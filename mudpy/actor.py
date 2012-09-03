@@ -1,11 +1,54 @@
 from attributes import Attributes
+from item import Inventory
 
 class Actor(object):
-	def __init__(self, name):
-		self.name = name
+	def __init__(self):
+		self.name = 'an actor'
+		self.level = 0
 		self.experience = 0
 		self.attributes = self.getDefaultAttributes()
 		self.max_attributes = self.getDefaultAttributes()
+		self.sex = 'neutral'
+		self.room = None
+		self.abilities = None
+		self.target = None
+		self.weight = 0
+		self.inventory = Inventory()
+		"""
+		self.equipped = {
+			{'position':'light', 'equipped':None},
+			{'position':'finger', 'equipped':None},
+			{'position':'finger', 'equipped':None},
+			{'position':'neck', 'equipped':None},
+			{'position':'neck', 'equipped':None},
+			{'position':'body', 'equipped':None},
+			{'position':'head', 'equipped':None},
+			{'position':'legs', 'equipped':None},
+			{'position':'feet', 'equipped':None},
+			{'position':'hands', 'equipped':None},
+			{'position':'arms', 'equipped':None},
+			{'position':'torso', 'equipped':None},
+			{'position':'waist', 'equipped':None},
+			{'position':'wrist', 'equipped':None},
+			{'position':'wrist', 'equipped':None},
+			{'position':'wield', 'equipped':None},
+			{'position':'wield', 'equipped':None},
+			{'position':'float', 'equipped':None}
+		}
+		"""
+	
+	def getMovementCost(self):
+		# Add logic for carrying at maximum weight, injured, affects
+		cost = 1
+		if(self.isEncumbered()):
+			cost += 1
+		return cost
+	
+	def getMaxWeight(self):
+		return 1+(self.level*100)
+	
+	def isEncumbered(self):
+		return self.weight > self.getMaxWeight() * 0.95
 	
 	def notify(self, message):
 		return
@@ -16,7 +59,7 @@ class Actor(object):
 	def __str__(self):
 		return self.name
 	
-	def getDefaultAttributes()
+	def getDefaultAttributes(self):
 		a = Attributes()
 		a.hp = 20
 		a.mana = 20
@@ -31,17 +74,21 @@ class Actor(object):
 
 class Mob(Actor):
 	movement = 1
+	respawn = 1
+	auto_flee = False
+	area = None
+	role = ''
 
 class User(Actor):
-	def __init__(self, client, name):
-		self.client = client
-		super(User, self).__init__(name)
-
 	def look(self):
-		self.client.write("%s\n%s\n[Exits %s]\n%s" % (self.room.title, self.room.description, self.room.getDirectionString(), self.room.getActorsString(self)))
+		msg = "%s\n%s\n[Exits %s]\n" % (self.room.title, self.room.description, self.room.getDirectionString())
+		if len(self.room.inventory.items):
+			msg += self.room.inventory.inspection()+"\n"
+		msg += self.room.getActorsString(self)
+		self.client.write(msg)
 	
 	def prompt(self):
-		return ">> "
+		return "%i %i %i >> " % (self.attributes.hp, self.attributes.mana, self.attributes.movement)
 	
 	def notify(self, message):
 		self.client.write(message)

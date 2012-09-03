@@ -1,6 +1,7 @@
 import sys, time, hashlib
 from db import Db
 from random import randint
+from item import Inventory
 
 class Room:
 	def __init__(self):
@@ -9,6 +10,7 @@ class Room:
 		self.description = ''
 		self.directions = {'north': None, 'south': None, 'east': None, 'west': None, 'up': None, 'down': None}
 		self.actors = []
+		self.inventory = Inventory()
 
 	def getDirectionString(self):
 		dirstr = ''

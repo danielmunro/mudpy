@@ -8,7 +8,11 @@ class Command:
 		'down',
 		'who',
 		'quit',
-		'look'
+		'look',
+		'score',
+		'inventory',
+		'get',
+		'drop'
 	]
 
 	def __init__(self, actor, args):
@@ -46,6 +50,35 @@ class InstanceCommand(object):
 	def parseArgs(self, args):
 		return args
 
+class CommandGet(InstanceCommand):
+	def perform(self, actor, command, args):
+		item = actor.room.inventory.getByName(args[1])
+		if item:
+			actor.room.inventory.remove(item)
+			actor.inventory.append(item)
+			actor.notify("You pick up "+str(item)+" off the floor.")
+		else:
+			actor.notify("Nothing is there.")
+
+class CommandDrop(InstanceCommand):
+	def perform(self, actor, command, args):
+		item = actor.inventory.getByName(args[1])
+		if item:
+			actor.inventory.remove(item)
+			actor.room.inventory.append(item)
+			actor.notify("You drop "+str(item)+" to the floor.")
+		else:
+			actor.notify("Nothing is there.")
+
+class CommandInventory(InstanceCommand):
+	def perform(self, actor, command, args):
+		actor.notify("Your inventory:\n"+actor.inventory.inspection())
+
+class CommandScore(InstanceCommand):
+	def perform(self, actor, command, args):
+		a = actor.attributes
+		m = actor.max_attributes
+		actor.notify("You are %s.\n%i/%i hp %i/%i mana %i/%i mv\n" % (actor.name, a.hp, m.hp, a.mana, m.mana, a.movement, m.movement));
 
 class CommandLook(InstanceCommand):
 	def perform(self, actor, command, args):
@@ -68,12 +101,17 @@ class MoveDirection(InstanceCommand):
 	def perform(self, actor, command, args):
 		newRoom = self.getNewRoom(actor)
 		if(newRoom):
-			actor.room.notify(actor, str(actor)+" leaves "+command+".")
-			actor.room.removeActor(actor)
-			actor.room = newRoom
-			actor.room.addActor(actor)
-			actor.room.notify(actor, str(actor)+" has arrived.")
-			actor.look()
+			cost = actor.getMovementCost()
+			if(actor.attributes.movement > cost):
+				actor.attributes.movement -= cost
+				actor.room.notify(actor, str(actor)+" leaves "+command+".")
+				actor.room.removeActor(actor)
+				actor.room = newRoom
+				actor.room.addActor(actor)
+				actor.room.notify(actor, str(actor)+" has arrived.")
+				actor.look()
+			else:
+				actor.notify("You are too tired to move.")
 		else:
 			actor.notify("Alas, nothing is there.")
 	
