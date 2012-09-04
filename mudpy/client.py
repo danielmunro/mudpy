@@ -35,10 +35,11 @@ class Client(Protocol):
 		self.user.client = self
 		self.user.name = name
 		self.user.room = self.factory.roomFactory.DEFAULT_ROOM
-		self.user.room.addActor(self.user)
+		self.user.room.appendActor(self.user)
 		self.user.look()
 		self.user.notify("\n"+self.user.prompt())
 		self.factory.heartbeat.attach(self.user)
+		self.user.save()
 
 		from item import Item 
 		import copy

@@ -1,8 +1,12 @@
+import sys, time, hashlib
+from random import randint
 from attributes import Attributes
 from item import Inventory
+from save import Save
 
 class Actor(object):
 	def __init__(self):
+		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
 		self.name = 'an actor'
 		self.level = 0
 		self.experience = 0
@@ -12,7 +16,6 @@ class Actor(object):
 		self.room = None
 		self.abilities = None
 		self.target = None
-		self.weight = 0
 		self.inventory = Inventory()
 		"""
 		self.equipped = {
@@ -48,10 +51,13 @@ class Actor(object):
 		return 1+(self.level*100)
 	
 	def isEncumbered(self):
-		return self.weight > self.getMaxWeight() * 0.95
+		return self.inventory.getWeight() > self.getMaxWeight() * 0.95
 	
 	def notify(self, message):
 		return
+	
+	def look(self):
+		return;
 	
 	def tick(self):
 		print "tick"
@@ -71,6 +77,9 @@ class Actor(object):
 		a.hit = 1
 		a.dam = 1
 		return a
+	
+	def save(self):
+		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'max_attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
 
 class Mob(Actor):
 	movement = 1
@@ -81,11 +90,26 @@ class Mob(Actor):
 
 class User(Actor):
 	def look(self):
-		msg = "%s\n%s\n[Exits %s]\n" % (self.room.title, self.room.description, self.room.getDirectionString())
+		# directions
+		dirstr = ''
+		for i, v in self.room.directions.iteritems():
+			if(v):
+				dirstr += i[:1]
+		# looking
+		msg = "%s\n%s\n[Exits %s]\n" % (self.room.title, self.room.description, dirstr)
 		if len(self.room.inventory.items):
 			msg += self.room.inventory.inspection()+"\n"
-		msg += self.room.getActorsString(self)
+		# actors
+		for i, v in enumerate(self.room.actors):
+			if(v is not self):
+				msg += str(v)+" is here.\n"
 		self.client.write(msg)
+	
+	def getDirectionString(self):
+		return dirstr
+	
+	def getActorsString(self, actor):
+		return actorstr
 	
 	def prompt(self):
 		return "%i %i %i >> " % (self.attributes.hp, self.attributes.mana, self.attributes.movement)

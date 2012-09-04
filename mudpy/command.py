@@ -107,7 +107,7 @@ class MoveDirection(InstanceCommand):
 				actor.room.notify(actor, str(actor)+" leaves "+command+".")
 				actor.room.removeActor(actor)
 				actor.room = newRoom
-				actor.room.addActor(actor)
+				actor.room.appendActor(actor)
 				actor.room.notify(actor, str(actor)+" has arrived.")
 				actor.look()
 			else:

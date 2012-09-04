@@ -2,6 +2,7 @@ import sys, time, hashlib
 from db import Db
 from random import randint
 from item import Inventory
+from save import Save
 
 class Room:
 	def __init__(self):
@@ -12,21 +13,7 @@ class Room:
 		self.actors = []
 		self.inventory = Inventory()
 
-	def getDirectionString(self):
-		dirstr = ''
-		for i, v in self.directions.iteritems():
-			if(v):
-				dirstr += i[:1]
-		return dirstr
-	
-	def getActorsString(self, actor):
-		actorstr = ''
-		for i, v in enumerate(self.actors):
-			if(v is not actor):
-				actorstr += str(v)+" is here.\n"
-		return actorstr
-	
-	def addActor(self, actor):
+	def appendActor(self, actor):
 		self.actors.append(actor)
 	
 	def removeActor(self, actor):
@@ -40,14 +27,7 @@ class Room:
 				k.notify(message)
 	
 	def save(self):
-		db = Db().getConnection()
-		db.sadd('rooms', self.id)
-		db.hset(self.id, 'id', self.id)
-		db.hset(self.id, 'title', self.title)
-		db.hset(self.id, 'description', self.description)
-		for i, k in self.directions.iteritems():
-			if k:
-				db.hset(self.id+':directions', i, str(k))
+		Save(self, ['id', 'title', 'description', 'directions']).execute()
 	
 	def __str__(self):
 		return self.id
@@ -72,6 +52,3 @@ class RoomFactory:
 			attrs = db.hgetall(i+':directions')
 			for k, n in attrs.iteritems():
 				self.rooms[i].directions[k] = self.rooms[n]
-
-
-

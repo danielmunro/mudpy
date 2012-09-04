@@ -1,5 +1,10 @@
+import sys, time, hashlib
+from random import randint
+from save import Save
+
 class Inventory:
 	def __init__(self):
+		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
 		self.items = []
 		self.itemCount = {}
 	
@@ -28,13 +33,28 @@ class Inventory:
 		for i, n in self.itemCount.iteritems():
 			msg += ("("+str(n)+") " if n > 1 else "")+i+"\n"
 		return msg
+	
+	def getWeight(self):
+		weight = 0
+		for i in self.items:
+			weight += i.weight
+		return weight
+	
+	def save(self):
+		Save(self, ['id', 'items']).execute()
 
 class Item(object):
-	name = 'a generic item'
-	value = 0
+	def __init__(self):
+		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
+		self.name = 'a generic item'
+		self.value = 0
+		self.weight = 0
 
 	def __str__(self):
 		return self.name
+	
+	def save(self):
+		Save(self, ['id', 'name', 'value', 'weight'])
 
 class Consumable(Item):
 	nourishment = 0
