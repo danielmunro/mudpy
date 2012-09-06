@@ -3,6 +3,7 @@ from twisted.internet.protocol import Factory, Protocol
 from actor import User
 from command import Command
 from room import Room
+from command import CommandLook
 
 class Client(Protocol):
 	def connectionMade(self):
@@ -36,7 +37,7 @@ class Client(Protocol):
 		self.user.name = name
 		self.user.room = self.factory.DEFAULT_ROOM
 		self.user.room.appendActor(self.user)
-		self.user.look()
+		CommandLook().perform(self.user)
 		self.user.notify("\n"+self.user.prompt())
 		self.factory.heartbeat.attach(self.user)
 		self.user.save()

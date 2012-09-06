@@ -57,9 +57,6 @@ class Actor(object):
 	def notify(self, message):
 		return
 	
-	def look(self):
-		return;
-	
 	def tick(self):
 		print "tick"
 
@@ -92,22 +89,6 @@ class Mob(Actor):
 		super(Mob, self).__init__()
 
 class User(Actor):
-	def look(self):
-		# directions
-		dirstr = ''
-		for i, v in self.room.directions.iteritems():
-			if(v):
-				dirstr += i[:1]
-		# looking
-		msg = "%s\n%s\n[Exits %s]\n" % (self.room.title, self.room.description, dirstr)
-		if len(self.room.inventory.items):
-			msg += self.room.inventory.inspection()+"\n"
-		# actors
-		for i, v in enumerate(self.room.actors):
-			if(v is not self):
-				msg += str(v)+" is here.\n"
-		self.client.write(msg)
-	
 	def getDirectionString(self):
 		return dirstr
 	
