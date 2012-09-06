@@ -17,6 +17,7 @@ class Actor(object):
 		self.abilities = None
 		self.target = None
 		self.inventory = Inventory()
+		self.race = ""
 		"""
 		self.equipped = {
 			{'position':'light', 'equipped':None},
@@ -82,11 +83,13 @@ class Actor(object):
 		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'max_attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
 
 class Mob(Actor):
-	movement = 1
-	respawn = 1
-	auto_flee = False
-	area = None
-	role = ''
+	def __init__(self):
+		self.movement = 1
+		self.respawn = 1
+		self.auto_flee = False
+		self.area = None
+		self.role = ''
+		super(Mob, self).__init__()
 
 class User(Actor):
 	def look(self):
