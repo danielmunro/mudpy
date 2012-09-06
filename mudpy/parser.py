@@ -101,7 +101,9 @@ class Parser:
 			for d, direction in Room.rooms[r].directions.iteritems():
 				if(direction):
 					try:
-						Room.rooms[r].directions[d] = Room.rooms[Room.rooms[r].area.name+":"+direction]
+						if not direction.find(":") > -1:
+							direction = Room.rooms[r].area.name+":"+direction
+						Room.rooms[r].directions[d] = Room.rooms[direction]
 					except KeyError:
 						print "Room id "+str(direction)+" is not defined"
 
