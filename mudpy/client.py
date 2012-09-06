@@ -58,4 +58,4 @@ class ClientFactory(Factory):
 
 	def __init__(self, heartbeat):
 		self.heartbeat = heartbeat
-		self.DEFAULT_ROOM = Room.rooms["1"]
+		self.DEFAULT_ROOM = Room.rooms["midgaard:1"]

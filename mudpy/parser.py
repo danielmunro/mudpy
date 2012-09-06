@@ -101,7 +101,7 @@ class Parser:
 			for d, direction in Room.rooms[r].directions.iteritems():
 				if(direction):
 					try:
-						Room.rooms[r].directions[d] = Room.rooms[direction]
+						Room.rooms[r].directions[d] = Room.rooms[Room.rooms[r].area.name+":"+direction]
 					except KeyError:
 						print "Room id "+str(direction)+" is not defined"
 
@@ -129,10 +129,13 @@ class Parser:
 				except ParserException:
 					pass
 				if isinstance(instance, Room):
-					Room.rooms[instance.id] = instance
 					lastRoom = instance
+					lastRoom.area = lastArea
+					Room.rooms[lastRoom.area.name+":"+lastRoom.id] = lastRoom
 				elif isinstance(instance, Mob):
 					lastRoom.appendActor(instance)
+				elif isinstance(instance, Area):
+					lastArea = instance
 			line = f.readline()
 	
 	def trim(self, line):
