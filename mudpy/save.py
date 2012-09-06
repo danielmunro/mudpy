@@ -24,9 +24,7 @@ class Save:
 					if k:
 						db.hset(self.saved.id+':'+p, i, str(k))
 			elif 'save' in dir(v):
-				from room import Room
-				if not v is Room:
-					v.save()
+				v.save()
 				db.sadd(self.entity+":"+v.__class__.__name__, p, v.id)
 			else:
 				pass
