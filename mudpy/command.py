@@ -17,11 +17,12 @@ class Command:
 
 	def __init__(self, actor, args):
 		args = args.split()
-		i = self.getCommandIndexFromArg(args[0])
-		if i > -1:
-			globals()[self.getCommandClassFromIndex(i)](actor, self.commands[i], args)
-		else:
-			actor.notify("What was that?")
+		if len(args):
+			i = self.getCommandIndexFromArg(args[0])
+			if i > -1:
+				globals()[self.getCommandClassFromIndex(i)](actor, self.commands[i], args)
+			else:
+				actor.notify("What was that?")
 	
 	def getCommandIndexFromArg(self, arg):
 		for i, k in enumerate(self.commands):
