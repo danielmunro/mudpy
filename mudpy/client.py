@@ -1,8 +1,8 @@
 from twisted.internet.protocol import Factory, Protocol
 
 from actor import User
-from room import RoomFactory
 from command import Command
+from room import Room
 
 class Client(Protocol):
 	def connectionMade(self):
@@ -34,7 +34,7 @@ class Client(Protocol):
 		self.user = User()
 		self.user.client = self
 		self.user.name = name
-		self.user.room = self.factory.roomFactory.DEFAULT_ROOM
+		self.user.room = self.factory.DEFAULT_ROOM
 		self.user.room.appendActor(self.user)
 		self.user.look()
 		self.user.notify("\n"+self.user.prompt())
@@ -53,9 +53,9 @@ class Client(Protocol):
 class ClientFactory(Factory):
 	protocol = Client
 	clients = []
-	roomFactory = None
 	heartbeat = None
+	DEFAULT_ROOM = None
 
 	def __init__(self, heartbeat):
-		self.roomFactory = RoomFactory()
 		self.heartbeat = heartbeat
+		self.DEFAULT_ROOM = Room.rooms["1"]

@@ -1,10 +1,10 @@
 import sys, time, hashlib
-from db import Db
 from random import randint
 from item import Inventory
-from save import Save
 
 class Room:
+	rooms = {}
+
 	def __init__(self):
 		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
 		self.title = ''
@@ -26,29 +26,11 @@ class Room:
 			else:
 				k.notify(message)
 	
-	def save(self):
-		Save(self, ['id', 'title', 'description', 'directions']).execute()
-	
 	def __str__(self):
 		return self.id
 
-class RoomFactory:
-	rooms = {}
-	DEFAULT_ROOM = None
-
+class Area:
 	def __init__(self):
-		db = Db().getConnection()
-
-		for i in db.smembers('rooms'):
-			attrs = db.hgetall(i)
-			r = Room()
-			for k, n in attrs.iteritems():
-				setattr(r, k, n)
-			self.rooms[r.id] = r
-
-		for i in self.rooms:
-			if not self.DEFAULT_ROOM:
-				self.DEFAULT_ROOM = self.rooms[i]
-			attrs = db.hgetall(i+':directions')
-			for k, n in attrs.iteritems():
-				self.rooms[i].directions[k] = self.rooms[n]
+		self.name = ""
+		self.terrain = ""
+		self.location = ""
