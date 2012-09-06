@@ -2,9 +2,10 @@ from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
 from client import ClientFactory
-from actor import Actor, User
-from room import Room
 from heartbeat import Heartbeat
+from parser import Parser
+
+Parser("areas")
 
 heartbeat = Heartbeat()
 
