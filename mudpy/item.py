@@ -49,6 +49,9 @@ class Item(object):
 		self.name = 'a generic item'
 		self.value = 0
 		self.weight = 0
+		self.material = ""
+		self.can_own = True
+		self.level = 1
 
 	def __str__(self):
 		return self.name
@@ -56,28 +59,51 @@ class Item(object):
 	def save(self):
 		Save(self, ['id', 'name', 'value', 'weight'])
 
+class Door(Item):
+	def __init__(self):
+		self.disposition = ""
+		super(Door, self).__init__()
+		self.can_own = False
+
+class Container(Item):
+	def __init__(self):
+		self.inventory = Inventory()
+		super(Container, self).__init__()
+
 class Consumable(Item):
-	nourishment = 0
+	def __init__(self):
+		self.nourishment = 0
+		super(Consumable, self).__init__()
 
 class Food(Consumable):
-	nourishment = 0
+	def __init__(self):
+		self.nourishment = 0
+		super(Food, self).__init__()
 
 class Drink(Consumable):
-	refillable = True
-	drink = ''
-	amount = 1
+	def __init__(self):
+		self.refillable = True
+		self.contents = ''
+		self.uses = 1
+		super(Drink, self).__init__()
 
 class Equipment(Item):
-	position = ''
-	condition = 1
+	def __init__(self):
+		self.position = ''
+		self.condition = 1
+		super(Equipment, self).__init__()
 
 class Armor(Equipment):
-	ac_slash = 0
-	ac_bash = 0
-	ac_pierce = 0
-	ac_magic = 0
+	def __init__(self):
+		self.ac_slash = 0
+		self.ac_bash = 0
+		self.ac_pierce = 0
+		self.ac_magic = 0
+		super(Armor, self).__init__()
 
 class Weapon(Equipment):
-	hit = 0
-	dam = 0
-	position = 'held'
+	def __init__(self):
+		self.hit = 0
+		self.dam = 0
+		self.position = 'held'
+		super(Weapon, self).__init__()
