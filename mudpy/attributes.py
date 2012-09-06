@@ -9,7 +9,7 @@ class Attributes:
 		self.mana = 0
 		self.movement = 0
 
-		self.bless = 0
+		self.saves = 0
 
 		self.ac_bash = 0
 		self.ac_pierce = 0
@@ -20,4 +20,4 @@ class Attributes:
 		self.dam = 0
 	
 	def save(self):
-		Save(self, ['id', 'hp', 'mana', 'movement', 'bless', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']).execute()
+		Save(self, ['id', 'hp', 'mana', 'movement', 'saves', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']).execute()
