@@ -93,11 +93,11 @@ class CommandLook(InstanceCommand):
 			if not item:
 				item = actor.room.inventory.getItemByName(lookat)
 			if item:
-				msg = item.long+"\n"
+				msg = item.long.capitalize()+".\n"
 			else:
 				_actor = actor.room.getActorByName(lookat)
 				if _actor:
-					msg = _actor.long+"\n"
+					msg = _actor.long.capitalize()+".\n"
 		actor.notify(msg)
 
 class CommandQuit(InstanceCommand):
