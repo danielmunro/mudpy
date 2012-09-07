@@ -1,0 +1,53 @@
+area
+name goblin forest, terrain forest, location outside
+
+room
+Entrance to the goblin forest
+Trees begin to envelop you as you travel further into the woods.~
+id 200, e 24, w 202, s 201
+
+item
+a wooden sign
+A wooden sign is on the side of the path. It reads,
+"Beware travellers, beyond this point is controlled by renegade goblins. Continue at your own risk.
+
+To the south is lost to spiders,
+To the west, through the goblin forest, is Stone Hill"~
+material wood, can_own false
+
+random_dungeon
+A beaten trail
+A small path leads you through the goblin forest.~
+id 201, n 200, rooms 6, n_prob 0, u_prob 0, s_prob .75, exit 203~
+
+mob
+a small green goblin
+A little green goblin is here, probably looking to cause trouble.~
+movement 1, race critter, count 2, name a small green goblin, level 5
+hp 10
+
+mob
+a small yellow goblin
+A little yellow goblin is here, probably looking to cause trouble.~
+movement 1, race critter, count 2, name a small yellow goblin, level 5
+hp 12
+
+random_dungeon
+A trail in the goblin forest
+You are following a dirt road through the goblin forest. Trees line the narrow and often trecherous path.~
+id 202, e 200, exit 204, rooms 8, e_prob .25, u_prob 0, w_prob .85
+
+room
+A large tree filled with cobwebs
+The trail winds to a halt right below an enormous tree that has been covered in thick spider webs.~
+id 203, u 300
+
+room
+A trail in the goblin forest
+You are following a dirt road through the goblin forest. Trees line the narrow and often trecherous path.~
+id 204
+
+item
+a sign posted to a tree
+A handmade wooden sign is posted to a tree on the side of the trail. It reads,
+"Follow the trail west to Stone Hill"~

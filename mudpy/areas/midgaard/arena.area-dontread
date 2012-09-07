@@ -1,0 +1,16 @@
+area
+alias The Temple Arena, terrain city, location indoors, lighting normal~
+
+#grid_dungeon
+random_dungeon
+The Temple Arena
+A large colliseum surrounds a dirt fighting pit, where many wretched creatures have met their fate.~
+id 100, e 2, rooms 5~
+#id 100, e 2, w_count 5, n_count 2, s_count 2~ 
+
+mob
+a snail is trying to get out of your way
+A little brown snail is slithering across your path.~
+movement 5, race critter, count 3, alias a snail~
+hp 5, level 5~
+~
