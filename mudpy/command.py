@@ -41,7 +41,7 @@ class InstanceCommand(object):
 
 class CommandGet(InstanceCommand):
 	def perform(self, actor, args = []):
-		item = actor.room.inventory.getByName(args[1])
+		item = actor.room.inventory.getItemByName(args[1])
 		if item:
 			actor.room.inventory.remove(item)
 			actor.inventory.append(item)
@@ -51,7 +51,7 @@ class CommandGet(InstanceCommand):
 
 class CommandDrop(InstanceCommand):
 	def perform(self, actor, args = []):
-		item = actor.inventory.getByName(args[1])
+		item = actor.inventory.getItemByName(args[1])
 		if item:
 			actor.inventory.remove(item)
 			actor.room.inventory.append(item)
@@ -71,19 +71,33 @@ class CommandScore(InstanceCommand):
 
 class CommandLook(InstanceCommand):
 	def perform(self, actor, args = []):
-		# directions
-		dirstr = ''
-		for i, v in actor.room.directions.iteritems():
-			if(v):
-				dirstr += i[:1]
-		msg = "%s\n%s\n[Exits %s]\n" % (actor.room.title, actor.room.description, dirstr)
-		# items
-		if len(actor.room.inventory.items):
-			msg += actor.room.inventory.inspection()+"\n"
-		# actors
-		for i, v in enumerate(actor.room.actors):
-			if(v is not actor):
-				msg += str(v)+" is here.\n"
+		l = len(args)
+		if l <= 1:
+			# directions
+			dirstr = ''
+			for i, v in actor.room.directions.iteritems():
+				if(v):
+					dirstr += i[:1]
+			msg = "%s\n%s\n[Exits %s]\n" % (actor.room.title, actor.room.description, dirstr)
+			# items
+			if len(actor.room.inventory.items):
+				msg += actor.room.inventory.inspection()+"\n"
+			# actors
+			for i, v in enumerate(actor.room.actors):
+				if(v is not actor):
+					msg += str(v)+" is here.\n"
+		else:
+			lookat = args[1:][0]
+			item = actor.inventory.getItemByName(lookat)
+			msg = "Nothing is there."
+			if not item:
+				item = actor.room.inventory.getItemByName(lookat)
+			if item:
+				msg = item.long+"\n"
+			else:
+				_actor = actor.room.getActorByName(lookat)
+				if _actor:
+					msg = _actor.long+"\n"
 		actor.notify(msg)
 
 class CommandQuit(InstanceCommand):

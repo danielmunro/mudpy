@@ -23,9 +23,9 @@ class Inventory:
 		except ValueError:
 			pass
 	
-	def getByName(self, name):
+	def getItemByName(self, name):
 		for i in iter(self.items):
-			if i.name.find(name):
+			if i.name.find(name) > -1:
 				return i
 
 	def inspection(self):
@@ -46,7 +46,8 @@ class Inventory:
 class Item(object):
 	def __init__(self):
 		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
-		self.name = 'a generic item'
+		self.name = "a generic item"
+		self.long = "a generic item is here"
 		self.value = 0
 		self.weight = 0
 		self.material = ""

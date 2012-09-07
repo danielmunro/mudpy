@@ -26,6 +26,11 @@ class Room:
 			else:
 				k.notify(message)
 	
+	def getActorByName(self, name):
+		for i in iter(self.actors):
+			if i.name.lower().find(name.lower()) > -1:
+				return i
+	
 	def __str__(self):
 		return self.id
 
