@@ -7,12 +7,13 @@ from save import Save
 class Actor(object):
 	def __init__(self):
 		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
-		self.name = 'an actor'
+		self.name = "an actor"
+		self.long = "An actor is here"
 		self.level = 0
 		self.experience = 0
 		self.attributes = self.getDefaultAttributes()
 		self.max_attributes = self.getDefaultAttributes()
-		self.sex = 'neutral'
+		self.sex = "neutral"
 		self.room = None
 		self.abilities = None
 		self.target = None
