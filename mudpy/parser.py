@@ -55,27 +55,20 @@ class Attributes(Assignable):
 		else:
 			raise AttributeError('Attribute "'+instanceProperty+'" is not defined in '+instance.__class__.__name__)
 
-class Line:
-	def __init__(self, propertyName):
-		self.propertyName = propertyName
-	
-	def process(self, f, instance):
-		setattr(instance, self.propertyName, f.readline().strip())
-
 class Block:
-	def __init__(self, propertyName):
+	def __init__(self, propertyName, end = "\n"):
 		self.propertyName = propertyName
+		self.end = end
 	
 	def process(self, f, instance):
 		setattr(instance, self.propertyName, self._process(f, ""))
 	
 	def _process(self, f, value):
-		line = f.readline().strip()
-		if line.find("~") > -1:
-			return value+line.strip("~")
+		line = f.readline()
+		if line.find(self.end) > -1:
+			return value+line.strip(self.end)
 		else:
-			return self._process(f, value+line+"\n")
-
+			return self._process(f, value+line)
 
 class Abilities:
 	def process(self, f, instance):
@@ -87,13 +80,13 @@ class Abilities:
 class Parser:
 	definitions = {
 		'area': [Properties()],
-		'room': [Line('title'), Block('description'), Properties()],
-		'mob': [Line('long'), Block('description'), Properties(), Attributes(), Abilities()],
-		'container': [Line('long'), Block('description'), Properties()],
-		'drink': [Line('long'), Block('description'), Properties()],
-		'item': [Line('long'), Block('description'), Properties()],
+		'room': [Block('title'), Block('description', '~'), Properties()],
+		'mob': [Block('long'), Block('description', '~'), Properties(), Attributes(), Abilities()],
+		'container': [Block('long'), Block('description', '~'), Properties()],
+		'drink': [Block('long'), Block('description', '~'), Properties()],
+		'item': [Block('long'), Block('description', '~'), Properties()],
 		'quest': [Block('name')],
-		'door': [Line('long'), Block('description'), Properties()]
+		'door': [Block('long'), Block('description', '~'), Properties()]
 	}
 	def __init__(self, baseDir):
 		self.parseDir(baseDir)
