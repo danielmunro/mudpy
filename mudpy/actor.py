@@ -90,12 +90,6 @@ class Mob(Actor):
 		super(Mob, self).__init__()
 
 class User(Actor):
-	def getDirectionString(self):
-		return dirstr
-	
-	def getActorsString(self, actor):
-		return actorstr
-	
 	def prompt(self):
 		return "%i %i %i >> " % (self.attributes.hp, self.attributes.mana, self.attributes.movement)
 	
