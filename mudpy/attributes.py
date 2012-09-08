@@ -18,6 +18,13 @@ class Attributes:
 
 		self.hit = 0
 		self.dam = 0
+
+		self.str = 15
+		self.int = 15
+		self.wis = 15
+		self.dex = 15
+		self.con = 15
+		self.cha = 15
 	
 	def save(self):
 		Save(self, ['id', 'hp', 'mana', 'movement', 'saves', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']).execute()

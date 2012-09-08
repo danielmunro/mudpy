@@ -13,6 +13,12 @@ class Actor(object):
 		self.experience = 0
 		self.attributes = self.getDefaultAttributes()
 		self.max_attributes = self.getDefaultAttributes()
+		self.max_attributes.str += 5
+		self.max_attributes.int += 5
+		self.max_attributes.wis += 5
+		self.max_attributes.dex += 5
+		self.max_attributes.con += 5
+		self.max_attributes.cha += 5
 		self.sex = "neutral"
 		self.room = None
 		self.abilities = []
