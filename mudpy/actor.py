@@ -15,7 +15,7 @@ class Actor(object):
 		self.max_attributes = self.getDefaultAttributes()
 		self.sex = "neutral"
 		self.room = None
-		self.abilities = None
+		self.abilities = []
 		self.target = None
 		self.inventory = Inventory()
 		self.race = ""
