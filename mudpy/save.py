@@ -1,3 +1,5 @@
+import time, hashlib
+from random import randint
 from db import Db
 
 class Save:
@@ -6,9 +8,15 @@ class Save:
 		self.properties = properties
 		self.entity = saved.__class__.__name__
 	
+	@staticmethod
+	def getRandomID():
+		return hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
+	
 	def execute(self):
 		# get connection
 		db = Db().getConnection()
+		if not self.saved.id:
+			self.saved.id = self.getRandomID()
 		# save the object's id in the entity set
 		db.sadd(self.entity, self.saved.id)
 		# loop through persistable properties and save in applicable data structure

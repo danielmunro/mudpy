@@ -1,12 +1,11 @@
-import sys, time, hashlib
-from random import randint
 from item import Inventory
+from save import Save
 
 class Room:
 	rooms = {}
 
 	def __init__(self):
-		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
+		self.id = Save.getRandomID()
 		self.title = ''
 		self.description = ''
 		self.directions = {'north': None, 'south': None, 'east': None, 'west': None, 'up': None, 'down': None}

@@ -1,10 +1,7 @@
-import sys, time, hashlib
-from random import randint
 from save import Save
 
 class Inventory:
 	def __init__(self):
-		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
 		self.items = []
 		self.itemCount = {}
 	
@@ -45,7 +42,7 @@ class Inventory:
 
 class Item(object):
 	def __init__(self):
-		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
+		self.id = Save.getRandomID()
 		self.name = "a generic item"
 		self.long = "a generic item is here"
 		self.value = 0

@@ -65,9 +65,16 @@ class CommandInventory(InstanceCommand):
 
 class CommandScore(InstanceCommand):
 	def perform(self, actor, args = []):
-		a = actor.attributes
-		m = actor.max_attributes
-		actor.notify("You are %s.\n%i/%i hp %i/%i mana %i/%i mv\n" % (actor.name, a.hp, m.hp, a.mana, m.mana, a.movement, m.movement));
+		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\n" % ( \
+			actor, actor.race, actor.getAttribute('hp'), actor.getMaxAttribute('hp'), actor.getAttribute('mana'), \
+			actor.getMaxAttribute('mana'), actor.getAttribute('movement'), actor.getMaxAttribute('movement'), \
+			actor.getBaseAttribute('str'), actor.getAttribute('str'), \
+			actor.getBaseAttribute('int'), actor.getAttribute('int'), \
+			actor.getBaseAttribute('wis'), actor.getAttribute('wis'), \
+			actor.getBaseAttribute('dex'), actor.getAttribute('dex'), \
+			actor.getBaseAttribute('con'), actor.getAttribute('con'), \
+			actor.getBaseAttribute('cha'), actor.getAttribute('cha'))
+		actor.notify(msg);
 
 class CommandLook(InstanceCommand):
 	def perform(self, actor, args = []):

@@ -1,55 +1,27 @@
-import sys, time, hashlib
-from random import randint
 from attributes import Attributes
 from item import Inventory
 from save import Save
 
 class Actor(object):
 	def __init__(self):
-		self.id = hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
+		self.id = Save.getRandomID()
 		self.name = "an actor"
 		self.long = "An actor is here"
 		self.level = 0
 		self.experience = 0
 		self.attributes = self.getDefaultAttributes()
 		self.max_attributes = self.getDefaultAttributes()
-		self.max_attributes.str += 5
-		self.max_attributes.int += 5
-		self.max_attributes.wis += 5
-		self.max_attributes.dex += 5
-		self.max_attributes.con += 5
-		self.max_attributes.cha += 5
 		self.sex = "neutral"
 		self.room = None
 		self.abilities = []
+		self.affects = []
 		self.target = None
 		self.inventory = Inventory()
-		self.race = ""
-		"""
-		self.equipped = {
-			{'position':'light', 'equipped':None},
-			{'position':'finger', 'equipped':None},
-			{'position':'finger', 'equipped':None},
-			{'position':'neck', 'equipped':None},
-			{'position':'neck', 'equipped':None},
-			{'position':'body', 'equipped':None},
-			{'position':'head', 'equipped':None},
-			{'position':'legs', 'equipped':None},
-			{'position':'feet', 'equipped':None},
-			{'position':'hands', 'equipped':None},
-			{'position':'arms', 'equipped':None},
-			{'position':'torso', 'equipped':None},
-			{'position':'waist', 'equipped':None},
-			{'position':'wrist', 'equipped':None},
-			{'position':'wrist', 'equipped':None},
-			{'position':'wield', 'equipped':None},
-			{'position':'wield', 'equipped':None},
-			{'position':'float', 'equipped':None}
-		}
-		"""
+		self.race = None
+		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery'])
+		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 	
 	def getMovementCost(self):
-		# Add logic for carrying at maximum weight, injured, affects
 		cost = 1
 		if(self.isEncumbered()):
 			cost += 1
@@ -81,7 +53,34 @@ class Actor(object):
 		a.ac_magic = 100
 		a.hit = 1
 		a.dam = 1
+		a.str = 15
+		a.int = 15
+		a.wis = 15
+		a.dex = 15
+		a.con = 15
+		a.cha = 15
 		return a
+	
+	def getAttribute(self, attribute):
+		# todo: don't let max attributes for str, int, wis, etc get modified
+		calculatedMaxAttribute = self.getMaxAttribute(attribute)
+		calculatedAttribute = self.getCalculatedAttribute(self.attributes, attribute)
+
+		return calculatedAttribute if calculatedAttribute < calculatedMaxAttribute else calculatedMaxAttribute
+	
+	def getMaxAttribute(self, attribute):
+		return self.getCalculatedAttribute(self.max_attributes, attribute)
+	
+	def getBaseAttribute(self, attribute):
+		return getattr(self.race.attributes, attribute) + getattr(self.attributes, attribute)
+		
+	def getCalculatedAttribute(self, attributes, attribute):
+		# affects and race modifiers
+		def getAtt(affect): return getattr(affect.attributes, attribute)
+		modifiers = sum(map(getAtt, self.affects)) + getattr(self.race.attributes, attribute)
+
+		# base attributes + modifiers
+		return getattr(attributes, attribute) + modifiers
 	
 	def save(self):
 		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'max_attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
@@ -97,7 +96,7 @@ class Mob(Actor):
 
 class User(Actor):
 	def prompt(self):
-		return "%i %i %i >> " % (self.attributes.hp, self.attributes.mana, self.attributes.movement)
+		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
 	
 	def notify(self, message):
 		self.client.write(message)
