@@ -84,6 +84,9 @@ class Actor(object):
 	
 	def save(self):
 		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'max_attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
+	
+	def getAbilities(self):
+		return self.abilities + self.race.abilities
 
 class Mob(Actor):
 	def __init__(self):
