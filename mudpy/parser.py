@@ -2,6 +2,8 @@ import os
 from room import Area, Room
 from actor import Mob
 from item import Item, Container, Drink, Door
+from ability import AbilityFactory
+from race import RaceFactory, Human
 
 class Assignable(object):
 	def process(self, f, instance):
@@ -23,7 +25,11 @@ class Assignable(object):
 class Properties(Assignable):
 	def assign(self, instance, instanceProperty, value):
 		if hasattr(instance, instanceProperty):
-			setattr(instance, instanceProperty, value)
+			#hack
+			if instanceProperty == "race":
+				instance.race = RaceFactory.newRace(value)
+			else:
+				setattr(instance, instanceProperty, value)
 		elif self.aliases(instance, instanceProperty, value):
 			pass
 		else:
@@ -55,6 +61,12 @@ class Attributes(Assignable):
 		else:
 			raise AttributeError('Attribute "'+instanceProperty+'" is not defined in '+instance.__class__.__name__)
 
+class Abilities:
+	def process(self, f, instance):
+		parts = f.readline().split(",")
+		for i in parts:
+			instance.abilities.append(AbilityFactory.newAbility(i.strip()))
+
 class Block:
 	def __init__(self, propertyName, end = "\n"):
 		self.propertyName = propertyName
@@ -70,13 +82,6 @@ class Block:
 		else:
 			return self._process(f, value+line)
 
-class Abilities:
-	def process(self, f, instance):
-		line = f.readline().strip()
-		if not line:
-			raise ParserException
-		parts = line.split(",")
-
 class Parser:
 	definitions = {
 		'area': [Properties()],
@@ -86,10 +91,11 @@ class Parser:
 		'drink': [Block('long'), Block('description', '~'), Properties()],
 		'item': [Block('long'), Block('description', '~'), Properties()],
 		'quest': [Block('name')],
-		'door': [Block('long'), Block('description', '~'), Properties()]
+		'door': [Block('long'), Block('description', '~'), Properties()],
+		'ability': [Block('name'), Properties()]
 	}
 	def __init__(self, baseDir):
-		self.parseDir(baseDir)
+		self.parseDir("scripts/"+baseDir)
 		for r, room in Room.rooms.iteritems():
 			for d, direction in Room.rooms[r].directions.iteritems():
 				if(direction):

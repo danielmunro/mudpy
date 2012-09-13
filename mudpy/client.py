@@ -2,10 +2,10 @@ from twisted.internet.protocol import Factory, Protocol
 from collections import deque
 
 from actor import User
-from command import Command
+from command import CommandFactory
 from room import Room
-from command import CommandLook
-from race import *
+from race import RaceFactory
+from utility import *
 
 class Client(Protocol):
 	def connectionMade(self):
@@ -26,7 +26,12 @@ class Client(Protocol):
 	def dataReceived(self, data):
 		data = data.strip()
 		if self.user:
-			Command(self.user, data)
+			args = data.split(" ")
+			action = startsWith(args[0], CommandFactory.getCommands(), self.user.getAbilities())
+			if action:
+				action.perform(self.user, args)
+			else:
+				self.user.notify("What was that?")
 			self.write("\n"+self.user.prompt())
 		else:
 			self.login(data)
@@ -44,11 +49,10 @@ class Client(Protocol):
 			return
 		elif next == "race":
 			try:
-				race = globals()[data.strip().title()]()
-				if isinstance(race, Race):
+				race = startsWith(data, RaceFactory.getRaces())
+				if race:
 					self.newUser.race = race
 				else:
-					print "NOPE"
 					raise Exception
 			except Exception as e:
 				self.write("That is not a valid race. What is your race? ")
@@ -57,12 +61,10 @@ class Client(Protocol):
 			self.user = self.newUser
 			self.user.room = self.factory.DEFAULT_ROOM
 			self.user.room.appendActor(self.user)
-			CommandLook().perform(self.user)
+			CommandFactory.getCommand("look").perform(self.user)
 			self.write("\n"+self.user.prompt())
 			self.factory.heartbeat.attach(self.user)
 
-		"""
-		self.user.save()
 		from item import Item 
 		import copy
 		i1 = Item()
@@ -71,6 +73,8 @@ class Client(Protocol):
 		i2 = copy.copy(i1)
 		self.user.inventory.append(i1)
 		self.user.inventory.append(i2)
+		"""
+		self.user.save()
 		"""
 
 class ClientFactory(Factory):

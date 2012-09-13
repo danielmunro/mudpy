@@ -1,0 +1,7 @@
+ability
+berserk
+type skill, level 1, affect Berserk, cost movement .5
+
+ability
+second attack
+type skill, level 1, affect ExtraAttack hst

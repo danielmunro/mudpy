@@ -1,45 +1,37 @@
-class Command:
-	commands = [
-		'north',
-		'south',
-		'east',
-		'west',
-		'up',
-		'down',
-		'who',
-		'quit',
-		'look',
-		'score',
-		'inventory',
-		'get',
-		'drop'
-	]
+from utility import *
 
-	def __init__(self, actor, args):
-		args = args.split()
-		if len(args):
-			i = self.getCommandIndexFromArg(args[0])
-			if i > -1:
-				instance = globals()[self.getCommandClassFromIndex(i)]()
-				instance.perform(actor, args)
-			else:
-				actor.notify("What was that?")
+class CommandFactory:
+	commands = []
+
+	@staticmethod
+	def getCommands():
+		if not CommandFactory.commands:
+			CommandFactory.commands = CommandFactory.initializeAllCommands()
+		return CommandFactory.commands
+
+	@staticmethod
+	def initializeAllCommands():
+		TypeType = type(type)
+		commands = []
+		for command in [j for (i,j) in globals().iteritems() if isinstance(j, TypeType) and issubclass(j, InstanceCommand) and i.__class__.__name__ != "InstanceCommand"]:
+			commands.append(command())
+		return commands
 	
-	def getCommandIndexFromArg(self, arg):
-		for i, k in enumerate(self.commands):
-			if(k.find(arg) == 0):
-				return i
-		return -1
-	
-	def getCommandClassFromIndex(self, i):
-		return 'Command'+self.commands[i].title();
+	@staticmethod
+	def getCommand(name):
+		return startsWith(name, CommandFactory.getCommands())
 
 class InstanceCommand(object):
+	name = ""
 	def perform(self):
 		print "perform() not defined"
 		raise
+	
+	def __str__(self):
+		return self.name
 
 class CommandGet(InstanceCommand):
+	name = "get"
 	def perform(self, actor, args = []):
 		item = actor.room.inventory.getItemByName(args[1])
 		if item:
@@ -50,6 +42,7 @@ class CommandGet(InstanceCommand):
 			actor.notify("Nothing is there.")
 
 class CommandDrop(InstanceCommand):
+	name = "drop"
 	def perform(self, actor, args = []):
 		item = actor.inventory.getItemByName(args[1])
 		if item:
@@ -60,10 +53,12 @@ class CommandDrop(InstanceCommand):
 			actor.notify("Nothing is there.")
 
 class CommandInventory(InstanceCommand):
+	name = "inventory"
 	def perform(self, actor, args = []):
 		actor.notify("Your inventory:\n"+actor.inventory.inspection())
 
 class CommandScore(InstanceCommand):
+	name = "score"
 	def perform(self, actor, args = []):
 		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\n" % ( \
 			actor, actor.race, actor.getAttribute('hp'), actor.getMaxAttribute('hp'), actor.getAttribute('mana'), \
@@ -77,6 +72,7 @@ class CommandScore(InstanceCommand):
 		actor.notify(msg);
 
 class CommandLook(InstanceCommand):
+	name = "look"
 	def perform(self, actor, args = []):
 		l = len(args)
 		if l <= 1:
@@ -95,23 +91,19 @@ class CommandLook(InstanceCommand):
 					msg += str(v)+" is here.\n"
 		else:
 			lookat = args[1:][0]
-			item = actor.inventory.getItemByName(lookat)
 			msg = "Nothing is there."
-			if not item:
-				item = actor.room.inventory.getItemByName(lookat)
-			if item:
-				msg = item.long.capitalize()+".\n"
-			else:
-				_actor = actor.room.getActorByName(lookat)
-				if _actor:
-					msg = _actor.long.capitalize()+".\n"
+			lookingAt = matchPartial(lookat, actor.inventory.items, actor.room.inventory.items, actor.room.actors)
+			if lookingAt:
+				msg = lookingAt.long.capitalize()+".\n"
 		actor.notify(msg)
 
 class CommandQuit(InstanceCommand):
+	name = "quit"
 	def perform(self, actor, args = []):
 		actor.client.disconnect()
 
 class CommandWho(InstanceCommand):
+	name = "who"
 	def perform(self, actor, args = []):
 		wholist = '';
 		for i in actor.client.factory.clients:
@@ -127,7 +119,7 @@ class MoveDirection(InstanceCommand):
 			cost = actor.getMovementCost()
 			if(actor.attributes.movement > cost):
 				actor.attributes.movement -= cost
-				actor.room.notify(actor, str(actor)+" leaves "+self.command+".")
+				actor.room.notify(actor, str(actor)+" leaves "+self.name+".")
 				actor.room.removeActor(actor)
 				actor.room = newRoom
 				actor.room.appendActor(actor)
@@ -143,31 +135,31 @@ class MoveDirection(InstanceCommand):
 		raise 
 
 class CommandNorth(MoveDirection):
-	command = "north"
+	name = "north"
 	def getNewRoom(self, actor):
 		return actor.room.directions['north']
 
 class CommandSouth(MoveDirection):
-	command = "south"
+	name = "south"
 	def getNewRoom(self, actor):
 		return actor.room.directions['south']
 
 class CommandEast(MoveDirection):
-	command = "east"
+	name = "east"
 	def getNewRoom(self, actor):
 		return actor.room.directions['east']
 
 class CommandWest(MoveDirection):
-	command = "west"
+	name = "west"
 	def getNewRoom(self, actor):
 		return actor.room.directions['west']
 
 class CommandUp(MoveDirection):
-	command = "up"
+	name = "up"
 	def getNewRoom(self, actor):
 		return actor.room.directions['up']
 
 class CommandDown(MoveDirection):
-	command = "down"
+	name = "down"
 	def getNewRoom(self, actor):
 		return actor.room.directions['down']
