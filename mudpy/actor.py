@@ -37,7 +37,7 @@ class Actor(object):
 		return
 	
 	def tick(self):
-		print "tick"
+		pass
 
 	def __str__(self):
 		return self.name
@@ -62,7 +62,6 @@ class Actor(object):
 		return a
 	
 	def getAttribute(self, attribute):
-		# todo: don't let max attributes for str, int, wis, etc get modified
 		calculatedMaxAttribute = self.getMaxAttribute(attribute)
 		calculatedAttribute = self.getCalculatedAttribute(self.attributes, attribute)
 
@@ -103,3 +102,7 @@ class User(Actor):
 	
 	def notify(self, message):
 		self.client.write(message)
+	
+	def tick(self):
+		super(User, self).tick()
+		self.notify("\n\n"+self.prompt())
