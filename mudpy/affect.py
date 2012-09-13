@@ -20,8 +20,10 @@ class Affect(object):
 			Heartbeat.instance.detach(self)
 			self.affected.affects.remove(self)
 			if isinstance(self.affected, User) and self.wearOffMessage:
-				self.affected.notify(self.wearOffMessage)
+				self.affected.notify(self.wearOffMessage+"\n"+self.affected.prompt())
 
+	def __str__(self):
+		return self.name
 
 """
 class AttributeModifier:

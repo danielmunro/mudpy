@@ -112,6 +112,11 @@ class CommandWho(InstanceCommand):
 		wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found.\n"
 		actor.notify(wholist)
 
+class CommandAffects(InstanceCommand):
+	name = "affects"
+	def perform(self, actor, args = []):
+		actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+" ticks" for x in actor.affects)+"\n");
+
 class MoveDirection(InstanceCommand):
 	def perform(self, actor, args = []):
 		newRoom = self.getNewRoom(actor)
