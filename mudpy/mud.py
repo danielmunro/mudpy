@@ -7,7 +7,7 @@ from parser import Parser
 
 Parser("areas")
 
-heartbeat = Heartbeat()
+heartbeat = Heartbeat(reactor)
 
 # 8007 is the port you want to run under. Choose something >1024
 endpoint = TCP4ServerEndpoint(reactor, 9000)

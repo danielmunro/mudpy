@@ -1,8 +1,12 @@
 import random, time
 
 class Heartbeat:
-	def __init__(self):
+	instance = None
+
+	def __init__(self, reactor):
 		self.observers = []
+		self.reactor = reactor
+		Heartbeat.instance = self
 	
 	def start(self):
 		i = 0
@@ -27,4 +31,4 @@ class Heartbeat:
 	
 	def tick(self):
 		for i in self.observers:
-			i.tick()
+			self.reactor.callFromThread(i.tick)
