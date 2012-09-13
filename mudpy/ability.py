@@ -22,13 +22,13 @@ class Ability(object):
 		success = True
 
 		if success and self.messageSuccess:
-			invoker.notify(self.messageSuccess)
+			invoker.notify(self.messageSuccess+"\n")
 			affects = self.getAffects(receiver)
 			if affects:
 				for affect in affects:
 					affect.start()
 		elif not success and self.messageFail:
-			invoker.notify(self.messageFail)
+			invoker.notify(self.messageFail+"\n")
 
 		return success
 	
