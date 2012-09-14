@@ -2,6 +2,12 @@ from utility import *
 from affect import Affect
 from heartbeat import Heartbeat
 
+class AbilityFactory:
+	@staticmethod
+	def newAbility(name):
+		ability = startsWith(name, Ability.__subclasses__());
+		return ability() if ability else None
+
 class Ability(object):
 	name = "an ability"
 	level = 0
@@ -37,14 +43,6 @@ class Ability(object):
 	
 	def __str__(self):
 		return self.name;
-
-class AbilityFactory:
-	@staticmethod
-	def newAbility(name):
-		TypeType = type(type)
-		for ability in [j for (i,j) in globals().iteritems() if isinstance(j, TypeType) and issubclass(j, Ability)]:
-			if getattr(ability, 'name') == name:
-				return ability()
 
 class Berserk(Ability):
 	name = "berserk"
