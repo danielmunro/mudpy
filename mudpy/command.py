@@ -107,7 +107,7 @@ class MoveDirection(InstanceCommand):
 		newRoom = self.getNewRoom(actor)
 		if(newRoom):
 			cost = actor.getMovementCost()
-			if(actor.attributes.movement > cost):
+			if(actor.attributes.movement >= cost):
 				actor.attributes.movement -= cost
 				actor.room.notify(actor, str(actor)+" leaves "+self.name+".")
 				actor.room.actors.remove(actor)
