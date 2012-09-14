@@ -34,7 +34,13 @@ class Actor(object):
 		return
 	
 	def tick(self):
-		pass
+		self.setAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * 0.1)
+		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * 0.1)
+		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * 0.1)
+	
+	def setAttribute(self, attribute, value):
+		maxatt = self.getMaxAttribute(attribute)
+		setattr(self.attributes, attribute, value) if getattr(self.attributes, attribute) + value <= maxatt else setattr(self.attributes, attribute, maxatt)
 
 	def getAttribute(self, attribute):
 		calculatedMaxAttribute = self.getMaxAttribute(attribute)
