@@ -22,13 +22,10 @@ class Actor(object):
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 	
 	def getMovementCost(self):
-		cost = 1
-		if(self.isEncumbered()):
-			cost += 1
-		return cost
+		return self.race.movementCost + 1 if self.isEncumbered() else self.race.movementCost
 	
 	def getMaxWeight(self):
-		return 1+(self.level*100)
+		return 100+(self.level*100)
 	
 	def isEncumbered(self):
 		return self.inventory.getWeight() > self.getMaxWeight() * 0.95
@@ -39,28 +36,6 @@ class Actor(object):
 	def tick(self):
 		pass
 
-	def __str__(self):
-		return self.name
-	
-	def getDefaultAttributes(self):
-		a = Attributes()
-		a.hp = 20
-		a.mana = 20
-		a.movement = 100
-		a.ac_bash = 100
-		a.ac_pierce = 100
-		a.ac_slash = 100
-		a.ac_magic = 100
-		a.hit = 1
-		a.dam = 1
-		a.str = 15
-		a.int = 15
-		a.wis = 15
-		a.dex = 15
-		a.con = 15
-		a.cha = 15
-		return a
-	
 	def getAttribute(self, attribute):
 		calculatedMaxAttribute = self.getMaxAttribute(attribute)
 		calculatedAttribute = self.getCalculatedAttribute(self.attributes, attribute)
@@ -87,6 +62,28 @@ class Actor(object):
 	def getAbilities(self):
 		return self.abilities + self.race.abilities
 
+	def __str__(self):
+		return self.name
+	
+	def getDefaultAttributes(self):
+		a = Attributes()
+		a.hp = 20
+		a.mana = 20
+		a.movement = 100
+		a.ac_bash = 100
+		a.ac_pierce = 100
+		a.ac_slash = 100
+		a.ac_magic = 100
+		a.hit = 1
+		a.dam = 1
+		a.str = 15
+		a.int = 15
+		a.wis = 15
+		a.dex = 15
+		a.con = 15
+		a.cha = 15
+		return a
+	
 class Mob(Actor):
 	def __init__(self):
 		self.movement = 1

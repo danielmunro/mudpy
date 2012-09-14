@@ -2,7 +2,8 @@ from twisted.internet.protocol import Factory, Protocol
 from collections import deque
 
 from actor import User
-from command import CommandFactory
+from command import InstanceCommand, CommandFactory, MoveDirection
+from ability import Ability
 from room import Room
 from race import RaceFactory
 from utility import *
@@ -20,16 +21,16 @@ class Client(Protocol):
 	
 	def disconnect(self):
 		self.factory.heartbeat.detach(self.user)
-		self.user.room.removeActor(self.user)
+		self.user.room.actors.remove(self.user)
 		self.transport.loseConnection()
 	
 	def dataReceived(self, data):
 		data = data.strip()
 		if self.user:
 			args = data.split(" ")
-			action = startsWith(args[0], CommandFactory.getCommands(), self.user.getAbilities())
+			action = startsWith(args[0], MoveDirection.__subclasses__(), InstanceCommand.__subclasses__(), Ability.__subclasses__())
 			if action:
-				action.perform(self.user, args)
+				action().perform(self.user, args)
 			else:
 				self.user.notify("What was that?")
 			self.write("\n"+self.user.prompt())
@@ -48,20 +49,17 @@ class Client(Protocol):
 			self.write("What is your race? ")
 			return
 		elif next == "race":
-			try:
-				race = startsWith(data, RaceFactory.getRaces())
-				if race:
-					self.newUser.race = race
-				else:
-					raise Exception
-			except Exception as e:
+			race = RaceFactory.newRace(data)
+			if race:
+				self.newUser.race = race
+			else:
 				self.write("That is not a valid race. What is your race? ")
 				self.loginSteps.appendleft(next)
 				return
 			self.user = self.newUser
 			self.user.room = self.factory.DEFAULT_ROOM
-			self.user.room.appendActor(self.user)
-			CommandFactory.getCommand("look").perform(self.user)
+			self.user.room.actors.append(self.user)
+			CommandFactory.newCommand("look").perform(self.user)
 			self.write("\n"+self.user.prompt())
 			self.factory.heartbeat.attach(self.user)
 

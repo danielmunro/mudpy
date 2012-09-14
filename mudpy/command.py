@@ -1,25 +1,10 @@
 from utility import *
 
 class CommandFactory:
-	commands = []
-
 	@staticmethod
-	def getCommands():
-		if not CommandFactory.commands:
-			CommandFactory.commands = CommandFactory.initializeAllCommands()
-		return CommandFactory.commands
-
-	@staticmethod
-	def initializeAllCommands():
-		TypeType = type(type)
-		commands = []
-		for command in [j for (i,j) in globals().iteritems() if isinstance(j, TypeType) and issubclass(j, InstanceCommand) and i.__class__.__name__ != "InstanceCommand"]:
-			commands.append(command())
-		return commands
-	
-	@staticmethod
-	def getCommand(name):
-		return startsWith(name, CommandFactory.getCommands())
+	def newCommand(name):
+		command = startsWith(name, InstanceCommand.__subclasses__());
+		return command() if command else None
 
 class InstanceCommand(object):
 	name = ""
@@ -125,9 +110,9 @@ class MoveDirection(InstanceCommand):
 			if(actor.attributes.movement > cost):
 				actor.attributes.movement -= cost
 				actor.room.notify(actor, str(actor)+" leaves "+self.name+".")
-				actor.room.removeActor(actor)
+				actor.room.actors.remove(actor)
 				actor.room = newRoom
-				actor.room.appendActor(actor)
+				actor.room.actors.append(actor)
 				actor.room.notify(actor, str(actor)+" has arrived.")
 				CommandLook().perform(actor)
 			else:

@@ -1,9 +1,10 @@
 import os
-from room import Area, Room
+from room import Area, Room, Direction
 from actor import Mob
 from item import Item, Container, Drink, Door
 from ability import AbilityFactory
-from race import RaceFactory, Human
+from race import RaceFactory
+from utility import *
 
 class Assignable(object):
 	def process(self, f, instance):
@@ -38,18 +39,9 @@ class Properties(Assignable):
 	# this function is a hack
 	def aliases(self, instance, instanceProperty, value):
 		if isinstance(instance, Room):
-			if instanceProperty == "n":
-				instance.directions["north"] = value
-			elif instanceProperty == "s":
-				instance.directions["south"] = value
-			elif instanceProperty == "e":
-				instance.directions["east"] = value
-			elif instanceProperty == "w":
-				instance.directions["west"] = value
-			elif instanceProperty == "u":
-				instance.directions["up"] = value
-			elif instanceProperty == "d":
-				instance.directions["down"] = value
+			direction = startsWith(instanceProperty, Direction.__subclasses__())
+			if direction:
+				instance.directions[direction.name] = value
 			return True
 		return False
 
@@ -134,7 +126,7 @@ class Parser:
 					lastRoom.area = lastArea
 					Room.rooms[lastRoom.area.name+":"+lastRoom.id] = lastRoom
 				elif isinstance(instance, Mob):
-					lastRoom.appendActor(instance)
+					lastRoom.actors.append(instance)
 				elif isinstance(instance, Area):
 					lastArea = instance
 			line = f.readline()

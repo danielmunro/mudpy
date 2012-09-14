@@ -1,22 +1,15 @@
 from item import Inventory
-from save import Save
 
 class Room:
 	rooms = {}
 
 	def __init__(self):
-		self.id = Save.getRandomID()
+		self.id = 0
 		self.title = ''
 		self.description = ''
-		self.directions = {'north': None, 'south': None, 'east': None, 'west': None, 'up': None, 'down': None}
 		self.actors = []
 		self.inventory = Inventory()
-
-	def appendActor(self, actor):
-		self.actors.append(actor)
-	
-	def removeActor(self, actor):
-		self.actors.remove(actor)
+		self.directions = dict((getattr(direction, 'name'), None) for direction in Direction.__subclasses__())
 	
 	def notify(self, actor, message):
 		for i, k in enumerate(self.actors):
@@ -32,6 +25,30 @@ class Room:
 	
 	def __str__(self):
 		return self.id
+
+class Direction(object):
+	name = ""
+
+	def __str__(self):
+		return self.name
+
+class North(Direction):
+	name = "north"
+
+class South(Direction):
+	name = "south"
+
+class East(Direction):
+	name = "east"
+
+class West(Direction):
+	name = "west"
+
+class Up(Direction):
+	name = "up"
+
+class Down(Direction):
+	name = "down"
 
 class Area:
 	def __init__(self):

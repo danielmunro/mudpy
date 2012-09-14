@@ -1,5 +1,12 @@
 from attributes import Attributes
 from ability import AbilityFactory
+from utility import *
+
+class RaceFactory:
+	@staticmethod
+	def newRace(name):
+		race = startsWith(name, Race.__subclasses__());
+		return race() if race else None
 
 class Race(object):
 	SIZE_TINY = 1
@@ -24,31 +31,6 @@ class Race(object):
 
 	def __str__(self):
 		return self.name
-
-class RaceFactory:
-	races = []
-
-	@staticmethod
-	def newRace(name):
-		TypeType = type(type)
-		for race in Race.__subclasses__():
-			if getattr(race, 'name') == name:
-				return race()
-	
-	@staticmethod
-	def getRaces():
-		if not RaceFactory.races:
-			RaceFactory.races = RaceFactory.initializeAllRaces()
-		return RaceFactory.races
-	
-	@staticmethod
-	def initializeAllRaces():
-		TypeType = type(type)
-		races = []
-		for race in Race.__subclasses__():
-			races.append(race())
-		return races
-
 
 class Human(Race):
 	name = "human"
