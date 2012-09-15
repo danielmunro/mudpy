@@ -2,8 +2,7 @@ import os
 from room import Area, Room, Direction
 from actor import Mob
 from item import Item, Container, Drink, Door
-from ability import AbilityFactory
-from race import RaceFactory
+from factory import Factory
 from utility import *
 
 class Assignable(object):
@@ -28,7 +27,7 @@ class Properties(Assignable):
 		if hasattr(instance, instanceProperty):
 			#hack
 			if instanceProperty == "race":
-				instance.race = RaceFactory.newRace(value)
+				instance.race = Factory.new(Race = value)
 			else:
 				setattr(instance, instanceProperty, value)
 		elif self.aliases(instance, instanceProperty, value):
@@ -57,7 +56,7 @@ class Abilities:
 	def process(self, f, instance):
 		parts = f.readline().split(",")
 		for i in parts:
-			instance.abilities.append(AbilityFactory.newAbility(i.strip()))
+			instance.abilities.append(Factory.new(Ability = i.strip()))
 
 class Block:
 	def __init__(self, propertyName, end = "\n"):

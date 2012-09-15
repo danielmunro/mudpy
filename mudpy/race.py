@@ -1,12 +1,4 @@
 from attributes import Attributes
-from ability import AbilityFactory
-from utility import *
-
-class RaceFactory:
-	@staticmethod
-	def newRace(name):
-		race = startsWith(name, Race.__subclasses__());
-		return race() if race else None
 
 class Race(object):
 	SIZE_TINY = 1
@@ -36,13 +28,30 @@ class Human(Race):
 	name = "human"
 	isPlayable = True
 
+class Giant(Race):
+	name = "giant"
+	isPlayable = True
+
+class Ogre(Race):
+	name = "ogre"
+	isPlayable = True
+
+class Volare(Race):
+	name = "volare"
+	isPlayable = True
+
+class Gnome(Race):
+	name = "gnome"
+	isPlayable = True
+
 class Elf(Race):
 	name = "elf"
 	isPlayable = True
 	proficiencies = {'light armor': 5, 'piercing': 5, 'sorcery': 5, 'sneaking': 5, 'evasive': 5}
 
 	def setup(self):
-		self.abilities.append(AbilityFactory.newAbility("sneak"))
+		from factory import Factory
+		self.abilities.append(Factory.new(Ability = "sneak"))
 
 		# attributes
 		self.attributes.str -= 3
@@ -58,7 +67,8 @@ class Dwarf(Race):
 	size = Race.SIZE_SMALL
 
 	def setup(self):
-		self.abilities.append(AbilityFactory.newAbility("berserk"))
+		from factory import Factory
+		self.abilities.append(Factory.new(Ability = "berserk"))
 
 		# attributes
 		self.attributes.str += 3

@@ -1,12 +1,12 @@
-from twisted.internet.protocol import Factory, Protocol
+from twisted.internet.protocol import Factory as tFactory, Protocol
 from collections import deque
 
 from actor import User
-from command import InstanceCommand, CommandFactory, MoveDirection
+from command import Command, MoveDirection
 from ability import Ability
 from room import Room
-from race import RaceFactory
 from utility import *
+from factory import Factory
 
 class Client(Protocol):
 	def connectionMade(self):
@@ -28,7 +28,7 @@ class Client(Protocol):
 		data = data.strip()
 		if self.user:
 			args = data.split(" ")
-			action = startsWith(args[0], MoveDirection.__subclasses__(), InstanceCommand.__subclasses__(), Ability.__subclasses__())
+			action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.__subclasses__())
 			if action:
 				action().perform(self.user, args)
 			else:
@@ -49,17 +49,16 @@ class Client(Protocol):
 			self.write("What is your race? ")
 			return
 		elif next == "race":
-			race = RaceFactory.newRace(data)
-			if race:
-				self.newUser.race = race
-			else:
+			try:
+				self.newUser.race = Factory.new(Race = data)
+			except NameError:
 				self.write("That is not a valid race. What is your race? ")
 				self.loginSteps.appendleft(next)
 				return
 			self.user = self.newUser
 			self.user.room = self.factory.DEFAULT_ROOM
 			self.user.room.actors.append(self.user)
-			CommandFactory.newCommand("look").perform(self.user)
+			Factory.new(Command = "look").perform(self.user)
 			self.write("\n"+self.user.prompt())
 			self.factory.heartbeat.attach(self.user)
 
@@ -75,7 +74,7 @@ class Client(Protocol):
 		self.user.save()
 		"""
 
-class ClientFactory(Factory):
+class ClientFactory(tFactory):
 	protocol = Client
 	clients = []
 	heartbeat = None

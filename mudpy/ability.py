@@ -2,12 +2,6 @@ from utility import *
 from affect import Affect
 from heartbeat import Heartbeat
 
-class AbilityFactory:
-	@staticmethod
-	def newAbility(name):
-		ability = startsWith(name, Ability.__subclasses__());
-		return ability() if ability else None
-
 class Ability(object):
 	name = "an ability"
 	level = 0
@@ -63,11 +57,23 @@ class Berserk(Ability):
 		affect.attributes.dam = round(receiver.max_attributes.dam * .1)
 		return [affect]
 
+class Bash(Ability):
+	name = "bash"
+	level = 1
+	type = "skill"
+	hook = "input"
+
 class SecondAttack(Ability):
 	name = "second attack"
 	level = 1
 	type = "skill"
 	hook = "melee"
+
+class DirtKick(Ability):
+	name = "dirt kick"
+	level = 1
+	type = "skill"
+	hook = "input"
 
 class Kick(Ability):
 	name = "kick"
@@ -90,3 +96,10 @@ class Sneak(Ability):
 		affect.name = "sneak"
 		affect.timeout = receiver.level
 		affect.wearOffMessage = "You stop moving silently."
+
+class Heal(Ability):
+	name = "heal"
+	level = 1
+	type = "spell"
+	hook = "input"
+
