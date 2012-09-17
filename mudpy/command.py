@@ -88,13 +88,13 @@ class CommandWho(Command):
 		for i in actor.client.factory.clients:
 			wholist += str(i.user) if i.user else ""
 		l = len(actor.client.factory.clients)
-		wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found.\n"
+		wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
 		actor.notify(wholist)
 
 class CommandAffects(Command):
 	name = "affects"
 	def perform(self, actor, args = []):
-		actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+" ticks" for x in actor.affects)+"\n");
+		actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+" ticks" for x in actor.affects));
 
 class MoveDirection(Command):
 	def perform(self, actor, args = []):
@@ -103,11 +103,11 @@ class MoveDirection(Command):
 			cost = actor.getMovementCost()
 			if(actor.attributes.movement >= cost):
 				actor.attributes.movement -= cost
-				actor.room.notify(actor, str(actor)+" leaves "+self.name+".")
+				actor.room.notify(actor, str(actor).title()+" leaves "+self.name+".")
 				actor.room.actors.remove(actor)
 				actor.room = newRoom
 				actor.room.actors.append(actor)
-				actor.room.notify(actor, str(actor)+" has arrived.")
+				actor.room.notify(actor, str(actor).title()+" has arrived.")
 				CommandLook().perform(actor)
 			else:
 				actor.notify("You are too tired to move.")

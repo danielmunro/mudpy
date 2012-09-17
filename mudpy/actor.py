@@ -131,4 +131,4 @@ class User(Actor):
 	
 	def tick(self):
 		super(User, self).tick()
-		self.notify("\n\n"+self.prompt())
+		self.notify("\n"+self.prompt())

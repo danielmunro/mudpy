@@ -16,7 +16,7 @@ class Room:
 			if k is actor:
 				continue
 			else:
-				k.notify(message)
+				k.notify(message+"\n")
 	
 	def getActorByName(self, name):
 		for i in iter(self.actors):

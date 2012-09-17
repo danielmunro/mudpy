@@ -91,14 +91,15 @@ class Parser:
 	def __init__(self, baseDir):
 		self.parseDir("scripts/"+baseDir)
 		for r, room in Room.rooms.iteritems():
-			for d, direction in Room.rooms[r].directions.iteritems():
+			for d, direction in Room.rooms[r].directions.items():
 				if(direction):
 					try:
 						if type(direction) is int:
 							direction = Room.rooms[r].area.name+":"+str(direction)
 						Room.rooms[r].directions[d] = Room.rooms[direction]
 					except KeyError:
-						print "Room id "+str(direction)+" is not defined"
+						print "Room id "+str(direction)+" is not defined, removing"
+						del Room.rooms[r].directions[d]
 
 
 	def parseDir(self, path):
