@@ -5,12 +5,11 @@ from client import ClientFactory
 from heartbeat import Heartbeat
 from parser import Parser
 
+heartbeat = Heartbeat(reactor)
 Parser("areas")
 
-heartbeat = Heartbeat(reactor)
-
-# 8007 is the port you want to run under. Choose something >1024
 endpoint = TCP4ServerEndpoint(reactor, 9000)
 endpoint.listen(ClientFactory(heartbeat))
+
 reactor.callInThread(heartbeat.start)
 reactor.run()
