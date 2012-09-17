@@ -15,9 +15,12 @@ class Assignable(object):
 			kv = i.strip().split(' ', 1)
 			if kv[0]:
 				try:
-					self.assign(instance, kv[0], kv[1])
+					self.assign(instance, kv[0], self.tryParse(kv[1]))
 				except AttributeError as e:
 					print e
+	
+	def tryParse(self, value):
+		return int(value) if value.isdigit() else value
 	
 	def assign(self, instance, instanceProperty, value):
 		print "assign not implemented"
@@ -91,8 +94,8 @@ class Parser:
 			for d, direction in Room.rooms[r].directions.iteritems():
 				if(direction):
 					try:
-						if not direction.find(":") > -1:
-							direction = Room.rooms[r].area.name+":"+direction
+						if type(direction) is int:
+							direction = Room.rooms[r].area.name+":"+str(direction)
 						Room.rooms[r].directions[d] = Room.rooms[direction]
 					except KeyError:
 						print "Room id "+str(direction)+" is not defined"
@@ -123,9 +126,10 @@ class Parser:
 				if isinstance(instance, Room):
 					lastRoom = instance
 					lastRoom.area = lastArea
-					Room.rooms[lastRoom.area.name+":"+lastRoom.id] = lastRoom
+					Room.rooms[lastRoom.area.name+":"+str(lastRoom.id)] = lastRoom
 				elif isinstance(instance, Mob):
 					lastRoom.actors.append(instance)
+					instance.room = lastRoom
 				elif isinstance(instance, Area):
 					lastArea = instance
 			line = f.readline()

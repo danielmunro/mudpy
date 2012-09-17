@@ -60,7 +60,6 @@ class Client(Protocol):
 			self.user.room.actors.append(self.user)
 			Factory.new(Command = "look").perform(self.user)
 			self.write("\n"+self.user.prompt())
-			self.factory.heartbeat.attach(self.user)
 
 		from item import Item 
 		import copy

@@ -1,6 +1,10 @@
 from attributes import Attributes
 from item import Inventory
 from save import Save
+from random import choice
+from room import Direction
+#from command import MoveDirection
+from heartbeat import Heartbeat
 
 class Actor(object):
 	def __init__(self):
@@ -20,6 +24,8 @@ class Actor(object):
 		self.race = None
 		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery'])
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
+
+		Heartbeat.instance.attach(self)
 	
 	def getMovementCost(self):
 		return self.race.movementCost + 1 if self.isEncumbered() else self.race.movementCost
@@ -71,7 +77,8 @@ class Actor(object):
 	def __str__(self):
 		return self.name
 	
-	def getDefaultAttributes(self):
+	@staticmethod
+	def getDefaultAttributes():
 		a = Attributes()
 		a.hp = 20
 		a.mana = 20
@@ -92,12 +99,28 @@ class Actor(object):
 	
 class Mob(Actor):
 	def __init__(self):
-		self.movement = 1
+		self.movement_timeout = 1
+		self.movement_timer = self.movement_timeout
 		self.respawn = 1
 		self.auto_flee = False
 		self.area = None
 		self.role = ''
 		super(Mob, self).__init__()
+	
+	def tick(self):
+		super(Mob, self).tick()
+		if self.movement_timeout:
+			self.decrementMovementTimer()
+	
+	def decrementMovementTimer(self):
+		self.movement_timer -= 1;
+		if self.movement_timer < 0:
+			self.move()
+			self.movement_timer = self.movement_timeout
+	
+	def move(self, direction = ""):
+		from factory import Factory
+		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).perform(self)
 
 class User(Actor):
 	def prompt(self):
