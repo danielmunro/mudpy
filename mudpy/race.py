@@ -28,26 +28,96 @@ class Human(Race):
 	name = "human"
 	isPlayable = True
 
+class Faerie(Race):
+	name = "faerie"
+	isPlayable = True
+	size = Race.SIZE_TINY
+	proficiencies = {'evasive': 5, 'maladictions': 10, 'sorcery': 10}
+
+	def setup(self):
+		from factory import Factory
+		#self.abilities.append(Factory.new(Ability = "dirt kick", Ability = "kick"))
+
+		# attributes
+		self.attributes.str += 3
+		self.attributes.int -= 2
+		self.attributes.wis += 2
+		self.attributes.dex += 0
+		self.attributes.con += 3
+		self.attributes.cha -= 3
+
 class Giant(Race):
 	name = "giant"
 	isPlayable = True
+	size = Race.SIZE_GIGANTIC
+	proficiencies = {'bashing': 5, 'alchemy': 5, 'melee': 5, 'elemental': 5}
+
+	def setup(self):
+		from factory import Factory
+		#self.abilities.append(Factory.new(Ability = "dirt kick", Ability = "kick"))
+
+		# attributes
+		self.attributes.str += 3
+		self.attributes.int -= 2
+		self.attributes.wis += 2
+		self.attributes.dex += 0
+		self.attributes.con += 3
+		self.attributes.cha -= 3
 
 class Ogre(Race):
 	name = "ogre"
 	isPlayable = True
+	size = Race.SIZE_LARGE
+	proficiencies = {'melee': 10, 'bashing': 10, 'heavy armor': 5}
+
+	def setup(self):
+		from factory import Factory
+		self.abilities.append(Factory.new(Ability = "bash"))
+
+		# attributes
+		self.attributes.str += 3
+		self.attributes.int -= 2
+		self.attributes.wis += 2
+		self.attributes.dex += 0
+		self.attributes.con += 3
+		self.attributes.cha -= 3
 
 class Volare(Race):
 	name = "volare"
 	isPlayable = True
+	proficiencies = {'curative': 10, 'healing': 10}
+
+	def setup(self):
+
+		# attributes
+		self.attributes.str -= 2
+		self.attributes.int += 1
+		self.attributes.wis += 3
+		self.attributes.dex += 0
+		self.attributes.con -= 2
 
 class Gnome(Race):
 	name = "gnome"
 	isPlayable = True
+	size = Race.SIZE_SMALL
+	proficiencies = {'evasive': 5, 'sneaking': 10, 'maladictions': 5, 'sorcery': 5}
+
+	def setup(self):
+		from factory import Factory
+		#self.abilities.append(Factory.new(Ability = "sneak", Ability = "dirt kick"))
+
+		# attributes
+		self.attributes.str -= 4
+		self.attributes.int += 3
+		self.attributes.wis += 2
+		self.attributes.dex += 2
+		self.attributes.con -= 3
 
 class Elf(Race):
 	name = "elf"
 	isPlayable = True
 	proficiencies = {'light armor': 5, 'piercing': 5, 'sorcery': 5, 'sneaking': 5, 'evasive': 5}
+	size = Race.SIZE_SMALL
 
 	def setup(self):
 		from factory import Factory
@@ -57,7 +127,7 @@ class Elf(Race):
 		self.attributes.str -= 3
 		self.attributes.int += 2
 		self.attributes.wis += 1
-		self.attributes.dex += 2
+		self.attributes.dex += 3
 		self.attributes.con -= 3
 
 class Dwarf(Race):
