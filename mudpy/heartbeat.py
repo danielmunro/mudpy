@@ -8,8 +8,10 @@ class Heartbeat:
 
 	PULSE_SECONDS = 1
 
+	EVENT_TYPES = ['tick', 'pulse']
+
 	def __init__(self, reactor):
-		self.observers = []
+		self.observers = dict((e, []) for e in Heartbeat.EVENT_TYPES)
 		self.reactor = reactor
 		Heartbeat.instance = self
 	
@@ -24,18 +26,18 @@ class Heartbeat:
 				i = 0
 				self.tick()
 	
-	def attach(self, observer):
+	def attach(self, event, observer):
 		if not observer in self.observers:
-			self.observers.append(observer)
+			self.observers[event].append(observer)
 	
-	def detach(self, observer):
+	def detach(self, event, observer):
 		try:
-			self.observers.remove(observer)
+			self.observers[event].remove(observer)
 		except ValueError:
 			pass
 	
 	def tick(self):
-		for i in self.observers:
+		for i in self.observers['tick']:
 			self.reactor.callFromThread(i.tick)
 	
 	def getTickLength(self):

@@ -25,7 +25,7 @@ class Actor(object):
 		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery', 'haggling', 'alchemy', 'elemental'])
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 
-		Heartbeat.instance.attach(self)
+		Heartbeat.instance.attach('tick', self)
 	
 	def getMovementCost(self):
 		return self.race.movementCost + 1 if self.isEncumbered() else self.race.movementCost
