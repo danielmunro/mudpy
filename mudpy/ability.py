@@ -16,24 +16,39 @@ class Ability(object):
 		receiver = matchPartial(args[-1], invoker.room.actors)
 		if not receiver:
 			receiver = invoker
-		self.rollsSuccess(invoker, receiver)
-
-	def rollsSuccess(self, invoker, receiver):
-		success = True
-
-		if success and self.messageSuccess:
-			invoker.notify(self.messageSuccess+"\n")
+		if self.applyCost(invoker) and self.rollsSuccess(invoker, receiver):
+			self.announceSuccess(invoker, receiver)
 			affects = self.getAffects(receiver)
 			if affects:
 				for affect in affects:
 					affect.start()
-		elif not success and self.messageFail:
-			invoker.notify(self.messageFail+"\n")
+		else:
+			self.announceFail(invoker, receiver)
+
+	def rollsSuccess(self, invoker, receiver):
+		success = True
 
 		return success
 	
 	def getAffects(self):
 		return []
+
+	def announceSuccess(self, invoker, receiver):
+		pass
+
+	def announceFail(self, invoker, receiver):
+		pass
+	
+	def applyCost(self, invoker):
+		for attr, cost in self.costs.iteritems():
+			curattr = invoker.getAttribute(attr)
+			cost *= curattr if cost > 0 and cost < 1 else 1
+			if curattr < cost:
+				return False
+		for attr, cost in self.costs.iteritems():
+			cost *= curattr if cost > 0 and cost < 1 else 1
+			invoker.setAttribute(attr, cost)
+		return True
 	
 	def __str__(self):
 		return self.name;
@@ -43,9 +58,19 @@ class Berserk(Ability):
 	level = 1
 	costs = {'movement': .5}
 	type = "skill"
-	messageSuccess = "Your pulse speeds up as you are consumed by rage!"
-	messageFail = "Your face gets red as you huff and puff."
 	hook = "input"
+
+	def announceSuccess(self, invoker, receiver):
+		invoker.room.announce({
+			invoker: "Your pulse speeds up as you are consumed by rage!",
+			"*": str(invoker).title()+" goes into a rage!"
+		})
+	
+	def announceFail(self, invoker, receiver):
+		invoker.room.announce({
+			invoker: "Your face gets red as you huff and puff.",
+			"*": str(invoker).title()+" stomps around in a huff."
+		})
 		
 	def getAffects(self, receiver):
 		affect = Affect(receiver)
