@@ -19,7 +19,7 @@ class Heartbeat:
 		while(1):
 			time.sleep(Heartbeat.PULSE_SECONDS)
 			i += Heartbeat.PULSE_SECONDS
-			if i == next_tick:
+			if i > next_tick:
 				next_tick = self.getTickLength()
 				i = 0
 				self.tick()
