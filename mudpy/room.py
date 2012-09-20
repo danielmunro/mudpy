@@ -18,6 +18,20 @@ class Room:
 			else:
 				k.notify(message+"\n")
 	
+	def announce(self, messages):
+		announcedActors = []
+		generalMessage = ""
+		for actor, message in messages.iteritems():
+			if actor == "*":
+				generalMessage = message
+			else:
+				actor.notify(message+"\n")
+				announcedActors.append(actor)
+		if generalMessage:
+			needAnnouncements = list(set(self.actors) - set(announcedActors))
+			for actor in needAnnouncements:
+				actor.notify(generalMessage+"\n")
+	
 	def getActorByName(self, name):
 		for i in iter(self.actors):
 			if i.name.lower().find(name.lower()) > -1:
