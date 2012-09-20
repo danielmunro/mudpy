@@ -11,7 +11,7 @@ class Affect(object):
 		self.affected = affected
 	
 	def start(self):
-		Heartbeat.instance.attach(self)
+		Heartbeat.instance.attach('tick', self)
 		self.affected.affects.append(self)
 	
 	def tick(self):
@@ -43,7 +43,7 @@ class AttributeModifier:
 		setattr(self.receiver.max_attributes, self.attribute_modified, self.amount)
 
 		if self.timeout > -1:
-			heartbeat.attach(self)
+			heartbeat.attach('tick', self)
 		
 	def remove(self):
 		setattr(self.receiver.attributes, self.attribute_modified, -self.amount)
