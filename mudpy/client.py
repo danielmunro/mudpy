@@ -20,7 +20,7 @@ class Client(Protocol):
 		self.factory.clients.remove(self)
 	
 	def disconnect(self):
-		self.factory.heartbeat.detach(self.user)
+		self.factory.heartbeat.detach('tick', self.user)
 		self.user.room.actors.remove(self.user)
 		self.transport.loseConnection()
 	
