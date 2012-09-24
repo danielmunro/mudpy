@@ -1,9 +1,9 @@
+from __future__ import division
 from attributes import Attributes
 from item import Inventory
 from save import Save
 from random import choice
 from room import Direction
-#from command import MoveDirection
 from heartbeat import Heartbeat
 
 class Actor(object):
@@ -44,9 +44,15 @@ class Actor(object):
 		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * 0.1)
 		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * 0.1)
 	
+	def pulse(self):
+		if self.target:
+			self.doRegularAttacks()
+		else:
+			Heartbeat.instance.detach('pulse', self)
+	
 	def setAttribute(self, attribute, value):
 		maxatt = self.getMaxAttribute(attribute)
-		setattr(self.attributes, attribute, value) if getattr(self.attributes, attribute) + value <= maxatt else setattr(self.attributes, attribute, maxatt)
+		setattr(self.attributes, attribute, value) if value <= maxatt else setattr(self.attributes, attribute, maxatt)
 
 	def getAttribute(self, attribute):
 		calculatedMaxAttribute = self.getMaxAttribute(attribute)
@@ -77,6 +83,48 @@ class Actor(object):
 	def __str__(self):
 		return self.name
 	
+	def doRegularAttacks(self, recursed = False):
+		regularattacks = ['reg']
+		for attackname in regularattacks:
+			self.attack(attackname)
+		if self.target.target is self and not recursed:
+			self.target.doRegularAttacks(True)
+		self.notify(self.target.status()+"\n")
+	
+	def attack(self, attackname):
+		hit = self.getAttribute('hit')
+		dam = self.getAttribute('dam')
+		self.target.setAttribute('hp', self.target.getAttribute('hp') - dam)
+		ucname = str(self).title()
+		tarname = str(self.target)
+		self.room.announce({
+			self: "Your clumsy attack hits "+tarname+".",
+			self.target: ucname+"'s clumsy attack hits you.",
+			"*": ucname+"'s clumsy attack hits "+tarname+"."
+		})
+		if not self.target.target:
+			self.target.target = self
+	
+	def status(self):
+		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
+		
+		if hppercent < 0.1:
+			description = 'is in awful condition'
+		elif hppercent < 0.15:
+			description = 'looks pretty hurt'
+		elif hppercent < 0.30:
+			description = 'has some big nasty wounds and scratches'
+		elif hppercent < 0.50:
+			description = 'has quite a few wounds'
+		elif hppercent < 0.75:
+			description = 'has some small wounds and bruises'
+		elif hppercent < 0.99:
+			description = 'has a few scratches'
+		else:
+			description = 'is in excellent condition'
+
+		return str(self).title()+' '+description+'.'
+	
 	@staticmethod
 	def getDefaultAttributes():
 		a = Attributes()
@@ -97,6 +145,10 @@ class Actor(object):
 		a.cha = 15
 		return a
 	
+	def move(self, direction = ""):
+		from factory import Factory
+		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).perform(self)
+
 class Mob(Actor):
 	def __init__(self):
 		self.movement_timeout = 1
@@ -118,10 +170,6 @@ class Mob(Actor):
 			self.move()
 			self.movement_timer = self.movement_timeout
 	
-	def move(self, direction = ""):
-		from factory import Factory
-		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).perform(self)
-
 class User(Actor):
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
@@ -132,3 +180,7 @@ class User(Actor):
 	def tick(self):
 		super(User, self).tick()
 		self.notify("\n"+self.prompt())
+	
+	def doRegularAttacks(self, recursed = False):
+		super(User, self).doRegularAttacks(recursed)
+		self.notify("\n"+self.prompt()+"\n")
