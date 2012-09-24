@@ -21,13 +21,14 @@ class Heartbeat:
 		while(1):
 			time.sleep(Heartbeat.PULSE_SECONDS)
 			i += Heartbeat.PULSE_SECONDS
+			self.dispatch('pulse')
 			if i > next_tick:
 				next_tick = self.getTickLength()
+				self.dispatch('tick')
 				i = 0
-				self.tick()
 	
 	def attach(self, event, observer):
-		if not observer in self.observers:
+		if not observer in self.observers[event]:
 			self.observers[event].append(observer)
 	
 	def detach(self, event, observer):
@@ -35,10 +36,10 @@ class Heartbeat:
 			self.observers[event].remove(observer)
 		except ValueError:
 			pass
-	
-	def tick(self):
-		for i in self.observers['tick']:
-			self.reactor.callFromThread(i.tick)
+
+	def dispatch(self, event):
+		for i in self.observers[event]:
+			self.reactor.callFromThread(getattr(i, event))
 	
 	def getTickLength(self):
 		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);
