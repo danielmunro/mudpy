@@ -9,6 +9,30 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandKill(Command):
+	name = "kill"
+	def perform(self, actor, args = []):
+		target = startsWith(args[1], actor.room.actors)
+		if target:
+			actor.target = target
+			from heartbeat import Heartbeat
+			Heartbeat.instance.attach('pulse', actor)
+		else:
+			actor.notify("They aren't here.")
+
+class CommandFlee(Command):
+	name = "flee"
+	def perform(self, actor, args = []):
+		if actor.target:
+			actor.target = None
+			actor.room.announce({
+				actor: "You run scared!",
+				"*": str(actor).title()+" runs scared!"
+			})
+			actor.move()
+		else:
+			actor.notify("You're not fighting anyone!")
+
 class CommandGet(Command):
 	name = "get"
 	def perform(self, actor, args = []):
@@ -98,6 +122,10 @@ class CommandAffects(Command):
 
 class MoveDirection(Command):
 	def perform(self, actor, args = []):
+		if actor.target:
+			actor.notify("You are fighting!")
+			return
+
 		newRoom = self.getNewRoom(actor)
 		if(newRoom):
 			cost = actor.getMovementCost()
