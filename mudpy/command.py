@@ -90,8 +90,8 @@ class CommandLook(Command):
 				msg += actor.room.inventory.inspection()+"\n"
 			# actors
 			for i, v in enumerate(actor.room.actors):
-				if(v is not actor):
-					msg += str(v)+" is here.\n"
+				if v is not actor:
+					msg += str(v).title()+" is here.\n"
 		else:
 			lookat = args[1:][0]
 			msg = "Nothing is there."
