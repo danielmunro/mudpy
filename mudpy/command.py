@@ -1,7 +1,17 @@
 from utility import *
+from actor import Disposition
 
 class Command(object):
 	name = ""
+	requiresStandingDisposition = False
+	def tryPerform(self, actor, args = []):
+		if self.requiresStandingDisposition and actor.disposition != Disposition.STANDING:
+			msg = "You are incapacitated and cannot do that." if actor.disposition == Disposition.INCAPACITATED else "You need to be standing to do that."
+			actor.notify(msg)
+			return
+		else:
+			self.perform(actor, args)
+
 	def perform(self):
 		print "perform() not defined"
 		raise
@@ -11,6 +21,7 @@ class Command(object):
 
 class CommandKill(Command):
 	name = "kill"
+	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		target = startsWith(args[1], actor.room.actors)
 		if target:
@@ -22,6 +33,7 @@ class CommandKill(Command):
 
 class CommandFlee(Command):
 	name = "flee"
+	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		if actor.target:
 			actor.target = None
@@ -35,6 +47,7 @@ class CommandFlee(Command):
 
 class CommandGet(Command):
 	name = "get"
+	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		item = actor.room.inventory.getItemByName(args[1])
 		if item:
@@ -46,6 +59,7 @@ class CommandGet(Command):
 
 class CommandDrop(Command):
 	name = "drop"
+	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		item = actor.inventory.getItemByName(args[1])
 		if item:
@@ -121,9 +135,14 @@ class CommandAffects(Command):
 		actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+" ticks" for x in actor.affects));
 
 class MoveDirection(Command):
+	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		if actor.target:
 			actor.notify("You are fighting!")
+			return
+
+		if actor.disposition == Disposition.INCAPACITATED:
+			actor.notify("You are incapacitated and will die soon if not aided.")
 			return
 
 		newRoom = self.getNewRoom(actor)
@@ -136,7 +155,7 @@ class MoveDirection(Command):
 				actor.room = newRoom
 				actor.room.actors.append(actor)
 				actor.room.notify(actor, str(actor).title()+" has arrived.")
-				CommandLook().perform(actor)
+				CommandLook().tryPerform(actor)
 			else:
 				actor.notify("You are too tired to move.")
 		else:

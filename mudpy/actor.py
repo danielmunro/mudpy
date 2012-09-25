@@ -22,6 +22,7 @@ class Actor(object):
 		self.target = None
 		self.inventory = Inventory()
 		self.race = None
+		self.disposition = Disposition.STANDING
 		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery', 'haggling', 'alchemy', 'elemental'])
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 
@@ -51,7 +52,15 @@ class Actor(object):
 			Heartbeat.instance.detach('pulse', self)
 	
 	def setAttribute(self, attribute, value):
+		if attribute == 'hp':
+			if value < 1:
+				self.incapacitate()
+			elif self.getAttribute('hp') < 1 and value > 0:
+				self.disposition = Disposition.LAYING
+				self.notify("You regain your footing on this mortal plane.\n")
+
 		maxatt = self.getMaxAttribute(attribute)
+		value = value if value > -1 else 0
 		setattr(self.attributes, attribute, value) if value <= maxatt else setattr(self.attributes, attribute, maxatt)
 
 	def getAttribute(self, attribute):
@@ -87,23 +96,27 @@ class Actor(object):
 		regularattacks = ['reg']
 		for attackname in regularattacks:
 			self.attack(attackname)
-		if self.target.target is self and not recursed:
+
+		if self.target and self.target.target is self and not recursed:
 			self.target.doRegularAttacks(True)
-		self.notify(self.target.status()+"\n")
+
+		if self.target:
+			self.notify(self.target.status()+"\n")
 	
 	def attack(self, attackname):
 		hit = self.getAttribute('hit')
 		dam = self.getAttribute('dam')
+		if self.target:
+			ucname = str(self).title()
+			tarname = str(self.target)
+			self.room.announce({
+				self: "Your clumsy attack hits "+tarname+".",
+				self.target: ucname+"'s clumsy attack hits you.",
+				"*": ucname+"'s clumsy attack hits "+tarname+"."
+			})
+			if not self.target.target:
+				self.target.target = self
 		self.target.setAttribute('hp', self.target.getAttribute('hp') - dam)
-		ucname = str(self).title()
-		tarname = str(self.target)
-		self.room.announce({
-			self: "Your clumsy attack hits "+tarname+".",
-			self.target: ucname+"'s clumsy attack hits you.",
-			"*": ucname+"'s clumsy attack hits "+tarname+"."
-		})
-		if not self.target.target:
-			self.target.target = self
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
@@ -125,6 +138,20 @@ class Actor(object):
 
 		return str(self).title()+' '+description+'.'
 	
+	def move(self, direction = ""):
+		from factory import Factory
+		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).tryPerform(self)
+	
+	def incapacitate(self):
+		if self.target.target is self:
+			self.target.target = None
+
+		if self.target:
+			self.target = None
+
+		self.disposition = Disposition.INCAPACITATED
+		self.notify("You are incapacitated and will slowly die if not aided.\n")
+	
 	@staticmethod
 	def getDefaultAttributes():
 		a = Attributes()
@@ -144,10 +171,6 @@ class Actor(object):
 		a.con = 15
 		a.cha = 15
 		return a
-	
-	def move(self, direction = ""):
-		from factory import Factory
-		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).perform(self)
 
 class Mob(Actor):
 	def __init__(self):
@@ -184,3 +207,10 @@ class User(Actor):
 	def doRegularAttacks(self, recursed = False):
 		super(User, self).doRegularAttacks(recursed)
 		self.notify("\n"+self.prompt()+"\n")
+
+class Disposition:
+	STANDING = 'standing'
+	SITTING = 'sitting'
+	LAYING = 'laying'
+	SLEEPING = 'sleeping'
+	INCAPACITATED = 'incapacitated'
