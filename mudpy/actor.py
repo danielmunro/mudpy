@@ -41,9 +41,10 @@ class Actor(object):
 		return
 	
 	def tick(self):
-		self.setAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * 0.1)
-		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * 0.1)
-		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * 0.1)
+		modifier = 0.1 if self.disposition != Disposition.INCAPACITATED else -0.1
+		self.setAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * modifier)
+		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * modifier)
+		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
 	
 	def pulse(self):
 		if self.target:
@@ -53,14 +54,16 @@ class Actor(object):
 	
 	def setAttribute(self, attribute, value):
 		if attribute == 'hp':
-			if value < 1:
+			curhp = self.getAttribute('hp')
+			if value < -9:
+				self.die()
+				return
+			elif value < 1 and curhp > 0:
 				self.incapacitate()
-			elif self.getAttribute('hp') < 1 and value > 0:
+			elif curhp < 1 and value > 0:
 				self.disposition = Disposition.LAYING
-				self.notify("You regain your footing on this mortal plane.\n")
 
 		maxatt = self.getMaxAttribute(attribute)
-		value = value if value > -1 else 0
 		setattr(self.attributes, attribute, value) if value <= maxatt else setattr(self.attributes, attribute, maxatt)
 
 	def getAttribute(self, attribute):
@@ -143,7 +146,7 @@ class Actor(object):
 		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).tryPerform(self)
 	
 	def incapacitate(self):
-		if self.target.target is self:
+		if self.target and self.target.target is self:
 			self.target.target = None
 
 		if self.target:
@@ -151,6 +154,9 @@ class Actor(object):
 
 		self.disposition = Disposition.INCAPACITATED
 		self.notify("You are incapacitated and will slowly die if not aided.\n")
+	
+	def die(self):
+		self.setAttribute('hp', 1)
 	
 	@staticmethod
 	def getDefaultAttributes():
@@ -207,6 +213,17 @@ class User(Actor):
 	def doRegularAttacks(self, recursed = False):
 		super(User, self).doRegularAttacks(recursed)
 		self.notify("\n"+self.prompt()+"\n")
+	
+	def die(self):
+		super(User, self).die()
+		self.room.actors.remove(self)
+		from room import Room
+		self.room = Room.rooms["midgaard:1"]
+		self.room.actors.append(self)
+		self.room.announce({
+			self: "You feel a rejuvinating rush as you pass through this mortal plane.",
+			"*": str(self).title()+" arrives in a puff of smoke."
+		})
 
 class Disposition:
 	STANDING = 'standing'
