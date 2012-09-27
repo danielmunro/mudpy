@@ -19,6 +19,15 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandWake(Command):
+	name = "wake"
+	def perform(self, actor, args = []):
+		actor.disposition = Disposition.STANDING
+		actor.room.announce({
+			actor: "You stand up.",
+			"*": str(actor).title()+" stands up."
+		})
+
 class CommandKill(Command):
 	name = "kill"
 	requiresStandingDisposition = True
