@@ -19,6 +19,15 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandSleep(Command):
+	name = "sleep"
+	def perform(self, actor, args = []):
+		actor.disposition = Disposition.SLEEPING
+		actor.room.announce({
+			actor: "You go to sleep.",
+			"*": str(actor).title()+" goes to sleep."
+		})
+
 class CommandWake(Command):
 	name = "wake"
 	def perform(self, actor, args = []):
@@ -107,7 +116,7 @@ class CommandLook(Command):
 			for i, v in actor.room.directions.iteritems():
 				if(v):
 					dirstr += i[:1]
-			msg = "%s\n%s\n[Exits %s]\n" % (actor.room.title, actor.room.description, dirstr)
+			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.title, actor.room.description, dirstr)
 			# items
 			if len(actor.room.inventory.items):
 				msg += actor.room.inventory.inspection()+"\n"
