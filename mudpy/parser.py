@@ -72,7 +72,7 @@ class Block:
 	def _process(self, f, value):
 		line = f.readline()
 		if line.find(self.end) > -1:
-			return value+line.strip(self.end)
+			return value+line.rstrip(self.end+"\n")
 		else:
 			return self._process(f, value+line)
 
