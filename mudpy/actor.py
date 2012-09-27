@@ -53,16 +53,6 @@ class Actor(object):
 			Heartbeat.instance.detach('pulse', self)
 	
 	def setAttribute(self, attribute, value):
-		if attribute == 'hp':
-			curhp = self.getAttribute('hp')
-			if value < -9:
-				self.die()
-				return
-			elif value < 1 and curhp > 0:
-				self.incapacitate()
-			elif curhp < 1 and value > 0:
-				self.disposition = Disposition.LAYING
-
 		maxatt = self.getMaxAttribute(attribute)
 		setattr(self.attributes, attribute, value) if value <= maxatt else setattr(self.attributes, attribute, maxatt)
 
@@ -145,18 +135,16 @@ class Actor(object):
 		from factory import Factory
 		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).tryPerform(self)
 	
-	def incapacitate(self):
+	def die(self):
+		self.removeTargets()
+		self.setAttribute('hp', 1)
+	
+	def removeTargets(self):
 		if self.target and self.target.target is self:
 			self.target.target = None
 
 		if self.target:
 			self.target = None
-
-		self.disposition = Disposition.INCAPACITATED
-		self.notify("You are incapacitated and will slowly die if not aided.\n")
-	
-	def die(self):
-		self.setAttribute('hp', 1)
 	
 	@staticmethod
 	def getDefaultAttributes():
@@ -199,6 +187,20 @@ class Mob(Actor):
 			self.move()
 			self.movement_timer = self.movement_timeout
 	
+	def setAttribute(self, attribute, value):
+		if attribute == 'hp':
+			if value < 1:
+				self.die()
+				return
+
+		super(Mob, self).setAttribute(attribute, value)
+	
+	def die(self):
+		super(Mob, self).die()
+		self.room.announce({
+			"*": str(self).title()+" arrives in a puff of smoke."
+		})
+	
 class User(Actor):
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
@@ -214,11 +216,27 @@ class User(Actor):
 		super(User, self).doRegularAttacks(recursed)
 		self.notify("\n"+self.prompt()+"\n")
 	
+	def setAttribute(self, attribute, value):
+		if attribute == 'hp':
+			curhp = self.getAttribute('hp')
+			if value < -9:
+				self.die()
+				return
+			elif value < 1 and curhp > 0:
+				self.removeTargets()
+				self.disposition = Disposition.INCAPACITATED
+				self.notify("You are incapacitated and will slowly die if not aided.\n")
+			elif curhp < 1 and value > 0:
+				self.disposition = Disposition.LAYING
+
+		super(User, self).setAttribute(attribute, value)
+
+	
 	def die(self):
 		super(User, self).die()
 		self.room.actors.remove(self)
 		from room import Room
-		self.room = Room.rooms["midgaard:1"]
+		self.room = Room.rooms["midgaard:82"]
 		self.room.actors.append(self)
 		self.room.announce({
 			self: "You feel a rejuvinating rush as you pass through this mortal plane.",
