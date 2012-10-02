@@ -20,7 +20,7 @@ class Client(Protocol):
 		self.factory.clients.remove(self)
 	
 	def disconnect(self):
-		self.factory.heartbeat.detach(self.user)
+		self.factory.heartbeat.detach('tick', self.user)
 		self.user.room.actors.remove(self.user)
 		self.transport.loseConnection()
 	
@@ -30,7 +30,7 @@ class Client(Protocol):
 			args = data.split(" ")
 			action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.__subclasses__())
 			if action:
-				action().perform(self.user, args)
+				action().tryPerform(self.user, args)
 			else:
 				self.user.notify("What was that?")
 			self.write("\n"+self.user.prompt())
@@ -58,7 +58,7 @@ class Client(Protocol):
 			self.user = self.newUser
 			self.user.room = self.factory.DEFAULT_ROOM
 			self.user.room.actors.append(self.user)
-			Factory.new(Command = "look").perform(self.user)
+			Factory.new(Command = "look").tryPerform(self.user)
 			self.write("\n"+self.user.prompt())
 
 		from item import Item 

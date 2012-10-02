@@ -1,9 +1,9 @@
+from __future__ import division
 from attributes import Attributes
 from item import Inventory
 from save import Save
 from random import choice
 from room import Direction
-#from command import MoveDirection
 from heartbeat import Heartbeat
 
 class Actor(object):
@@ -22,6 +22,7 @@ class Actor(object):
 		self.target = None
 		self.inventory = Inventory()
 		self.race = None
+		self.disposition = Disposition.STANDING
 		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery', 'haggling', 'alchemy', 'elemental'])
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 
@@ -40,13 +41,20 @@ class Actor(object):
 		return
 	
 	def tick(self):
-		self.setAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * 0.1)
-		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * 0.1)
-		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * 0.1)
+		modifier = 0.1 if self.disposition != Disposition.INCAPACITATED else -0.1
+		self.setAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * modifier)
+		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * modifier)
+		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
+	
+	def pulse(self):
+		if self.target:
+			self.doRegularAttacks()
+		else:
+			Heartbeat.instance.detach('pulse', self)
 	
 	def setAttribute(self, attribute, value):
 		maxatt = self.getMaxAttribute(attribute)
-		setattr(self.attributes, attribute, value) if getattr(self.attributes, attribute) + value <= maxatt else setattr(self.attributes, attribute, maxatt)
+		setattr(self.attributes, attribute, value) if value <= maxatt else setattr(self.attributes, attribute, maxatt)
 
 	def getAttribute(self, attribute):
 		calculatedMaxAttribute = self.getMaxAttribute(attribute)
@@ -77,6 +85,67 @@ class Actor(object):
 	def __str__(self):
 		return self.name
 	
+	def doRegularAttacks(self, recursed = False):
+		regularattacks = ['reg']
+		for attackname in regularattacks:
+			self.attack(attackname)
+
+		if self.target and self.target.target is self and not recursed:
+			self.target.doRegularAttacks(True)
+
+		if self.target:
+			self.notify(self.target.status()+"\n")
+	
+	def attack(self, attackname):
+		hit = self.getAttribute('hit')
+		dam = self.getAttribute('dam')
+		if self.target:
+			ucname = str(self).title()
+			tarname = str(self.target)
+			self.room.announce({
+				self: "Your clumsy attack hits "+tarname+".",
+				self.target: ucname+"'s clumsy attack hits you.",
+				"*": ucname+"'s clumsy attack hits "+tarname+"."
+			})
+			if not self.target.target:
+				self.target.target = self
+		self.target.setAttribute('hp', self.target.getAttribute('hp') - dam)
+	
+	def status(self):
+		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
+		
+		if hppercent < 0.1:
+			description = 'is in awful condition'
+		elif hppercent < 0.15:
+			description = 'looks pretty hurt'
+		elif hppercent < 0.30:
+			description = 'has some big nasty wounds and scratches'
+		elif hppercent < 0.50:
+			description = 'has quite a few wounds'
+		elif hppercent < 0.75:
+			description = 'has some small wounds and bruises'
+		elif hppercent < 0.99:
+			description = 'has a few scratches'
+		else:
+			description = 'is in excellent condition'
+
+		return str(self).title()+' '+description+'.'
+	
+	def move(self, direction = ""):
+		from factory import Factory
+		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).tryPerform(self)
+	
+	def die(self):
+		self.removeTargets()
+		self.setAttribute('hp', 1)
+	
+	def removeTargets(self):
+		if self.target and self.target.target is self:
+			self.target.target = None
+
+		if self.target:
+			self.target = None
+	
 	@staticmethod
 	def getDefaultAttributes():
 		a = Attributes()
@@ -96,7 +165,7 @@ class Actor(object):
 		a.con = 15
 		a.cha = 15
 		return a
-	
+
 class Mob(Actor):
 	def __init__(self):
 		self.movement_timeout = 1
@@ -118,10 +187,20 @@ class Mob(Actor):
 			self.move()
 			self.movement_timer = self.movement_timeout
 	
-	def move(self, direction = ""):
-		from factory import Factory
-		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).perform(self)
+	def setAttribute(self, attribute, value):
+		if attribute == 'hp':
+			if value < 1:
+				self.die()
+				return
 
+		super(Mob, self).setAttribute(attribute, value)
+	
+	def die(self):
+		super(Mob, self).die()
+		self.room.announce({
+			"*": str(self).title()+" arrives in a puff of smoke."
+		})
+	
 class User(Actor):
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
@@ -132,3 +211,41 @@ class User(Actor):
 	def tick(self):
 		super(User, self).tick()
 		self.notify("\n"+self.prompt())
+	
+	def doRegularAttacks(self, recursed = False):
+		super(User, self).doRegularAttacks(recursed)
+		self.notify("\n"+self.prompt()+"\n")
+	
+	def setAttribute(self, attribute, value):
+		if attribute == 'hp':
+			curhp = self.getAttribute('hp')
+			if value < -9:
+				self.die()
+				return
+			elif value < 1 and curhp > 0:
+				self.removeTargets()
+				self.disposition = Disposition.INCAPACITATED
+				self.notify("You are incapacitated and will slowly die if not aided.\n")
+			elif curhp < 1 and value > 0:
+				self.disposition = Disposition.LAYING
+
+		super(User, self).setAttribute(attribute, value)
+
+	
+	def die(self):
+		super(User, self).die()
+		self.room.actors.remove(self)
+		from room import Room
+		self.room = Room.rooms["midgaard:82"]
+		self.room.actors.append(self)
+		self.room.announce({
+			self: "You feel a rejuvinating rush as you pass through this mortal plane.",
+			"*": str(self).title()+" arrives in a puff of smoke."
+		})
+
+class Disposition:
+	STANDING = 'standing'
+	SITTING = 'sitting'
+	LAYING = 'laying'
+	SLEEPING = 'sleeping'
+	INCAPACITATED = 'incapacitated'
