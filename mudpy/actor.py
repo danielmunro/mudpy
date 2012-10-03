@@ -105,7 +105,7 @@ class Actor(object):
 			})
 			if not self.target.target:
 				self.target.target = self
-		self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam)
+			self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam)
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
