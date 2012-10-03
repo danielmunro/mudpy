@@ -47,7 +47,7 @@ class Ability(object):
 				return False
 		for attr, cost in self.costs.iteritems():
 			cost *= curattr if cost > 0 and cost < 1 else 1
-			invoker.setAttribute(attr, cost)
+			setattr(invoker.attributes, attr, curattr - cost)
 		return True
 	
 	def __str__(self):
