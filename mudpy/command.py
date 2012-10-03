@@ -19,6 +19,15 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandSit(Command):
+	name = "sit"
+	def perform(self, actor, args = []):
+		actor.disposition = Disposition.SITTING
+		actor.room.announce({
+			actor: "You sit down and rest.",
+			"*": str(actor).title()+" sits down and rests."
+		})
+
 class CommandSleep(Command):
 	name = "sleep"
 	def perform(self, actor, args = []):
@@ -41,7 +50,7 @@ class CommandKill(Command):
 	name = "kill"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
-		target = startsWith(args[1], actor.room.actors)
+		target = matchPartial(args[1], actor.room.actors)
 		if target:
 			actor.target = target
 			from heartbeat import Heartbeat
