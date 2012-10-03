@@ -82,9 +82,10 @@ class Actor(object):
 		return self.name
 	
 	def doRegularAttacks(self, recursed = False):
-		regularattacks = ['reg']
-		for attackname in regularattacks:
-			self.attack(attackname)
+		if self.disposition != Disposition.INCAPACITATED:
+			regularattacks = ['reg']
+			for attackname in regularattacks:
+				self.attack(attackname)
 
 		if self.target and self.target.target is self and not recursed:
 			self.target.doRegularAttacks(True)
@@ -99,7 +100,7 @@ class Actor(object):
 			ucname = str(self).title()
 			tarname = str(self.target)
 			self.room.announce({
-				self: "Your clumsy attack hits "+tarname+".",
+				self: "("+attackname+") Your clumsy attack hits "+tarname+".",
 				self.target: ucname+"'s clumsy attack hits you.",
 				"*": ucname+"'s clumsy attack hits "+tarname+"."
 			})
@@ -218,11 +219,10 @@ class User(Actor):
 			if value < -9:
 				self.die()
 				return
-			elif value < 0 and curhp > 0:
-				self.removeTargets()
+			elif value < 0 and curhp >= 0:
 				self.disposition = Disposition.INCAPACITATED
 				self.notify("You are incapacitated and will slowly die if not aided.\n")
-			elif curhp < 0 and value > 0:
+			elif curhp < 0 and value >= 0:
 				self.disposition = Disposition.LAYING
 
 		super(User, self).trySetAttribute(attribute, value)
