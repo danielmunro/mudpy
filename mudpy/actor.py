@@ -42,9 +42,9 @@ class Actor(object):
 	
 	def tick(self):
 		modifier = 0.1 if self.disposition != Disposition.INCAPACITATED else -0.1
-		self.setAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * modifier)
-		self.setAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * modifier)
-		self.setAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
+		self.trySetAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * modifier)
+		self.trySetAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * modifier)
+		self.trySetAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
 	
 	def pulse(self):
 		if self.target:
@@ -52,29 +52,25 @@ class Actor(object):
 		else:
 			Heartbeat.instance.detach('pulse', self)
 	
-	def setAttribute(self, attribute, value):
-		maxatt = self.getMaxAttribute(attribute)
-		setattr(self.attributes, attribute, value) if value <= maxatt else setattr(self.attributes, attribute, maxatt)
+	def trySetAttribute(self, attributeName, amount):
+		maxAttributeAmount = self.getMaxAttribute(attributeName)
+		amount = amount if amount < maxAttributeAmount else maxAttributeAmount
+		setattr(self.attributes, attributeName, amount)  
 
-	def getAttribute(self, attribute):
-		calculatedMaxAttribute = self.getMaxAttribute(attribute)
-		calculatedAttribute = self.getCalculatedAttribute(self.attributes, attribute)
+	def getAttribute(self, attributeName):
+		amount = self.getCalculatedAttribute(attributeName, self.attributes, self.race.attributes)
+		for affect in self.affects:
+			amount += getattr(affect.attributes, attributeName)
+		return min(amount, self.getMaxAttribute(attributeName))
 
-		return calculatedAttribute if calculatedAttribute < calculatedMaxAttribute else calculatedMaxAttribute
-	
-	def getMaxAttribute(self, attribute):
-		return self.getCalculatedAttribute(self.max_attributes, attribute)
-	
-	def getBaseAttribute(self, attribute):
-		return getattr(self.race.attributes, attribute) + getattr(self.attributes, attribute)
-		
-	def getCalculatedAttribute(self, attributes, attribute):
-		# affects and race modifiers
-		def getAtt(affect): return getattr(affect.attributes, attribute)
-		modifiers = sum(map(getAtt, self.affects)) + getattr(self.race.attributes, attribute)
+	def getMaxAttribute(self, attributeName):
+		return self.getCalculatedAttribute(attributeName, self.max_attributes, self.race.attributes)
 
-		# base attributes + modifiers
-		return getattr(attributes, attribute) + modifiers
+	def getCalculatedAttribute(self, attributeName, *attributes):
+		amount = 0
+		for attribute in attributes:
+			amount += getattr(attribute, attributeName)
+		return amount;
 	
 	def save(self):
 		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'max_attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
@@ -109,7 +105,7 @@ class Actor(object):
 			})
 			if not self.target.target:
 				self.target.target = self
-		self.target.setAttribute('hp', self.target.getAttribute('hp') - dam)
+		self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam)
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
@@ -137,7 +133,7 @@ class Actor(object):
 	
 	def die(self):
 		self.removeTargets()
-		self.setAttribute('hp', 1)
+		setattr(self.attributes, 'hp', 1)
 	
 	def removeTargets(self):
 		if self.target and self.target.target is self:
@@ -187,13 +183,13 @@ class Mob(Actor):
 			self.move()
 			self.movement_timer = self.movement_timeout
 	
-	def setAttribute(self, attribute, value):
+	def trySetAttribute(self, attribute, value):
 		if attribute == 'hp':
-			if value < 1:
+			if value < 0:
 				self.die()
 				return
 
-		super(Mob, self).setAttribute(attribute, value)
+		super(Mob, self).trySetAttribute(attribute, value)
 	
 	def die(self):
 		super(Mob, self).die()
@@ -216,20 +212,20 @@ class User(Actor):
 		super(User, self).doRegularAttacks(recursed)
 		self.notify("\n"+self.prompt()+"\n")
 	
-	def setAttribute(self, attribute, value):
+	def trySetAttribute(self, attribute, value):
 		if attribute == 'hp':
 			curhp = self.getAttribute('hp')
 			if value < -9:
 				self.die()
 				return
-			elif value < 1 and curhp > 0:
+			elif value < 0 and curhp > 0:
 				self.removeTargets()
 				self.disposition = Disposition.INCAPACITATED
 				self.notify("You are incapacitated and will slowly die if not aided.\n")
-			elif curhp < 1 and value > 0:
+			elif curhp < 0 and value > 0:
 				self.disposition = Disposition.LAYING
 
-		super(User, self).setAttribute(attribute, value)
+		super(User, self).trySetAttribute(attribute, value)
 
 	
 	def die(self):
