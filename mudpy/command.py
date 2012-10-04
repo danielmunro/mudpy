@@ -63,6 +63,8 @@ class CommandFlee(Command):
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		if actor.target:
+			if actor.target.target is actor:
+				actor.target.target = None
 			actor.target = None
 			actor.room.announce({
 				actor: "You run scared!",
