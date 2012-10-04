@@ -22,6 +22,7 @@ class Heartbeat:
 			time.sleep(Heartbeat.PULSE_SECONDS)
 			i += Heartbeat.PULSE_SECONDS
 			self.dispatch('pulse')
+			self.postDispatch('pulse')
 			if i > next_tick:
 				next_tick = self.getTickLength()
 				self.dispatch('tick')
@@ -40,6 +41,11 @@ class Heartbeat:
 	def dispatch(self, event):
 		for i in self.observers[event]:
 			self.reactor.callFromThread(getattr(i, event))
+
+	def postDispatch(self, event):
+		func = 'post'+event.title()
+		for i in self.observers[event]:
+			self.reactor.callFromThread(getattr(i, func))
 	
 	def getTickLength(self):
 		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);
