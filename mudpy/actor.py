@@ -47,10 +47,16 @@ class Actor(object):
 		self.trySetAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
 	
 	def pulse(self):
-		if self.target:
-			self.doRegularAttacks()
-		else:
+		if self.target and not self.target.target:
+			self.target.target = self
+			Heartbeat.instance.attach('pulse', self.target)
+		elif not self.target:
 			Heartbeat.instance.detach('pulse', self)
+
+		self.doRegularAttacks()
+	
+	def postPulse(self):
+		pass
 	
 	def trySetAttribute(self, attributeName, amount):
 		maxAttributeAmount = self.getMaxAttribute(attributeName)
@@ -81,32 +87,31 @@ class Actor(object):
 	def __str__(self):
 		return self.name
 	
-	def doRegularAttacks(self, recursed = False):
+	def doRegularAttacks(self, recursedAttackIndex = 0):
+		if not self.target:
+			Heartbeat.instance.detach('pulse', self)
+			return
+
 		if self.disposition != Disposition.INCAPACITATED:
 			regularattacks = ['reg']
-			for attackname in regularattacks:
-				self.attack(attackname)
-
-		if self.target and self.target.target is self and not recursed:
-			self.target.doRegularAttacks(True)
-
-		if self.target:
-			self.notify(self.target.status()+"\n")
+			try:
+				self.attack(regularattacks[recursedAttackIndex])
+				recursedAttackIndex += 1
+				self.doRegularAttacks(recursedAttackIndex)
+			except IndexError:
+				pass
 	
 	def attack(self, attackname):
 		hit = self.getAttribute('hit')
 		dam = self.getAttribute('dam')
-		if self.target:
-			ucname = str(self).title()
-			tarname = str(self.target)
-			self.room.announce({
-				self: "("+attackname+") Your clumsy attack hits "+tarname+".",
-				self.target: ucname+"'s clumsy attack hits you.",
-				"*": ucname+"'s clumsy attack hits "+tarname+"."
-			})
-			if not self.target.target:
-				self.target.target = self
-			self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam)
+		ucname = str(self).title()
+		tarname = str(self.target)
+		self.room.announce({
+			self: "("+attackname+") Your clumsy attack hits "+tarname+".",
+			self.target: ucname+"'s clumsy attack hits you.",
+			"*": ucname+"'s clumsy attack hits "+tarname+"."
+		})
+		self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam)
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
@@ -209,9 +214,10 @@ class User(Actor):
 		super(User, self).tick()
 		self.notify("\n"+self.prompt())
 	
-	def doRegularAttacks(self, recursed = False):
-		super(User, self).doRegularAttacks(recursed)
-		self.notify("\n"+self.prompt()+"\n")
+	def postPulse(self):
+		if self.target:
+			self.notify(self.target.status()+"\n")
+			self.notify("\n"+self.prompt())
 	
 	def trySetAttribute(self, attribute, value):
 		if attribute == 'hp':
