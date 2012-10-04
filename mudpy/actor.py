@@ -138,10 +138,11 @@ class Actor(object):
 		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).tryPerform(self)
 	
 	def die(self):
-		self.removeTargets()
+		self.removeFromBattle()
+		self.disposition = Disposition.LAYING
 		setattr(self.attributes, 'hp', 1)
 	
-	def removeTargets(self):
+	def removeFromBattle(self):
 		if self.target and self.target.target is self:
 			self.target.target = None
 
@@ -225,10 +226,10 @@ class User(Actor):
 			if value < -9:
 				self.die()
 				return
-			elif value < 0 and curhp >= 0:
+			elif value <= 0 and curhp > 0:
 				self.disposition = Disposition.INCAPACITATED
 				self.notify("You are incapacitated and will slowly die if not aided.\n")
-			elif curhp < 0 and value >= 0:
+			elif curhp <= 0 and value > 0:
 				self.disposition = Disposition.LAYING
 
 		super(User, self).trySetAttribute(attribute, value)
@@ -244,6 +245,7 @@ class User(Actor):
 			self: "You feel a rejuvinating rush as you pass through this mortal plane.",
 			"*": str(self).title()+" arrives in a puff of smoke."
 		})
+		self.notify("\n"+self.prompt())
 
 class Disposition:
 	STANDING = 'standing'
