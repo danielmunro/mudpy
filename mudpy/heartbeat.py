@@ -11,7 +11,7 @@ class Heartbeat:
 	EVENT_TYPES = ['tick', 'pulse']
 
 	def __init__(self, reactor):
-		self.observers = dict((e, []) for e in Heartbeat.EVENT_TYPES)
+		self.observers = dict((event, []) for event in Heartbeat.EVENT_TYPES)
 		self.reactor = reactor
 		Heartbeat.instance = self
 	
