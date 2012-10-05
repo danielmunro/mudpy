@@ -98,52 +98,10 @@ class Actor(object):
 		if self.disposition != Disposition.INCAPACITATED:
 			regularattacks = ['reg']
 			try:
-				self.attack(regularattacks[recursedAttackIndex])
+				Attack(self, regularattacks[recursedAttackIndex])
 				self.doRegularAttacks(recursedAttackIndex + 1)
 			except IndexError:
 				pass
-	
-	def attack(self, attackname):
-		from random import uniform
-
-		hit_roll = self.getAttribute('hit') + ((self.getAttribute('dex') / Attributes.MAX_ATTRIBUTE) * 4)
-		dam_roll = self.getAttribute('dam') + ((self.getAttribute('str') / Attributes.MAX_ATTRIBUTE) * 4)
-		dam_roll = uniform(dam_roll/2, dam_roll)
-
-		def_roll = (self.target.getAttribute('dex') / Attributes.MAX_ATTRIBUTE) * 4
-		def_roll += 5 - self.target.race.size
-
-		weapons = self.getWieldedWeapons()
-
-		try:
-			damType = weapons[0].damageType
-		except IndexError:
-			damType = self.race.damType
-
-		try:
-			ac = self.target.getAttribute('ac_'+damType) / 100
-		except AttributeError:
-			ac = 0
-
-		roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
-		if roll > 0:
-			isHit = "hits"
-		else:
-			isHit = "misses"
-			dam_roll = 0
-		verb = Actor.getDamageVerb(dam_roll)
-
-		ucname = str(self).title()
-		tarname = str(self.target)
-		self.room.announce({
-			self: "("+attackname+") Your "+verb+" attack "+isHit+" "+tarname+".",
-			self.target: ucname+"'s "+verb+" attack "+isHit+" you.",
-			"*": ucname+"'s "+verb+" attack "+isHit+" "+tarname+"."
-		})
-
-		#need to do this check again here, can't have the actor dead before the hit message
-		if roll > 0: 
-			self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam_roll)
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
@@ -296,3 +254,52 @@ class Disposition:
 	LAYING = 'laying'
 	SLEEPING = 'sleeping'
 	INCAPACITATED = 'incapacitated'
+
+class Attack:
+	def __init__(self, aggressor, attackname):
+		from random import uniform
+
+		# initial rolls for attack/defense
+		hit_roll = aggressor.getAttribute('hit') + self.getAttributeModifier(aggressor, 'dex')
+		def_roll = self.getAttributeModifier(aggressor.target, 'dex')
+		def_roll += 5 - aggressor.target.race.size
+
+		# determine dam type from weapon
+		weapons = aggressor.getWieldedWeapons()
+		try:
+			damType = weapons[0].damageType
+		except IndexError:
+			damType = aggressor.race.damType
+
+		# get the ac bonus from the damage type
+		try:
+			ac = aggressor.target.getAttribute('ac_'+damType) / 100
+		except AttributeError:
+			ac = 0
+
+		# roll the dice and determine if the attack was successful
+		roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
+		if roll > 0:
+			isHit = "hits"
+			dam_roll = aggressor.getAttribute('dam') + self.getAttributeModifier(aggressor, 'str')
+			dam_roll = uniform(dam_roll/2, dam_roll)
+		else:
+			isHit = "misses"
+			dam_roll = 0
+
+		# update the room on the attack progress
+		verb = Actor.getDamageVerb(dam_roll)
+		ucname = str(aggressor).title()
+		tarname = str(aggressor.target)
+		aggressor.room.announce({
+			aggressor: "("+attackname+") Your "+verb+" attack "+isHit+" "+tarname+".",
+			aggressor.target: ucname+"'s "+verb+" attack "+isHit+" you.",
+			"*": ucname+"'s "+verb+" attack "+isHit+" "+tarname+"."
+		})
+
+		#need to do this check again here, can't have the actor dead before the hit message
+		if roll > 0: 
+			aggressor.target.trySetAttribute('hp', aggressor.target.getAttribute('hp') - dam_roll)
+	
+	def getAttributeModifier(self, actor, attributeName):
+		return (actor.getAttribute(attributeName) / Attributes.MAX_ATTRIBUTE) * 4
