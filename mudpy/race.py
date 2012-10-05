@@ -11,6 +11,7 @@ class Race(object):
 	movementCost = 1
 	isPlayable = False
 	proficiencies = []
+	damType = 'bash'
 
 	def __init__(self):
 		self.attributes = Attributes()

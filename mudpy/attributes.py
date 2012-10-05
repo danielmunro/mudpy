@@ -1,6 +1,8 @@
 from save import Save
 
 class Attributes:
+	MAX_ATTRIBUTE = 25
+
 	def __init__(self):
 		self.hp = 0
 		self.mana = 0

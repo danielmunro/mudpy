@@ -87,6 +87,9 @@ class Actor(object):
 	def __str__(self):
 		return self.name
 	
+	def getWieldedWeapons(self):
+		return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
+	
 	def doRegularAttacks(self, recursedAttackIndex = 0):
 		if not self.target:
 			Heartbeat.instance.detach('pulse', self)
@@ -96,22 +99,51 @@ class Actor(object):
 			regularattacks = ['reg']
 			try:
 				self.attack(regularattacks[recursedAttackIndex])
-				recursedAttackIndex += 1
-				self.doRegularAttacks(recursedAttackIndex)
+				self.doRegularAttacks(recursedAttackIndex + 1)
 			except IndexError:
 				pass
 	
 	def attack(self, attackname):
-		hit = self.getAttribute('hit')
-		dam = self.getAttribute('dam')
+		from random import uniform
+
+		hit_roll = self.getAttribute('hit') + ((self.getAttribute('dex') / Attributes.MAX_ATTRIBUTE) * 4)
+		dam_roll = self.getAttribute('dam') + ((self.getAttribute('str') / Attributes.MAX_ATTRIBUTE) * 4)
+		dam_roll = uniform(dam_roll/2, dam_roll)
+
+		def_roll = (self.target.getAttribute('dex') / Attributes.MAX_ATTRIBUTE) * 4
+		def_roll += 5 - self.target.race.size
+
+		weapons = self.getWieldedWeapons()
+
+		try:
+			damType = weapons[0].damageType
+		except IndexError:
+			damType = self.race.damType
+
+		try:
+			ac = self.target.getAttribute('ac_'+damType) / 100
+		except AttributeError:
+			ac = 0
+
+		roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
+		if roll > 0:
+			isHit = "hits"
+		else:
+			isHit = "misses"
+			dam_roll = 0
+		verb = Actor.getDamageVerb(dam_roll)
+
 		ucname = str(self).title()
 		tarname = str(self.target)
 		self.room.announce({
-			self: "("+attackname+") Your clumsy attack hits "+tarname+".",
-			self.target: ucname+"'s clumsy attack hits you.",
-			"*": ucname+"'s clumsy attack hits "+tarname+"."
+			self: "("+attackname+") Your "+verb+" attack "+isHit+" "+tarname+".",
+			self.target: ucname+"'s "+verb+" attack "+isHit+" you.",
+			"*": ucname+"'s "+verb+" attack "+isHit+" "+tarname+"."
 		})
-		self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam)
+
+		#need to do this check again here, can't have the actor dead before the hit message
+		if roll > 0: 
+			self.target.trySetAttribute('hp', self.target.getAttribute('hp') - dam_roll)
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
@@ -149,6 +181,17 @@ class Actor(object):
 		if self.target:
 			self.target = None
 	
+	@staticmethod
+	def getDamageVerb(dam_roll):
+		if dam_roll < 5:
+			return "clumsy"
+		elif dam_roll < 10:
+			return "amateur"
+		elif dam_roll < 15:
+			return "competent"
+		else:
+			return "skillful"
+
 	@staticmethod
 	def getDefaultAttributes():
 		a = Attributes()
