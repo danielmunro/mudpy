@@ -61,14 +61,18 @@ class Client(Protocol):
 			Factory.new(Command = "look").tryPerform(self.user)
 			self.write("\n"+self.user.prompt())
 
-		from item import Item 
-		import copy
-		i1 = Item()
-		i1.name = 'an item'
-		i1.value = 10
-		i2 = copy.copy(i1)
-		self.user.inventory.append(i1)
-		self.user.inventory.append(i2)
+		from item import Item, Equipment 
+		i = Item()
+		i.name = 'an item'
+		i.value = 10
+		self.user.inventory.append(i)
+		
+		i = Equipment()
+		i.name = 'a subissue sword'
+		i.position = 'wield'
+		i.value = 0
+		i.attributes.hp = 1
+		self.user.inventory.append(i)
 		"""
 		self.user.save()
 		"""
