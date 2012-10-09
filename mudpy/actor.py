@@ -1,5 +1,5 @@
 from __future__ import division
-from attributes import Attributes
+from attributes import ActorAttributes
 from item import Inventory
 from save import Save
 from random import choice
@@ -7,6 +7,9 @@ from room import Direction
 from heartbeat import Heartbeat
 
 class Actor(object):
+	MAX_STAT = 25
+	STARTING_STAT = 15
+
 	def __init__(self):
 		self.id = Save.getRandomID()
 		self.name = "an actor"
@@ -14,7 +17,6 @@ class Actor(object):
 		self.level = 0
 		self.experience = 0
 		self.attributes = self.getDefaultAttributes()
-		self.max_attributes = self.getDefaultAttributes()
 		self.sex = "neutral"
 		self.room = None
 		self.abilities = []
@@ -79,22 +81,26 @@ class Actor(object):
 		setattr(self.attributes, attributeName, amount)  
 
 	def getAttribute(self, attributeName):
-		amount = self.getCalculatedAttribute(attributeName, self.attributes, self.race.attributes)
+		amount = getattr(self.attributes, attributeName) + getattr(self.race.attributes, attributeName)
 		for affect in self.affects:
 			amount += getattr(affect.attributes, attributeName)
+		for equipment in self.equipped.values():
+			if equipment:
+				amount += getattr(equipment.attributes, attributeName)
 		return min(amount, self.getMaxAttribute(attributeName))
 
 	def getMaxAttribute(self, attributeName):
-		return self.getCalculatedAttribute(attributeName, self.max_attributes, self.race.attributes)
-
-	def getCalculatedAttribute(self, attributeName, *attributes):
-		amount = 0
-		for attribute in attributes:
-			amount += getattr(attribute, attributeName)
-		return amount;
+		if attributeName in self.attributes.stats:
+			racialAttr = getattr(self.race.attributes, attributeName)
+			return min(getattr(self.attributes, attributeName) + racialAttr + 4, self.STARTING_STAT + racialAttr + 8)
+		else:
+			try:
+				return getattr(self.attributes, 'max'+attributeName)
+			except:
+				return 0
 	
 	def save(self):
-		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'max_attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
+		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
 	
 	def getAbilities(self):
 		return self.abilities + self.race.abilities
@@ -167,7 +173,7 @@ class Actor(object):
 
 	@staticmethod
 	def getDefaultAttributes():
-		a = Attributes()
+		a = ActorAttributes()
 		a.hp = 20
 		a.mana = 20
 		a.movement = 100
@@ -177,12 +183,15 @@ class Actor(object):
 		a.ac_magic = 100
 		a.hit = 1
 		a.dam = 1
-		a.str = 15
-		a.int = 15
-		a.wis = 15
-		a.dex = 15
-		a.con = 15
-		a.cha = 15
+		a.str = Actor.STARTING_STAT
+		a.int = Actor.STARTING_STAT
+		a.wis = Actor.STARTING_STAT
+		a.dex = Actor.STARTING_STAT
+		a.con = Actor.STARTING_STAT
+		a.cha = Actor.STARTING_STAT
+		a.maxhp = 20
+		a.maxmana = 100
+		a.maxmovement = 100
 		return a
 
 class Mob(Actor):
@@ -317,4 +326,4 @@ class Attack:
 			aggressor.target.trySetAttribute('hp', aggressor.target.getAttribute('hp') - dam_roll)
 	
 	def getAttributeModifier(self, actor, attributeName):
-		return (actor.getAttribute(attributeName) / Attributes.MAX_ATTRIBUTE) * 4
+		return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4

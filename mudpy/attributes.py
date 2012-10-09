@@ -1,7 +1,7 @@
 from save import Save
 
-class Attributes:
-	MAX_ATTRIBUTE = 25
+class Attributes(object):
+	stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
 
 	def __init__(self):
 		self.hp = 0
@@ -27,3 +27,10 @@ class Attributes:
 	
 	def save(self):
 		Save(self, ['id', 'hp', 'mana', 'movement', 'saves', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']).execute()
+
+class ActorAttributes(Attributes):
+	def __init__(self):
+		self.maxhp = 0
+		self.maxmana = 0
+		self.maxmovement = 0
+		super(ActorAttributes, self).__init__()

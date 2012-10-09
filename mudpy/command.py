@@ -143,12 +143,12 @@ class CommandScore(Command):
 		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\n" % ( \
 			actor, actor.race, actor.getAttribute('hp'), actor.getMaxAttribute('hp'), actor.getAttribute('mana'), \
 			actor.getMaxAttribute('mana'), actor.getAttribute('movement'), actor.getMaxAttribute('movement'), \
-			actor.getBaseAttribute('str'), actor.getAttribute('str'), \
-			actor.getBaseAttribute('int'), actor.getAttribute('int'), \
-			actor.getBaseAttribute('wis'), actor.getAttribute('wis'), \
-			actor.getBaseAttribute('dex'), actor.getAttribute('dex'), \
-			actor.getBaseAttribute('con'), actor.getAttribute('con'), \
-			actor.getBaseAttribute('cha'), actor.getAttribute('cha'))
+			actor.getAttribute('str'), actor.getMaxAttribute('str'), \
+			actor.getAttribute('int'), actor.getMaxAttribute('int'), \
+			actor.getAttribute('wis'), actor.getMaxAttribute('wis'), \
+			actor.getAttribute('dex'), actor.getMaxAttribute('dex'), \
+			actor.getAttribute('con'), actor.getMaxAttribute('con'), \
+			actor.getAttribute('cha'), actor.getMaxAttribute('cha'))
 		actor.notify(msg);
 
 class CommandLook(Command):

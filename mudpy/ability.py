@@ -77,9 +77,9 @@ class Berserk(Ability):
 		affect.name = "berserk"
 		affect.timeout = 2
 		affect.wearOffMessage = "Your pulse slows down."
-		affect.attributes.hp = round(receiver.max_attributes.hp * .1)
-		affect.attributes.hit = round(receiver.max_attributes.hit * .1)
-		affect.attributes.dam = round(receiver.max_attributes.dam * .1)
+		affect.attributes.hp = round(receiver.getMaxAttribute('hp') * .1)
+		affect.attributes.hit = round(receiver.getMaxAttribute('hit') * .1)
+		affect.attributes.dam = round(receiver.getMaxAttribute('dam') * .1)
 		return [affect]
 
 class Bash(Ability):

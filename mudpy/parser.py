@@ -51,7 +51,8 @@ class Attributes(Assignable):
 	def assign(self, instance, instanceProperty, value):
 		if hasattr(instance.attributes, instanceProperty):
 			setattr(instance.attributes, instanceProperty, value)
-			setattr(instance.max_attributes, instanceProperty, value)
+			if instanceProperty in ['hp', 'mana', 'movement']:
+				setattr(instance.attributes, 'max'+instanceProperty, value)
 		else:
 			raise AttributeError('Attribute "'+instanceProperty+'" is not defined in '+instance.__class__.__name__)
 
@@ -90,17 +91,7 @@ class Parser:
 	}
 	def __init__(self, baseDir):
 		self.parseDir("scripts/"+baseDir)
-		for r, room in Room.rooms.iteritems():
-			for d, direction in Room.rooms[r].directions.items():
-				if(direction):
-					try:
-						if type(direction) is int:
-							direction = Room.rooms[r].area.name+":"+str(direction)
-						Room.rooms[r].directions[d] = Room.rooms[direction]
-					except KeyError:
-						print "Room id "+str(direction)+" is not defined, removing"
-						del Room.rooms[r].directions[d]
-
+		self.initializeRooms()
 
 	def parseDir(self, path):
 		listing = os.listdir(path)
@@ -141,6 +132,18 @@ class Parser:
 		if commentPos > -1:
 			line = line[0:commentPos]
 		return line
+	
+	def initializeRooms(self):
+		for r, room in Room.rooms.iteritems():
+			for d, direction in Room.rooms[r].directions.items():
+				if(direction):
+					try:
+						if type(direction) is int:
+							direction = Room.rooms[r].area.name+":"+str(direction)
+						Room.rooms[r].directions[d] = Room.rooms[direction]
+					except KeyError:
+						print "Room id "+str(direction)+" is not defined, removing"
+						del Room.rooms[r].directions[d]
 
 class ParserException(Exception):
 	pass
