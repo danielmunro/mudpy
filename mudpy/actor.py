@@ -64,12 +64,6 @@ class Actor(object):
 		self.trySetAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
 	
 	def pulse(self):
-		if self.target and not self.target.target:
-			self.target.target = self
-			Heartbeat.instance.attach('pulse', self.target)
-		elif not self.target:
-			Heartbeat.instance.detach('pulse', self)
-
 		self.doRegularAttacks()
 	
 	def postPulse(self):
@@ -115,6 +109,10 @@ class Actor(object):
 		if not self.target:
 			Heartbeat.instance.detach('pulse', self)
 			return
+
+		if self.target and not self.target.target:
+			self.target.target = self
+			Heartbeat.instance.attach('pulse', self.target)
 
 		if self.disposition != Disposition.INCAPACITATED:
 			regularattacks = ['reg']
