@@ -55,7 +55,7 @@ class Actor(object):
 		return self.inventory.getWeight() > self.getMaxWeight() * 0.95
 	
 	def notify(self, message):
-		return
+		pass
 	
 	def tick(self):
 		modifier = 0.1 if self.disposition != Disposition.INCAPACITATED else -0.1
@@ -71,8 +71,7 @@ class Actor(object):
 	
 	def trySetAttribute(self, attributeName, amount):
 		maxAttributeAmount = self.getMaxAttribute(attributeName)
-		amount = amount if amount < maxAttributeAmount else maxAttributeAmount
-		setattr(self.attributes, attributeName, amount)  
+		setattr(self.attributes, attributeName, amount if amount < maxAttributeAmount else maxAttributeAmount)
 
 	def getAttribute(self, attributeName):
 		amount = getattr(self.attributes, attributeName) + getattr(self.race.attributes, attributeName)
