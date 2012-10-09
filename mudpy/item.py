@@ -1,4 +1,5 @@
 from save import Save
+from attributes import Attributes
 
 class Inventory:
 	def __init__(self):
@@ -27,8 +28,9 @@ class Inventory:
 
 	def inspection(self):
 		msg = ""
-		for i, n in self.itemCount.iteritems():
-			msg += ("("+str(n)+") " if n > 1 else "")+i+"\n"
+		for i in iter(self.items):
+			strI = str(i)
+			msg += ("("+self.itemCount[strI]+") " if self.itemCount[strI] > 1 else "")+strI+"\n"
 		return msg
 	
 	def getWeight(self):
@@ -89,6 +91,7 @@ class Equipment(Item):
 	def __init__(self):
 		self.position = ''
 		self.condition = 1
+		self.attributes = Attributes()
 		super(Equipment, self).__init__()
 
 class Armor(Equipment):

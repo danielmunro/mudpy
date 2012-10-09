@@ -28,6 +28,21 @@ class Actor(object):
 
 		Heartbeat.instance.attach('tick', self)
 	
+	def getEquipmentByPosition(self, position):
+		for _position in self.equipped:
+			if _position.find(position) == 0:
+				return self.equipped[_position]
+	
+	def setEquipment(self, equipment):
+		return self.setEquipmentByPosition(equipment.position, equipment)
+	
+	def setEquipmentByPosition(self, position, equipment):
+		for _position in self.equipped:
+			if _position.find(position) == 0:
+				self.equipped[_position] = equipment
+				return True
+		return False
+	
 	def getMovementCost(self):
 		return self.race.movementCost + 1 if self.isEncumbered() else self.race.movementCost
 	

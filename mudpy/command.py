@@ -19,6 +19,42 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandWear(Command):
+	name = "wear"
+	def perform(self, actor, args = []):
+		equipment = matchPartial(args[1], actor.inventory.items)
+		if equipment:
+			currentEq = actor.getEquipmentByPosition(equipment.position)
+			if currentEq:
+				CommandRemove().perform(actor, [currentEq.name])
+			if actor.setEquipment(equipment):
+				actor.notify("You wear "+str(equipment)+".")
+				actor.inventory.remove(equipment)
+			else:
+				actor.notify("You are not qualified enough to equip "+str(equipment)+".")
+		else:
+			actor.notify("You have nothing like that.")
+
+class CommandRemove(Command):
+	name = "remove"
+	def perform(self, actor, args = []):
+		equipment = matchPartial(args[1], list(equipment for equipment in actor.equipped.values() if equipment))
+		if equipment:
+			actor.setEquipmentByPosition(equipment.position, None)
+			actor.notify("You remove "+str(equipment)+" and place it in your inventory.")
+			actor.inventory.append(equipment)
+		else:
+			actor.notify("You are not wearing that.")
+
+class CommandEquipped(Command):
+	name = "equipped"
+	def perform(self, actor, args = []):
+		import re
+		msg = ""
+		for p, e in actor.equipped.iteritems():
+			msg += re.sub("\d+", "", p)+": "+str(e)+"\n"
+		actor.notify("You are wearing: "+msg)
+
 class CommandSit(Command):
 	name = "sit"
 	def perform(self, actor, args = []):
