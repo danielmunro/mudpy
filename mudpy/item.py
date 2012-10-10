@@ -26,11 +26,11 @@ class Inventory:
 			if i.name.find(name) > -1:
 				return i
 
-	def inspection(self):
+	def inspection(self, appendToItemDisplayName = ""):
 		msg = ""
 		for i in iter(self.items):
-			strI = str(i)
-			msg += ("("+self.itemCount[strI]+") " if self.itemCount[strI] > 1 else "")+strI+"\n"
+			itemDisplayName = str(i)
+			msg += ("("+str(self.itemCount[itemDisplayName])+") " if self.itemCount[itemDisplayName] > 1 else "")+itemDisplayName.capitalize()+appendToItemDisplayName+"\n"
 		return msg
 	
 	def getWeight(self):
@@ -62,7 +62,20 @@ class Item(object):
 class Door(Item):
 	def __init__(self):
 		self.disposition = ""
+		self.directions = {}
 		super(Door, self).__init__()
+		self.can_own = False
+
+class Key(Item):
+	def __init__(self):
+		self.door_id = 0
+		super(Key, self).__init__()
+
+class Furniture(Item):
+	def __init__(self):
+		self.material = "generic"
+		self.regen = 0
+		super(Furniture, self).__init__()
 		self.can_own = False
 
 class Container(Item):
