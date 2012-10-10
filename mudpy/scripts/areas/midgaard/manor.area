@@ -35,7 +35,7 @@ id 34, e 33, n 37, w 39
 item
 a decrepit record player
 A very old, and very broken looking record player is set against the wall.~
-can_own false
+canOwn false
 
 mob
 a ghost of a servant boy is floating around
@@ -77,7 +77,7 @@ id 38, w 36, s 35
 furniture
 a leather bound couch
 A leather bound couch is here, covered by a white linen sheet.~
-can_own false, material leather
+canOwn false, material leather
 
 mob
 a ghost of a servant boy is floating around

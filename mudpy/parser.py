@@ -32,6 +32,10 @@ class Properties(Assignable):
 			if instanceProperty == "race":
 				instance.race = Factory.new(Race = value)
 			else:
+				if value == "true":
+					value = True
+				elif value == "false":
+					value = False
 				setattr(instance, instanceProperty, value)
 		elif self.aliases(instance, instanceProperty, value):
 			pass
@@ -84,6 +88,7 @@ class Parser:
 		'mob': [Block('long'), Block('description', '~'), Properties(), Attributes(), Abilities()],
 		'container': [Block('name'), Block('description', '~'), Properties()],
 		'drink': [Block('name'), Block('description', '~'), Properties()],
+		'furniture': [Block('name'), Block('description', '~'), Properties()],
 		'item': [Block('name'), Block('description', '~'), Properties()],
 		'key': [Block('name'), Block('description', '~'), Properties()],
 		'quest': [Block('name')],

@@ -50,7 +50,7 @@ class Item(object):
 		self.value = 0
 		self.weight = 0
 		self.material = ""
-		self.can_own = True
+		self.canOwn = True
 		self.level = 1
 
 	def __str__(self):
@@ -64,7 +64,7 @@ class Door(Item):
 		self.disposition = ""
 		self.directions = {}
 		super(Door, self).__init__()
-		self.can_own = False
+		self.canOwn = False
 
 class Key(Item):
 	def __init__(self):
@@ -76,7 +76,7 @@ class Furniture(Item):
 		self.material = "generic"
 		self.regen = 0
 		super(Furniture, self).__init__()
-		self.can_own = False
+		self.canOwn = False
 
 class Container(Item):
 	def __init__(self):

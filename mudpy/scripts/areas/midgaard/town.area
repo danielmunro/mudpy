@@ -21,7 +21,7 @@ id 82, s 1
 container
 a sacrifical pit
 A pit is here, containing treasures donated from other adventurers.~
-material stone, can_own false
+material stone, canOwn false
 
 mob
 an acolyte stands here, ready to help you practice
@@ -39,13 +39,13 @@ id 2, n 1, s 3, w 100, e 80
 drink
 an ornate fountain
 An ornately carved fountain is the centerpiece to the temple garden.~
-contents water, uses -1, can_own false
+contents water, uses -1, canOwn false
 
 item
 a small plaque
 A small brass plaque is here, affixed to the temple wall, it reads:
 Welcome to Midgaard.~
-can_own false
+canOwn false
 
 mob
 an adept of Mojo walks the garden

@@ -113,12 +113,12 @@ class CommandGet(Command):
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
 		item = actor.room.inventory.getItemByName(args[1])
-		if item:
+		if item and item.canOwn:
 			actor.room.inventory.remove(item)
 			actor.inventory.append(item)
 			actor.notify("You pick up "+str(item)+" off the floor.")
 		else:
-			actor.notify("Nothing is there.")
+			actor.notify("Nothing is there." if not item else "You cannot pick up "+str(item)+".")
 
 class CommandDrop(Command):
 	name = "drop"
