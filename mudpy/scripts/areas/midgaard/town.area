@@ -50,7 +50,7 @@ can_own false
 mob
 an adept of Mojo walks the garden
 An adept of Mojo is here, wearing a white linen robe and tending to the temple.~
-id 1, race volare, name adept of Mojo, role questmaster
+id 1, race volare, name an adept of Mojo, role questmaster
 
 #quest
 #adelwine
@@ -252,7 +252,7 @@ id 19, e 18, w 20, n 30, s 31
 room
 A Cobblestone Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~
-id 20, e 19, n 32
+id 20, e 19, n Adelwine Manor:32
 
 room
 A Cobblestone Street

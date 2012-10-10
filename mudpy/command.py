@@ -164,17 +164,17 @@ class CommandLook(Command):
 			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.title, actor.room.description, dirstr)
 			# items
 			if len(actor.room.inventory.items):
-				msg += actor.room.inventory.inspection()+"\n"
+				msg += actor.room.inventory.inspection(' is here.')
 			# actors
 			for i, v in enumerate(actor.room.actors):
 				if v is not actor:
-					msg += str(v).title()+" is here.\n"
+					msg += v.long.capitalize()+".\n"
 		else:
 			lookat = args[1:][0]
 			msg = "Nothing is there."
 			lookingAt = matchPartial(lookat, actor.inventory.items, actor.room.inventory.items, actor.room.actors)
 			if lookingAt:
-				msg = lookingAt.long.capitalize()+".\n"
+				msg = lookingAt.description.capitalize()+"\n"
 		actor.notify(msg)
 
 class CommandQuit(Command):
