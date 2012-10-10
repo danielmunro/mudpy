@@ -172,7 +172,7 @@ class Actor(object):
 	def getDefaultAttributes():
 		a = ActorAttributes()
 		a.hp = 20
-		a.mana = 20
+		a.mana = 100
 		a.movement = 100
 		a.ac_bash = 100
 		a.ac_pierce = 100
