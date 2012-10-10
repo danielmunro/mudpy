@@ -1,7 +1,7 @@
 import os
-from room import Area, Room, Direction
+from room import *
 from actor import Mob
-from item import Item, Container, Drink, Door
+from item import *
 from factory import Factory
 from utility import *
 
@@ -40,7 +40,7 @@ class Properties(Assignable):
 	
 	# this function is a hack
 	def aliases(self, instance, instanceProperty, value):
-		if isinstance(instance, Room):
+		if isinstance(instance, Room) or isinstance(instance, Door):
 			direction = startsWith(instanceProperty, Direction.__subclasses__())
 			if direction:
 				instance.directions[direction.name] = value
@@ -82,11 +82,12 @@ class Parser:
 		'area': [Properties()],
 		'room': [Block('title'), Block('description', '~'), Properties()],
 		'mob': [Block('long'), Block('description', '~'), Properties(), Attributes(), Abilities()],
-		'container': [Block('long'), Block('description', '~'), Properties()],
-		'drink': [Block('long'), Block('description', '~'), Properties()],
-		'item': [Block('long'), Block('description', '~'), Properties()],
+		'container': [Block('name'), Block('description', '~'), Properties()],
+		'drink': [Block('name'), Block('description', '~'), Properties()],
+		'item': [Block('name'), Block('description', '~'), Properties()],
+		'key': [Block('name'), Block('description', '~'), Properties()],
 		'quest': [Block('name')],
-		'door': [Block('long'), Block('description', '~'), Properties()],
+		'door': [Block('name'), Block('description', '~'), Properties()],
 		'ability': [Block('name'), Properties()]
 	}
 	def __init__(self, baseDir):
@@ -118,12 +119,17 @@ class Parser:
 				if isinstance(instance, Room):
 					lastRoom = instance
 					lastRoom.area = lastArea
+					lastInventory = instance.inventory
 					Room.rooms[lastRoom.area.name+":"+str(lastRoom.id)] = lastRoom
 				elif isinstance(instance, Mob):
 					lastRoom.actors.append(instance)
+					lastInventory = instance.inventory
 					instance.room = lastRoom
 				elif isinstance(instance, Area):
 					lastArea = instance
+				elif isinstance(instance, Item):
+					lastInventory.append(instance)
+
 			line = f.readline()
 	
 	def trim(self, line):
