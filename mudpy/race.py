@@ -131,6 +131,23 @@ class Elf(Race):
 		self.attributes.dex += 3
 		self.attributes.con -= 3
 
+class Kobold(Race):
+	name = "kobold"
+	isPlayable = False
+	proficiencies = {'light armor': 5, 'piercing': 5, 'sorcery': 5, 'sneaking': 5, 'evasive': 5}
+	size = Race.SIZE_SMALL
+
+	def setup(self):
+		from factory import Factory
+		self.abilities.append(Factory.new(Ability = "sneak"))
+
+		# attributes
+		self.attributes.str -= 3
+		self.attributes.int += 2
+		self.attributes.wis += 1
+		self.attributes.dex += 3
+		self.attributes.con -= 3
+
 class Dwarf(Race):
 	name = "dwarf"
 	inPlayable = True
