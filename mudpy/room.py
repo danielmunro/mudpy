@@ -1,4 +1,5 @@
 from item import Inventory
+from random import random, choice
 
 class Room(object):
 	rooms = {}
@@ -12,12 +13,9 @@ class Room(object):
 		self.directions = dict((getattr(direction, 'name'), None) for direction in Direction.__subclasses__())
 		self.area = None
 	
-	def notify(self, actor, message):
-		for i, k in enumerate(self.actors):
-			if k is actor:
-				continue
-			else:
-				k.notify(message+"\n")
+	def notify(self, notifier, message):
+		for actor in list(actor for actor in self.actors if not actor is notifier):
+			actor.notify(message+"\n")
 	
 	def announce(self, messages):
 		announcedActors = []
@@ -29,66 +27,50 @@ class Room(object):
 				actor.notify(message+"\n")
 				announcedActors.append(actor)
 		if generalMessage:
-			needAnnouncements = list(set(self.actors) - set(announcedActors))
-			for actor in needAnnouncements:
+			for actor in list(set(self.actors) - set(announcedActors)):
 				actor.notify(generalMessage+"\n")
-	
-	def getActorByName(self, name):
-		for i in iter(self.actors):
-			if i.name.lower().find(name.lower()) > -1:
-				return i
 
 class Randomhall(Room):
 	def __init__(self):
 		super(Randomhall, self).__init__()
 		self.rooms = 0
 		self.exit = 0
-		self.probabilities = dict((direction.name, .5) for direction in Direction.__subclasses__())
+		self.probabilities = dict((direction, .5) for direction in self.directions)
 	
 	def buildDungeon(self, roomCount = 0):
-		possibleDirections = list(direction for direction, room in self.directions.iteritems() if not room)
-		direction = None
-		import random
-		from random import choice
-		d = Direction.getRandom(possibleDirections)
-		r = random.random()
-		if self.probabilities[d] > r:
-			direction = d
+		direction = Direction.getRandom(list(direction for direction, room in self.directions.iteritems() if not room))
+		if self.probabilities[direction] > random():
+			if self.rooms < roomCount:
+				exit = Room.rooms[self.area.name+":"+str(self.exit)]
+				self.directions[direction] = exit
+				exit.directions[Direction.getReverse(direction)] = self
+			else:
+				return self.createTo(direction).buildDungeon(roomCount+1)
 		else:
 			rooms = list(room for room in self.directions.values() if isinstance(room, Randomhall))
 			if rooms:
 				return choice(rooms).buildDungeon(roomCount)
-			return roomCount;
+		return roomCount;
+	
+	def createTo(self, direction):
+		r = Randomhall()
+		r.title = self.title
+		r.description = self.description
+		r.rooms = self.rooms
+		r.exit = self.exit
+		r.probabilities = self.probabilities
+		r.area = self.area
+		self.directions[direction] = r
+		r.directions[Direction.getReverse(direction)] = self
+		return r
 
-		if self.rooms < roomCount:
-			exit = Room.rooms[self.area.name+":"+str(self.exit)]
-			self.directions[direction] = exit
-			exit.directions[Direction.getReverse(direction)] = self
-		else:
-			r = Randomhall()
-			r.title = self.title
-			r.description = self.description
-			r.rooms = self.rooms
-			r.exit = self.exit
-			r.probabilities = self.probabilities
-			r.area = self.area
-			self.directions[direction] = r
-			r.directions[Direction.getReverse(direction)] = self
-			return r.buildDungeon(roomCount+1)
-		return roomCount
 
 class Direction(object):
 	name = ""
-
-	def __str__(self):
-		return self.name
 	
 	@staticmethod
 	def getRandom(allowedDirections = []):
-		from random import choice
-		if not allowedDirections:
-			allowedDirections = list(direction.name for direction in Direction.__subclasses__())
-		return choice(allowedDirections)
+		return choice(allowedDirections if allowedDirections else list(direction.name for direction in Direction.__subclasses__()))
 	
 	@staticmethod
 	def getReverse(direction):
