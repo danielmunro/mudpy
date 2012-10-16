@@ -185,6 +185,5 @@ class Parser:
 			roomCount = room.buildDungeon()
 			while roomCount < room.rooms:
 				roomCount = room.buildDungeon(roomCount)
-				print roomCount
 
 class ParserException(Exception): pass
