@@ -143,7 +143,7 @@ class Actor(object):
 	
 	def move(self, direction = ""):
 		from factory import Factory
-		Factory.new(MoveDirection = direction if direction else choice(list(d for d in self.room.directions if d))).tryPerform(self)
+		Factory.new(MoveDirection = direction if direction else Direction.getRandom(list(direction for direction, room in self.room.directions.iteritems() if room))).tryPerform(self)
 	
 	def die(self):
 		self.removeFromBattle()

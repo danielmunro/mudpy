@@ -21,7 +21,6 @@ a brass key
 A tarnished brass key is here.~
 level 3, door_id 1
 
-
 room
 Adelwine Manor Sitting Room
 Portraits of the previous owners of Adelwine Manor hang on the wall. Badly aged and decayed, their condition is a stark reminder of the age of the manor. The hallway has opened up to a sitting room, with a staircase leading up, presumably to the bedrooms.~
@@ -88,7 +87,7 @@ hp 10
 room
 A small pantry
 The pantry is loaded with food that has long gone bad. A stairway leads to the attic.~
-id 39, e 34, u 40, d 44
+id 39, e 34, u 40, d Midgaard Catacombs:45
 
 food
 a molded mushroom
@@ -142,5 +141,5 @@ id 43, e 42, door e 1
 room
 A Musty Cellar
 An old wooden staircase leads down a narrow passage. The slate gray rock walls are cool to the touch.~
-id 44, u 39, d 45
+id 44, u 39, d Midgaard Catacombs:45
 #id 44, u 39, d 45, e 100~
