@@ -21,11 +21,6 @@ class Inventory:
 		except ValueError:
 			pass
 	
-	def getItemByName(self, name):
-		for i in iter(self.items):
-			if i.name.find(name) > -1:
-				return i
-
 	def inspection(self, appendToItemDisplayName = ""):
 		msg = ""
 		for i in iter(self.items):
@@ -34,10 +29,7 @@ class Inventory:
 		return msg
 	
 	def getWeight(self):
-		weight = 0
-		for i in self.items:
-			weight += i.weight
-		return weight
+		return sum(item.weight for item in self.items)
 	
 	def save(self):
 		Save(self, ['id', 'items']).execute()
@@ -52,6 +44,7 @@ class Item(object):
 		self.material = ""
 		self.canOwn = True
 		self.level = 1
+		self.repop = 1
 
 	def __str__(self):
 		return self.name
@@ -119,5 +112,8 @@ class Weapon(Equipment):
 	def __init__(self):
 		self.hit = 0
 		self.dam = 0
-		self.position = 'held'
+		self.position = "held"
+		self.verb = ""
+		self.weaponType = ""
+		self.damageType = ""
 		super(Weapon, self).__init__()

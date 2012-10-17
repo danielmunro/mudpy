@@ -65,6 +65,7 @@ class Client(Protocol):
 		i = Item()
 		i.name = 'an item'
 		i.value = 10
+		i.weight = .3
 		self.user.inventory.append(i)
 		
 		i = Equipment()
@@ -72,6 +73,7 @@ class Client(Protocol):
 		i.position = 'wield'
 		i.value = 0
 		i.attributes.hp = 1
+		i.weight = 1
 		self.user.inventory.append(i)
 		"""
 		self.user.save()

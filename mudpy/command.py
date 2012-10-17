@@ -112,7 +112,7 @@ class CommandGet(Command):
 	name = "get"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
-		item = actor.room.inventory.getItemByName(args[1])
+		item = matchPartial(args[1], actor.room.inventory.items)
 		if item and item.canOwn:
 			actor.room.inventory.remove(item)
 			actor.inventory.append(item)
@@ -124,7 +124,7 @@ class CommandDrop(Command):
 	name = "drop"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
-		item = actor.inventory.getItemByName(args[1])
+		item = matchPartial(args[1], actor.inventory.items)
 		if item:
 			actor.inventory.remove(item)
 			actor.room.inventory.append(item)
@@ -140,7 +140,7 @@ class CommandInventory(Command):
 class CommandScore(Command):
 	name = "score"
 	def perform(self, actor, args = []):
-		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\n" % ( \
+		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs" % ( \
 			actor, actor.race, actor.getAttribute('hp'), actor.getMaxAttribute('hp'), actor.getAttribute('mana'), \
 			actor.getMaxAttribute('mana'), actor.getAttribute('movement'), actor.getMaxAttribute('movement'), \
 			actor.getAttribute('str'), actor.getMaxAttribute('str'), \
@@ -148,7 +148,8 @@ class CommandScore(Command):
 			actor.getAttribute('wis'), actor.getMaxAttribute('wis'), \
 			actor.getAttribute('dex'), actor.getMaxAttribute('dex'), \
 			actor.getAttribute('con'), actor.getMaxAttribute('con'), \
-			actor.getAttribute('cha'), actor.getMaxAttribute('cha'))
+			actor.getAttribute('cha'), actor.getMaxAttribute('cha'), \
+			actor.inventory.getWeight(), actor.getMaxWeight())
 		actor.notify(msg);
 
 class CommandLook(Command):

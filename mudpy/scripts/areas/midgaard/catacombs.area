@@ -16,7 +16,7 @@ hp 35
 weapon
 a crude mining pick lays here
 A crude mining pick is here. It looks to be of kobold origin from the style and craftsmanship, or lack thereof.~
-value 4, weight 3, level 3, material metal, weapon_type flail, damage_type pierce, verb pierce, repop 50
+value 4, weight 3, level 3, material metal, weaponType flail, damageType pierce, verb pierce, repop 50
 hit 1
 
 equipment
