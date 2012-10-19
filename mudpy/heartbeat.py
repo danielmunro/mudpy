@@ -39,13 +39,20 @@ class Heartbeat:
 			pass
 
 	def dispatch(self, event):
-		for i in self.observers[event]:
-			self.reactor.callFromThread(getattr(i, event))
+		print len(self.observers[event])
+		if len(self.observers[event]): map(self.call, self.observers[event])
+		#for i in self.observers[event]:
+		#	self.reactor.callFromThread(getattr(i, event))
 
 	def postDispatch(self, event):
 		func = 'post'+event.title()
 		for i in self.observers[event]:
 			self.reactor.callFromThread(getattr(i, func))
+	
+	def call(self, observer, event):
+		print observer
+		print event
+		self.reactor.callFromThread(getattr(observer, event))
 	
 	def getTickLength(self):
 		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);

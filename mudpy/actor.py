@@ -27,6 +27,7 @@ class Actor(object):
 		self.disposition = Disposition.STANDING
 		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery', 'haggling', 'alchemy', 'elemental'])
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
+		self.attacks = ['reg']
 
 		Heartbeat.instance.attach('tick', self)
 	
@@ -114,9 +115,8 @@ class Actor(object):
 			Heartbeat.instance.attach('pulse', self.target)
 
 		if self.disposition != Disposition.INCAPACITATED:
-			regularattacks = ['reg']
 			try:
-				Attack(self, regularattacks[recursedAttackIndex])
+				Attack(self, self.attacks[recursedAttackIndex])
 				self.doRegularAttacks(recursedAttackIndex + 1)
 			except IndexError:
 				pass
@@ -239,8 +239,7 @@ class User(Actor):
 	
 	def postPulse(self):
 		if self.target:
-			self.notify(self.target.status()+"\n")
-			self.notify("\n"+self.prompt())
+			self.notify(self.target.status()+"\n\n"+self.prompt())
 	
 	def trySetAttribute(self, attribute, value):
 		if attribute == 'hp':
