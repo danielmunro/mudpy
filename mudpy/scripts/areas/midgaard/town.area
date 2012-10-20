@@ -269,10 +269,10 @@ The shipyard
 You are standing on one of five hefty wooden docks that span a hundred feet into the sea. Each dock is lined with merchant ships exchanging goods in Midgaard before continuing their journey.~
 id 81, n 22
 
-trainer
+mob
 A retired sailor stands here, ready to help you train
 An old man stands before you, grizzled with age and many seafaring years behind him. He may help you train to become stronger.~
-race human, name a retired sailor
+race human, type trainer, name a retired sailor
 
 room
 Entrance to the Thieves Guild
