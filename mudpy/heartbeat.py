@@ -8,7 +8,7 @@ class Heartbeat:
 
 	PULSE_SECONDS = 1
 
-	EVENT_TYPES = ['tick', 'pulse']
+	EVENT_TYPES = ['tick', 'pulse', 'stat']
 
 	def __init__(self, reactor):
 		self.observers = dict((event, []) for event in Heartbeat.EVENT_TYPES)
@@ -17,12 +17,12 @@ class Heartbeat:
 	
 	def start(self):
 		i = 0
-		next_tick = self.getTickLength()
+		next_tick = 0
 		while(1):
 			time.sleep(Heartbeat.PULSE_SECONDS)
 			i += Heartbeat.PULSE_SECONDS
 			self.dispatch('pulse')
-			self.postDispatch('pulse')
+			self.dispatch('stat')
 			if i > next_tick:
 				next_tick = self.getTickLength()
 				self.dispatch('tick')
@@ -39,20 +39,7 @@ class Heartbeat:
 			pass
 
 	def dispatch(self, event):
-		print len(self.observers[event])
-		if len(self.observers[event]): map(self.call, self.observers[event])
-		#for i in self.observers[event]:
-		#	self.reactor.callFromThread(getattr(i, event))
+		map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))
 
-	def postDispatch(self, event):
-		func = 'post'+event.title()
-		for i in self.observers[event]:
-			self.reactor.callFromThread(getattr(i, func))
-	
-	def call(self, observer, event):
-		print observer
-		print event
-		self.reactor.callFromThread(getattr(observer, event))
-	
 	def getTickLength(self):
 		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);

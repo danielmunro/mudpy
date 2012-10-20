@@ -67,9 +67,6 @@ class Actor(object):
 	def pulse(self):
 		self.doRegularAttacks()
 	
-	def postPulse(self):
-		pass
-	
 	def trySetAttribute(self, attributeName, amount):
 		maxAttributeAmount = self.getMaxAttribute(attributeName)
 		setattr(self.attributes, attributeName, amount if amount < maxAttributeAmount else maxAttributeAmount)
@@ -106,20 +103,18 @@ class Actor(object):
 		return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
 	
 	def doRegularAttacks(self, recursedAttackIndex = 0):
-		if not self.target:
+		if self.target:
+			if not self.target.target:
+				self.target.target = self
+				Heartbeat.instance.attach('pulse', self.target)
+
+			if self.disposition != Disposition.INCAPACITATED:
+				try:
+					Attack(self, self.attacks[recursedAttackIndex])
+					self.doRegularAttacks(recursedAttackIndex + 1)
+				except IndexError: pass
+		else:
 			Heartbeat.instance.detach('pulse', self)
-			return
-
-		if self.target and not self.target.target:
-			self.target.target = self
-			Heartbeat.instance.attach('pulse', self.target)
-
-		if self.disposition != Disposition.INCAPACITATED:
-			try:
-				Attack(self, self.attacks[recursedAttackIndex])
-				self.doRegularAttacks(recursedAttackIndex + 1)
-			except IndexError:
-				pass
 	
 	def status(self):
 		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
@@ -227,6 +222,10 @@ class Mob(Actor):
 		})
 	
 class User(Actor):
+	def __init__(self):
+		super(User, self).__init__()
+		Heartbeat.instance.attach('stat', self)
+
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
 	
@@ -237,7 +236,7 @@ class User(Actor):
 		super(User, self).tick()
 		self.notify("\n"+self.prompt())
 	
-	def postPulse(self):
+	def stat(self):
 		if self.target:
 			self.notify(self.target.status()+"\n\n"+self.prompt())
 	
