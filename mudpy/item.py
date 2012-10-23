@@ -38,7 +38,7 @@ class Item(object):
 	def __init__(self):
 		self.id = Save.getRandomID()
 		self.name = "a generic item"
-		self.long = "a generic item is here"
+		self.description = "a generic item is here"
 		self.value = 0
 		self.weight = 0
 		self.material = ""
