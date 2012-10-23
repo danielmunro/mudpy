@@ -272,7 +272,7 @@ id 81, n 22
 mob
 A retired sailor stands here, ready to help you train
 An old man stands before you, grizzled with age and many seafaring years behind him. He may help you train to become stronger.~
-race human, type trainer, name a retired sailor
+race human, role trainer, name a retired sailor
 
 room
 Entrance to the Thieves Guild
