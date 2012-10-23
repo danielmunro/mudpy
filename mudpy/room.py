@@ -29,6 +29,10 @@ class Room(object):
 		if generalMessage:
 			for actor in list(set(self.actors) - set(announcedActors)):
 				actor.notify(generalMessage+"\n")
+	
+	def mobs(self):
+		from actor import Mob
+		return list(actor for actor in self.actors if isinstance(actor, Mob))
 
 class Randomhall(Room):
 	def __init__(self):
