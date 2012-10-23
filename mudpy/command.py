@@ -19,6 +19,35 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandTrain(Command):
+	name = "train"
+	def perform(self, actor, args = []):
+		if actor.trains < 1:
+			actor.notify("You don't have any trains.")
+			return
+		hasTrainer = False
+		from actor import Mob
+		for mob in actor.room.mobs():
+			if mob.role == Mob.ROLE_TRAINER:
+				hasTrainer = True
+				break
+		if not hasTrainer:
+			actor.notify("There are no trainers here.")
+			return
+		from attributes import Attributes
+		stat = args[1]
+		if stat in Attributes.stats:
+			attr = actor.getAttribute(stat)
+			mattr = actor.getMaxAttribute(stat)
+			if attr+1 <= mattr:
+				setattr(actor.trainedAttributes, stat, getattr(actor.trainedAttributes, stat)+1)
+				actor.trains -= 1
+				actor.notify("Your "+stat+" increases!")
+			else:
+				actor.notify("You cannot train "+stat+" any further.")
+		else:
+			actor.notify("You cannot train that.")
+
 class CommandWear(Command):
 	name = "wear"
 	def perform(self, actor, args = []):
@@ -140,16 +169,17 @@ class CommandInventory(Command):
 class CommandScore(Command):
 	name = "score"
 	def perform(self, actor, args = []):
-		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs" % ( \
+		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs\nYou have %i trains, %i practices" % ( \
 			actor, actor.race, actor.getAttribute('hp'), actor.getMaxAttribute('hp'), actor.getAttribute('mana'), \
 			actor.getMaxAttribute('mana'), actor.getAttribute('movement'), actor.getMaxAttribute('movement'), \
-			actor.getAttribute('str'), actor.getMaxAttribute('str'), \
-			actor.getAttribute('int'), actor.getMaxAttribute('int'), \
-			actor.getAttribute('wis'), actor.getMaxAttribute('wis'), \
-			actor.getAttribute('dex'), actor.getMaxAttribute('dex'), \
-			actor.getAttribute('con'), actor.getMaxAttribute('con'), \
-			actor.getAttribute('cha'), actor.getMaxAttribute('cha'), \
-			actor.inventory.getWeight(), actor.getMaxWeight())
+			actor.getAttribute('str'), actor.getUnmodifiedAttribute('str'), \
+			actor.getAttribute('int'), actor.getUnmodifiedAttribute('int'), \
+			actor.getAttribute('wis'), actor.getUnmodifiedAttribute('wis'), \
+			actor.getAttribute('dex'), actor.getUnmodifiedAttribute('dex'), \
+			actor.getAttribute('con'), actor.getUnmodifiedAttribute('con'), \
+			actor.getAttribute('cha'), actor.getUnmodifiedAttribute('cha'), \
+			actor.inventory.getWeight(), actor.getMaxWeight(), \
+			actor.trains, actor.practices)
 		actor.notify(msg);
 
 class CommandLook(Command):
@@ -157,25 +187,15 @@ class CommandLook(Command):
 	def perform(self, actor, args = []):
 		l = len(args)
 		if l <= 1:
-			# directions
-			dirstr = ''
-			for i, v in actor.room.directions.iteritems():
-				if(v):
-					dirstr += i[:1]
-			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.title, actor.room.description, dirstr)
+			# room and exits
+			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.title, actor.room.description, "".join(direction[:1] for direction, room in actor.room.directions.iteritems() if room))
 			# items
-			if len(actor.room.inventory.items):
-				msg += actor.room.inventory.inspection(' is here.')
+			msg += actor.room.inventory.inspection(' is here.')
 			# actors
-			for i, v in enumerate(actor.room.actors):
-				if v is not actor:
-					msg += v.long.capitalize()+".\n"
+			msg += "\n".join(_actor.long.capitalize() for _actor in actor.room.actors if _actor is not actor)+"\n"
 		else:
-			lookat = args[1:][0]
-			msg = "Nothing is there."
-			lookingAt = matchPartial(lookat, actor.inventory.items, actor.room.inventory.items, actor.room.actors)
-			if lookingAt:
-				msg = lookingAt.description.capitalize()+"\n"
+			lookingAt = matchPartial(args[1:][0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
+			msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
 		actor.notify(msg)
 
 class CommandQuit(Command):

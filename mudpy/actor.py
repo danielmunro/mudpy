@@ -1,5 +1,5 @@
 from __future__ import division
-from attributes import ActorAttributes
+from attributes import Attributes, ActorAttributes
 from item import Inventory
 from save import Save
 from random import choice
@@ -17,6 +17,7 @@ class Actor(object):
 		self.level = 0
 		self.experience = 0
 		self.attributes = self.getDefaultAttributes()
+		self.trainedAttributes = Attributes()
 		self.sex = "neutral"
 		self.room = None
 		self.abilities = []
@@ -24,6 +25,8 @@ class Actor(object):
 		self.target = None
 		self.inventory = Inventory()
 		self.race = None
+		self.trains = 0
+		self.practices = 0
 		self.disposition = Disposition.STANDING
 		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery', 'haggling', 'alchemy', 'elemental'])
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
@@ -70,9 +73,12 @@ class Actor(object):
 	def trySetAttribute(self, attributeName, amount):
 		maxAttributeAmount = self.getMaxAttribute(attributeName)
 		setattr(self.attributes, attributeName, amount if amount < maxAttributeAmount else maxAttributeAmount)
+	
+	def getUnmodifiedAttribute(self, attributeName):
+		return getattr(self.attributes, attributeName) + getattr(self.trainedAttributes, attributeName) + getattr(self.race.attributes, attributeName)
 
 	def getAttribute(self, attributeName):
-		amount = getattr(self.attributes, attributeName) + getattr(self.race.attributes, attributeName)
+		amount = self.getUnmodifiedAttribute(attributeName)
 		for affect in self.affects:
 			amount += getattr(affect.attributes, attributeName)
 		for equipment in self.equipped.values():
@@ -187,6 +193,8 @@ class Actor(object):
 		return a
 
 class Mob(Actor):
+	ROLE_TRAINER = 'trainer'
+
 	def __init__(self):
 		self.movement_timeout = 1
 		self.movement_timer = self.movement_timeout
@@ -225,6 +233,8 @@ class User(Actor):
 	def __init__(self):
 		super(User, self).__init__()
 		Heartbeat.instance.attach('stat', self)
+		self.trains = 5
+		self.practices = 5
 
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
