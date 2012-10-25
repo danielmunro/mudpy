@@ -19,12 +19,12 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
-class CommandPractice(Command):
+class Practice(Command):
 	name = "practice"
 	def perform(self, actor, args = []):
 		actor.notify("Your proficiencies:\n"+"\n".join(proficiency+": "+str(actor.getProficiencyIn(proficiency)) for proficiency in actor.proficiencies))
 
-class CommandTrain(Command):
+class Train(Command):
 	name = "train"
 	def perform(self, actor, args = []):
 		if actor.trains < 1:
@@ -53,14 +53,15 @@ class CommandTrain(Command):
 		else:
 			actor.notify("You cannot train that.")
 
-class CommandWear(Command):
+class Wear(Command):
 	name = "wear"
 	def perform(self, actor, args = []):
 		equipment = matchPartial(args[1], actor.inventory.items)
 		if equipment:
 			currentEq = actor.getEquipmentByPosition(equipment.position)
 			if currentEq:
-				CommandRemove().perform(actor, [currentEq.name])
+				from factory import Factory
+				Factory.new(Command = "remove").perform(actor, [currentEq.name])
 			if actor.setEquipment(equipment):
 				actor.notify("You wear "+str(equipment)+".")
 				actor.inventory.remove(equipment)
@@ -69,7 +70,7 @@ class CommandWear(Command):
 		else:
 			actor.notify("You have nothing like that.")
 
-class CommandRemove(Command):
+class Remove(Command):
 	name = "remove"
 	def perform(self, actor, args = []):
 		equipment = matchPartial(args[1], list(equipment for equipment in actor.equipped.values() if equipment))
@@ -80,7 +81,7 @@ class CommandRemove(Command):
 		else:
 			actor.notify("You are not wearing that.")
 
-class CommandEquipped(Command):
+class Equipped(Command):
 	name = "equipped"
 	def perform(self, actor, args = []):
 		import re
@@ -89,7 +90,7 @@ class CommandEquipped(Command):
 			msg += re.sub("\d+", "", p)+": "+str(e)+"\n"
 		actor.notify("You are wearing: "+msg)
 
-class CommandSit(Command):
+class Sit(Command):
 	name = "sit"
 	def perform(self, actor, args = []):
 		actor.disposition = Disposition.SITTING
@@ -98,7 +99,7 @@ class CommandSit(Command):
 			"*": str(actor).title()+" sits down and rests."
 		})
 
-class CommandSleep(Command):
+class Sleep(Command):
 	name = "sleep"
 	def perform(self, actor, args = []):
 		actor.disposition = Disposition.SLEEPING
@@ -107,7 +108,7 @@ class CommandSleep(Command):
 			"*": str(actor).title()+" goes to sleep."
 		})
 
-class CommandWake(Command):
+class Wake(Command):
 	name = "wake"
 	def perform(self, actor, args = []):
 		actor.disposition = Disposition.STANDING
@@ -116,7 +117,7 @@ class CommandWake(Command):
 			"*": str(actor).title()+" stands up."
 		})
 
-class CommandKill(Command):
+class Kill(Command):
 	name = "kill"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
@@ -128,7 +129,7 @@ class CommandKill(Command):
 		else:
 			actor.notify("They aren't here.")
 
-class CommandFlee(Command):
+class Flee(Command):
 	name = "flee"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
@@ -142,7 +143,7 @@ class CommandFlee(Command):
 		else:
 			actor.notify("You're not fighting anyone!")
 
-class CommandGet(Command):
+class Get(Command):
 	name = "get"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
@@ -154,7 +155,7 @@ class CommandGet(Command):
 		else:
 			actor.notify("Nothing is there." if not item else "You cannot pick up "+str(item)+".")
 
-class CommandDrop(Command):
+class Drop(Command):
 	name = "drop"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
@@ -166,12 +167,12 @@ class CommandDrop(Command):
 		else:
 			actor.notify("Nothing is there.")
 
-class CommandInventory(Command):
+class Inventory(Command):
 	name = "inventory"
 	def perform(self, actor, args = []):
 		actor.notify("Your inventory:\n"+actor.inventory.inspection())
 
-class CommandScore(Command):
+class Score(Command):
 	name = "score"
 	def perform(self, actor, args = []):
 		msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs\nYou have %i trains, %i practices" % ( \
@@ -187,7 +188,7 @@ class CommandScore(Command):
 			actor.trains, actor.practices)
 		actor.notify(msg);
 
-class CommandLook(Command):
+class Look(Command):
 	name = "look"
 	def perform(self, actor, args = []):
 		l = len(args)
@@ -203,12 +204,12 @@ class CommandLook(Command):
 			msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
 		actor.notify(msg)
 
-class CommandQuit(Command):
+class Quit(Command):
 	name = "quit"
 	def perform(self, actor, args = []):
 		actor.client.disconnect()
 
-class CommandWho(Command):
+class Who(Command):
 	name = "who"
 	def perform(self, actor, args = []):
 		wholist = '';
@@ -218,7 +219,7 @@ class CommandWho(Command):
 		wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
 		actor.notify(wholist)
 
-class CommandAffects(Command):
+class Affects(Command):
 	name = "affects"
 	def perform(self, actor, args = []):
 		actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+" ticks" for x in actor.affects));
@@ -244,7 +245,8 @@ class MoveDirection(Command):
 				actor.room = newRoom
 				actor.room.actors.append(actor)
 				actor.room.notify(actor, str(actor).title()+" has arrived.")
-				CommandLook().tryPerform(actor)
+				from factory import Factory
+				Factory.new(Command = "look").tryPerform(actor)
 			else:
 				actor.notify("You are too tired to move.")
 		else:
@@ -254,32 +256,32 @@ class MoveDirection(Command):
 		print "getNewRoom is not defined"
 		raise 
 
-class CommandNorth(MoveDirection):
+class North(MoveDirection):
 	name = "north"
 	def getNewRoom(self, actor):
 		return actor.room.directions['north']
 
-class CommandSouth(MoveDirection):
+class South(MoveDirection):
 	name = "south"
 	def getNewRoom(self, actor):
 		return actor.room.directions['south']
 
-class CommandEast(MoveDirection):
+class East(MoveDirection):
 	name = "east"
 	def getNewRoom(self, actor):
 		return actor.room.directions['east']
 
-class CommandWest(MoveDirection):
+class West(MoveDirection):
 	name = "west"
 	def getNewRoom(self, actor):
 		return actor.room.directions['west']
 
-class CommandUp(MoveDirection):
+class Up(MoveDirection):
 	name = "up"
 	def getNewRoom(self, actor):
 		return actor.room.directions['up']
 
-class CommandDown(MoveDirection):
+class Down(MoveDirection):
 	name = "down"
 	def getNewRoom(self, actor):
 		return actor.room.directions['down']
