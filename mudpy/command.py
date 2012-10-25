@@ -22,7 +22,22 @@ class Command(object):
 class Practice(Command):
 	name = "practice"
 	def perform(self, actor, args = []):
-		actor.notify("Your proficiencies:\n"+"\n".join(proficiency+": "+str(actor.getProficiencyIn(proficiency)) for proficiency in actor.proficiencies))
+		if len(args) <= 1:
+			actor.notify("Your proficiencies:\n"+"\n".join(proficiency+": "+str(actor.getProficiencyIn(proficiency)) for proficiency in actor.proficiencies))
+		else:
+			from actor import Mob
+			if not any(mob.role == Mob.ROLE_ACOLYTE for mob in actor.room.mobs()):
+				actor.notify("No one is here to help you practice.")
+				return;
+			proficiency = ""
+			for p in actor.proficiencies:
+				if p.find(args[1]) == 0:
+					proficiency = p
+			if proficiency:
+				actor.proficiencies[proficiency] += 1
+				actor.notify("You get better at "+proficiency+"!")
+			else:
+				actor.notify("You cannot practice that.")
 
 class Train(Command):
 	name = "train"
@@ -32,11 +47,7 @@ class Train(Command):
 			return
 		hasTrainer = False
 		from actor import Mob
-		for mob in actor.room.mobs():
-			if mob.role == Mob.ROLE_TRAINER:
-				hasTrainer = True
-				break
-		if not hasTrainer:
+		if not any(mob.role == Mob.ROLE_TRAINER for mob in actor.room.mobs()):
 			actor.notify("There are no trainers here.")
 			return
 		from attributes import Attributes

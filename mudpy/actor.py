@@ -205,6 +205,7 @@ class Actor(object):
 
 class Mob(Actor):
 	ROLE_TRAINER = 'trainer'
+	ROLE_ACOLYTE = 'acolyte'
 
 	def __init__(self):
 		self.movement_timeout = 1
