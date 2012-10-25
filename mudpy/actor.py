@@ -34,6 +34,17 @@ class Actor(object):
 
 		Heartbeat.instance.attach('tick', self)
 	
+	def getProficiencyIn(self, proficiency):
+		try:
+			racialProf = self.race.proficiencies[proficiency]
+		except KeyError:
+			racialProf = 0
+
+		try:
+			return self.proficiencies[proficiency] + racialProf
+		except KeyError:
+			return 0 + racialProf
+	
 	def getEquipmentByPosition(self, position):
 		for _position in self.equipped:
 			if _position.find(position) == 0:

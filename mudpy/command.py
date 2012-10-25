@@ -19,6 +19,11 @@ class Command(object):
 	def __str__(self):
 		return self.name
 
+class CommandPractice(Command):
+	name = "practice"
+	def perform(self, actor, args = []):
+		actor.notify("Your proficiencies:\n"+"\n".join(proficiency+": "+str(actor.getProficiencyIn(proficiency)) for proficiency in actor.proficiencies))
+
 class CommandTrain(Command):
 	name = "train"
 	def perform(self, actor, args = []):
