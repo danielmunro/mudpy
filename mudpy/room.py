@@ -47,7 +47,7 @@ class Randomhall(Room):
 			if self.rooms < roomCount:
 				exit = Room.rooms[self.area.name+":"+str(self.exit)]
 				self.directions[direction] = exit
-				exit.directions[Direction.getReverse(direction)] = self
+				exit.directions[globals()[direction.title()]().reverse] = self
 			else:
 				return self.createTo(direction).buildDungeon(roomCount+1)
 		else:
@@ -65,7 +65,7 @@ class Randomhall(Room):
 		r.probabilities = self.probabilities
 		r.area = self.area
 		self.directions[direction] = r
-		r.directions[Direction.getReverse(direction)] = self
+		r.directions[globals()[direction.title()]().reverse] = self
 		return r
 
 
@@ -75,39 +75,30 @@ class Direction(object):
 	@staticmethod
 	def getRandom(allowedDirections = []):
 		return choice(allowedDirections if allowedDirections else list(direction.name for direction in Direction.__subclasses__()))
-	
-	@staticmethod
-	def getReverse(direction):
-		if direction == "north":
-			return "south"
-		elif direction == "south":
-			return "north"
-		elif direction == "east":
-			return "west"
-		elif direction == "west":
-			return "east"
-		elif direction == "up":
-			return "down"
-		elif direction == "down":
-			return "up"
 
 class North(Direction):
 	name = "north"
+	reverse = "south"
 
 class South(Direction):
 	name = "south"
+	reverse = "north"
 
 class East(Direction):
 	name = "east"
+	reverse = "west"
 
 class West(Direction):
 	name = "west"
+	reverse = "east"
 
 class Up(Direction):
 	name = "up"
+	reverse = "down"
 
 class Down(Direction):
 	name = "down"
+	reverse = "up"
 
 class Area:
 	def __init__(self):
