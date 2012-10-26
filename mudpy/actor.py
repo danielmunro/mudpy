@@ -153,9 +153,10 @@ class Actor(object):
 
 		return str(self).title()+' '+description+'.'
 	
-	def move(self, direction = ""):
+	def move(self, validDirections = []):
 		from factory import Factory
-		Factory.new(MoveDirection = direction if direction else Direction.getRandom(list(direction for direction, room in self.room.directions.iteritems() if room))).tryPerform(self)
+		from random import choice
+		Factory.new(MoveDirection = choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
 		self.removeFromBattle()
@@ -240,6 +241,9 @@ class Mob(Actor):
 		self.room.announce({
 			"*": str(self).title()+" arrives in a puff of smoke."
 		})
+
+	def move(self, validDirections = []):
+		super(Mob, self).move(validDirections if validDirections else list(direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area))
 	
 class User(Actor):
 	def __init__(self):
