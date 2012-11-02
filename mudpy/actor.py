@@ -16,6 +16,7 @@ class Actor(object):
 		self.long = "An actor is here"
 		self.level = 0
 		self.experience = 0
+		self.alignment = 0
 		self.attributes = self.getDefaultAttributes()
 		self.trainedAttributes = Attributes()
 		self.sex = "neutral"
@@ -159,9 +160,39 @@ class Actor(object):
 		Factory.new(MoveDirection = choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
+		if self.target:
+			self.target.awardExperienceFrom(self)
 		self.removeFromBattle()
 		self.disposition = Disposition.LAYING
 		setattr(self.attributes, 'hp', 1)
+	
+	def rewardExperienceFrom(self, victim):
+		self.experience += victim.getKillExperience(self)
+		diff = self.experience / self.getExperiencePerLevel()
+		if diff > self.level:
+			gain = 0
+			while gain < diff:
+				self.levelUp()
+				gain += 1
+	
+	def getKillExperience(self, killer):
+		from random import randint
+		leveldiff = self.level - killer.level
+		experience = 200 + 30 * leveldiff
+		if leveldiff > 5:
+			experience *= 1 + randint(0, leveldiff*2) / 100
+		aligndiff = abs(self.alignment - killer.alignment) / 2000
+		if aligndiff > 0.5:
+			mod = randint(15, 35) / 100
+			experience *= 1 + aligndiff - mod
+		experience = randint(experience * 0.8, experience * 1.2)
+		return experience if experience > 0 else 0
+
+	def getExperiencePerLevel(self):
+		return 1000
+
+	def levelUp(self):
+		self.level += 1
 	
 	def removeFromBattle(self):
 		if self.target and self.target.target is self:
@@ -169,6 +200,14 @@ class Actor(object):
 
 		if self.target:
 			self.target = None
+	
+	def getAlignment(self):
+		if self.alignment <= -1000:
+			return "evil"
+		elif self.alignment <= 0:
+			return "neutral"
+		elif self.alignment >= 1000:
+			return "good"
 	
 	@staticmethod
 	def getDamageVerb(dam_roll):
@@ -292,6 +331,10 @@ class User(Actor):
 			"*": str(self).title()+" arrives in a puff of smoke."
 		})
 		self.notify("\n"+self.prompt())
+	
+	def levelUp(self):
+		super(User, self).levelUp()
+		self.notify("You leveled up!")
 
 class Disposition:
 	STANDING = 'standing'
@@ -306,7 +349,7 @@ class Attack:
 
 		# initial rolls for attack/defense
 		hit_roll = aggressor.getAttribute('hit') + self.getAttributeModifier(aggressor, 'dex')
-		def_roll = self.getAttributeModifier(aggressor.target, 'dex')
+		def_roll = self.getAttributeModifier(aggressor.target, 'dex') / 2
 		def_roll += 5 - aggressor.target.race.size
 
 		# determine dam type from weapon
@@ -324,6 +367,7 @@ class Attack:
 
 		# roll the dice and determine if the attack was successful
 		roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
+		print roll
 		if roll > 0:
 			isHit = "hits"
 			dam_roll = aggressor.getAttribute('dam') + self.getAttributeModifier(aggressor, 'str')

@@ -13,7 +13,7 @@ id 32, s midgaard:20, n 33
 mob
 a ghost of a servant boy is floating around
 A ghost of a servant boy is here, looking for something useful to do.~
-race human, movement_timeout 3, level 8, name a ghost of a servant boy
+race human, movement_timeout 3, level 8, name a ghost of a servant boy, alignment -1000
 hp 10
 
 key

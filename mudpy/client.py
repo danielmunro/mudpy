@@ -13,7 +13,7 @@ class Client(Protocol):
 		self.write("By what name do you wish to be known? ");
 		self.factory.clients.append(self)
 		self.user = None
-		self.loginSteps = deque(["name", "race"])
+		self.loginSteps = deque(["name", "race", "alignment"])
 	
 	def connectionLost(self, reason):
 		self.write("Good bye!")
@@ -55,29 +55,41 @@ class Client(Protocol):
 				self.write("That is not a valid race. What is your race? ")
 				self.loginSteps.appendleft(next)
 				return
+			self.write("What alignment are you (good/neutral/evil)? ")
+		elif next == "alignment":
+			if "good".find(data) == 0:
+				self.newUser.alignment = 1000
+			elif "neutral".find(data) == 0:
+				self.newUser.alignment = 0
+			elif "evil".find(data) == 0:
+				self.newUser.alignment = -1000
+			else:
+				self.write("That is not a valid alignment. What is your alignment? ")
+				self.loginSteps.appendleft(next)
+				return
 			self.user = self.newUser
 			self.user.room = self.factory.DEFAULT_ROOM
 			self.user.room.actors.append(self.user)
 			Factory.new(Command = "look").tryPerform(self.user)
 			self.write("\n"+self.user.prompt())
 
-		from item import Item, Equipment 
-		i = Item()
-		i.name = 'an item'
-		i.value = 10
-		i.weight = .3
-		self.user.inventory.append(i)
-		
-		i = Equipment()
-		i.name = 'a subissue sword'
-		i.position = 'wield'
-		i.value = 0
-		i.attributes.hp = 1
-		i.weight = 1
-		self.user.inventory.append(i)
-		"""
-		self.user.save()
-		"""
+			from item import Item, Equipment 
+			i = Item()
+			i.name = 'an item'
+			i.value = 10
+			i.weight = .3
+			self.user.inventory.append(i)
+			
+			i = Equipment()
+			i.name = 'a subissue sword'
+			i.position = 'wield'
+			i.value = 0
+			i.attributes.hp = 1
+			i.weight = 1
+			self.user.inventory.append(i)
+			"""
+			self.user.save()
+			"""
 
 class ClientFactory(tFactory):
 	protocol = Client
