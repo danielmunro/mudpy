@@ -108,9 +108,6 @@ class Actor(object):
 			except:
 				return 0
 	
-	def save(self):
-		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
-	
 	def getAbilities(self):
 		return self.abilities + self.race.abilities
 
@@ -335,6 +332,9 @@ class User(Actor):
 	def levelUp(self):
 		super(User, self).levelUp()
 		self.notify("You leveled up!")
+	
+	def save(self):
+		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'sex', 'room', 'abilities', 'affects', 'inventory', 'trains', 'practices', 'alignment']).execute()
 
 class Disposition:
 	STANDING = 'standing'
