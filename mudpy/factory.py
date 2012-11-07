@@ -2,6 +2,7 @@ from utility import *
 from race import *
 from ability import *
 from command import *
+from room import *
 
 class Factory:
 	@staticmethod
