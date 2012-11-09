@@ -34,6 +34,12 @@ class Room(object):
 		from actor import Mob
 		return list(actor for actor in self.actors if isinstance(actor, Mob))
 
+	def copy(self, newRoom):
+		newRoom.title = self.title
+		newRoom.description = self.description
+		newRoom.area = self.area
+		return newRoom
+
 class Randomhall(Room):
 	def __init__(self):
 		super(Randomhall, self).__init__()
@@ -49,21 +55,18 @@ class Randomhall(Room):
 				self.directions[direction] = exit
 				exit.directions[globals()[direction.title()]().reverse] = self
 			else:
-				return self.createTo(direction).buildDungeon(roomCount+1)
+				return self.copy(direction).buildDungeon(roomCount+1)
 		else:
 			rooms = list(room for room in self.directions.values() if isinstance(room, Randomhall))
 			if rooms:
 				return choice(rooms).buildDungeon(roomCount)
 		return roomCount;
 	
-	def createTo(self, direction):
-		r = Randomhall()
-		r.title = self.title
-		r.description = self.description
+	def copy(self, direction):
+		r = super(Randomhall, self).copy(Randomhall())
 		r.rooms = self.rooms
 		r.exit = self.exit
 		r.probabilities = self.probabilities
-		r.area = self.area
 		self.directions[direction] = r
 		r.directions[globals()[direction.title()]().reverse] = self
 		return r
@@ -96,12 +99,9 @@ class Grid(Room):
 
 
 	def copy(self):
-		r = Grid()
-		r.title = self.title
-		r.description = self.description
+		r = super(Grid, self).copy(Grid())
 		r.rooms = self.rooms
 		r.exit = self.exit
-		r.area = self.area
 		r.counts = self.counts
 		return r
 
