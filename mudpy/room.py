@@ -85,9 +85,9 @@ class Grid(Room):
 				if not grid[y][x]:
 					grid[y][x] = self.copy()
 				if x > 0:
-					grid[y][x-1].setIfEmpty('west', grid[y][x])
+					grid[y][x-1].setIfEmpty('east', grid[y][x])
 				if y > 0:
-					grid[y-1][x].setIfEmpty('north', grid[y][x])
+					grid[y-1][x].setIfEmpty('south', grid[y][x])
 	
 	def setIfEmpty(self, direction, roomToSet):
 		from factory import Factory

@@ -193,10 +193,12 @@ class Parser:
 			while roomCount < room.rooms:
 				roomCount = room.buildDungeon(roomCount)
 		for room in grids:
-			rows = room.counts['west'] + room.counts['east'] + 1
-			cols = room.counts['north'] + room.counts['south'] + 1
-			grid = [[0 for col in range(rows)] for row in range(cols)]
-			grid[room.counts['south']][room.counts['east']] = room
+			rows = room.counts['west'] + room.counts['east']
+			rows = rows if rows > 0 else 1
+			cols = room.counts['north'] + room.counts['south']
+			cols = cols if cols > 0 else 1
+			grid = [[0 for row in range(rows)] for col in range(cols)]
+			grid[room.counts['north']-1][room.counts['west']-1] = room
 			room.buildDungeon(0, 0, grid)
 
 class ParserException(Exception): pass
