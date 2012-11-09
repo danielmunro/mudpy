@@ -68,6 +68,42 @@ class Randomhall(Room):
 		r.directions[globals()[direction.title()]().reverse] = self
 		return r
 
+class Grid(Room):
+	def __init__(self):
+		super(Grid, self).__init__()
+		self.counts = dict((direction, 0) for direction in self.directions)
+		self.exit = 0
+	
+	def buildDungeon(self, x = 0, y = 0, grid = []):
+		ylen = len(grid)
+		xlen = len(grid[0])
+		for y in range(ylen):
+			for x in range(xlen):
+				if not grid[y][x]:
+					grid[y][x] = self.copy()
+				if x > 0:
+					grid[y][x-1].setIfEmpty('west', grid[y][x])
+				if y > 0:
+					grid[y-1][x].setIfEmpty('north', grid[y][x])
+	
+	def setIfEmpty(self, direction, roomToSet):
+		from factory import Factory
+		rdir = Factory.new(Direction = direction).reverse
+		if self.directions[direction] is None:
+			self.directions[direction] = roomToSet
+			if roomToSet.directions[rdir] is None:
+				roomToSet.directions[rdir] = self
+
+
+	def copy(self):
+		r = Grid()
+		r.title = self.title
+		r.description = self.description
+		r.rooms = self.rooms
+		r.exit = self.exit
+		r.area = self.area
+		r.counts = self.counts
+		return r
 
 class Direction(object):
 	name = ""
