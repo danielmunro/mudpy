@@ -51,6 +51,15 @@ class Train(Command):
 			actor.notify("There are no trainers here.")
 			return
 		from attributes import Attributes
+		if len(args) == 1:
+			message = ""
+			for stat in Attributes.stats:
+				attr = actor.getAttribute(stat)
+				mattr = actor.getMaxAttribute(stat)
+				if attr+1 <= mattr:
+					message += stat+" "
+			actor.notify("You can train: "+message)
+			return
 		stat = args[1]
 		if stat in Attributes.stats:
 			attr = actor.getAttribute(stat)
