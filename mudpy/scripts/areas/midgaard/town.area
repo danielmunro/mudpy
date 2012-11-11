@@ -34,7 +34,7 @@ name an acolyte of the temple, role acolyte, level 10, race human
 room
 Temple Garden
 A small fountain lies to the side of the cobblestone path, which dissects an impressive garden. The temple of Midgaard is to the north, with the market square to the south.~
-id 2, n 1, s 3, w 100, e 80
+id 2, n 1, s 3, w The Temple Arena:1, e 80
 
 drink
 an ornate fountain
@@ -80,7 +80,12 @@ bash, kick
 room
 Midgaard sewer system
 Chipped rock walls offer no light or comfort in this barren, dirty tunnel.~
-id 75, u 3, door u 2
+id 75, u 3, door u 2, d 100
+
+grid
+Midgaard Sewers
+Chipped, concrete walls span into the darkness.~
+id 100, u 75, sCount 3, nCount 3
 
 room
 Market Street

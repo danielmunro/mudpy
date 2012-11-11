@@ -34,6 +34,12 @@ class Room(object):
 		from actor import Mob
 		return list(actor for actor in self.actors if isinstance(actor, Mob))
 
+	def copy(self, newRoom):
+		newRoom.title = self.title
+		newRoom.description = self.description
+		newRoom.area = self.area
+		return newRoom
+
 class Randomhall(Room):
 	def __init__(self):
 		super(Randomhall, self).__init__()
@@ -49,25 +55,55 @@ class Randomhall(Room):
 				self.directions[direction] = exit
 				exit.directions[globals()[direction.title()]().reverse] = self
 			else:
-				return self.createTo(direction).buildDungeon(roomCount+1)
+				return self.copy(direction).buildDungeon(roomCount+1)
 		else:
 			rooms = list(room for room in self.directions.values() if isinstance(room, Randomhall))
 			if rooms:
 				return choice(rooms).buildDungeon(roomCount)
 		return roomCount;
 	
-	def createTo(self, direction):
-		r = Randomhall()
-		r.title = self.title
-		r.description = self.description
+	def copy(self, direction):
+		r = super(Randomhall, self).copy(Randomhall())
 		r.rooms = self.rooms
 		r.exit = self.exit
 		r.probabilities = self.probabilities
-		r.area = self.area
 		self.directions[direction] = r
 		r.directions[globals()[direction.title()]().reverse] = self
 		return r
 
+class Grid(Room):
+	def __init__(self):
+		super(Grid, self).__init__()
+		self.counts = dict((direction, 0) for direction in self.directions)
+		self.exit = 0
+	
+	def buildDungeon(self, x = 0, y = 0, grid = []):
+		ylen = len(grid)
+		xlen = len(grid[0])
+		for y in range(ylen):
+			for x in range(xlen):
+				if not grid[y][x]:
+					grid[y][x] = self.copy()
+				if x > 0:
+					grid[y][x-1].setIfEmpty('east', grid[y][x])
+				if y > 0:
+					grid[y-1][x].setIfEmpty('south', grid[y][x])
+	
+	def setIfEmpty(self, direction, roomToSet):
+		from factory import Factory
+		rdir = Factory.new(Direction = direction).reverse
+		if self.directions[direction] is None:
+			self.directions[direction] = roomToSet
+			if roomToSet.directions[rdir] is None:
+				roomToSet.directions[rdir] = self
+
+
+	def copy(self):
+		r = super(Grid, self).copy(Grid())
+		r.rooms = self.rooms
+		r.exit = self.exit
+		r.counts = self.counts
+		return r
 
 class Direction(object):
 	name = ""

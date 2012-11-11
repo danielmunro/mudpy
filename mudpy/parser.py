@@ -48,7 +48,10 @@ class Properties(Assignable):
 			direction = startsWith(instanceProperty[0:1], Direction.__subclasses__())
 			instance.probabilities[direction.name] = value
 			return True
-		if isinstance(instance, Room) or isinstance(instance, Door) or isinstance(instance, Randomhall):
+		if isinstance(instance, Grid) and instanceProperty.find('Count') > -1:
+			direction = startsWith(instanceProperty[0:1], Direction.__subclasses__())
+			instance.counts[direction.name] = value
+		if issubclass(instance.__class__, Room) or isinstance(instance, Door):
 			direction = startsWith(instanceProperty, Direction.__subclasses__())
 			if direction:
 				instance.directions[direction.name] = value
@@ -92,6 +95,7 @@ class Parser:
 		'area': [Properties()],
 		'room': [Block('title'), Block('description', '~'), Properties()],
 		'randomhall': [Block('title'), Block('description', '~'), Properties()],
+		'grid': [Block('title'), Block('description', '~'), Properties()],
 		'mob': [Block('long'), Block('description', '~'), Properties(), Attributes(), Abilities()],
 		'container': [Block('name'), Block('description', '~'), Properties()],
 		'drink': [Block('name'), Block('description', '~'), Properties()],
@@ -133,7 +137,7 @@ class Parser:
 							chunk.process(self, instance)
 					except ParserException:
 						pass
-					if isinstance(instance, Room) or isinstance(instance, Randomhall):
+					if issubclass(instance.__class__, Room):
 						lastRoom = instance
 						lastRoom.area = lastArea
 						lastInventory = instance.inventory
@@ -169,9 +173,12 @@ class Parser:
 	
 	def initializeRooms(self):
 		randomHalls = []
+		grids = []
 		for r, room in Room.rooms.iteritems():
 			if isinstance(room, Randomhall):
 				randomHalls.append(room)
+			if isinstance(room, Grid):
+				grids.append(room)
 			for d, direction in Room.rooms[r].directions.items():
 				if direction:
 					try:
@@ -185,5 +192,13 @@ class Parser:
 			roomCount = room.buildDungeon()
 			while roomCount < room.rooms:
 				roomCount = room.buildDungeon(roomCount)
+		for room in grids:
+			rows = room.counts['west'] + room.counts['east']
+			rows = rows if rows > 0 else 1
+			cols = room.counts['north'] + room.counts['south']
+			cols = cols if cols > 0 else 1
+			grid = [[0 for row in range(rows)] for col in range(cols)]
+			grid[room.counts['north']-1][room.counts['west']-1] = room
+			room.buildDungeon(0, 0, grid)
 
 class ParserException(Exception): pass
