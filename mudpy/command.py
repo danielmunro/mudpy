@@ -6,9 +6,7 @@ class Command(object):
 	requiresStandingDisposition = False
 	def tryPerform(self, actor, args = []):
 		if self.requiresStandingDisposition and actor.disposition != Disposition.STANDING:
-			msg = "You are incapacitated and cannot do that." if actor.disposition == Disposition.INCAPACITATED else "You need to be standing to do that."
-			actor.notify(msg)
-			return
+			actor.notify("You are incapacitated and cannot do that." if actor.disposition == Disposition.INCAPACITATED else "You need to be standing to do that.")
 		else:
 			self.perform(actor, args)
 
@@ -22,7 +20,7 @@ class Command(object):
 class Practice(Command):
 	name = "practice"
 	def perform(self, actor, args = []):
-		if len(args) <= 1:
+		if len(args) == 0:
 			actor.notify("Your proficiencies:\n"+"\n".join(proficiency+": "+str(actor.getProficiencyIn(proficiency)) for proficiency in actor.proficiencies))
 		else:
 			from actor import Mob
@@ -31,7 +29,7 @@ class Practice(Command):
 				return;
 			proficiency = ""
 			for p in actor.proficiencies:
-				if p.find(args[1]) == 0:
+				if p.find(args[0]) == 0:
 					proficiency = p
 			if proficiency:
 				actor.proficiencies[proficiency] += 1
@@ -51,7 +49,7 @@ class Train(Command):
 			actor.notify("There are no trainers here.")
 			return
 		from attributes import Attributes
-		if len(args) == 1:
+		if len(args) == 0:
 			message = ""
 			for stat in Attributes.stats:
 				attr = actor.getAttribute(stat)
@@ -60,7 +58,7 @@ class Train(Command):
 					message += stat+" "
 			actor.notify("You can train: "+message)
 			return
-		stat = args[1]
+		stat = args[0]
 		if stat in Attributes.stats:
 			attr = actor.getAttribute(stat)
 			mattr = actor.getMaxAttribute(stat)
@@ -76,7 +74,7 @@ class Train(Command):
 class Wear(Command):
 	name = "wear"
 	def perform(self, actor, args = []):
-		equipment = matchPartial(args[1], actor.inventory.items)
+		equipment = matchPartial(args[0], actor.inventory.items)
 		if equipment:
 			currentEq = actor.getEquipmentByPosition(equipment.position)
 			if currentEq:
@@ -93,7 +91,7 @@ class Wear(Command):
 class Remove(Command):
 	name = "remove"
 	def perform(self, actor, args = []):
-		equipment = matchPartial(args[1], list(equipment for equipment in actor.equipped.values() if equipment))
+		equipment = matchPartial(args[0], list(equipment for equipment in actor.equipped.values() if equipment))
 		if equipment:
 			actor.setEquipmentByPosition(equipment.position, None)
 			actor.notify("You remove "+str(equipment)+" and place it in your inventory.")
@@ -141,7 +139,7 @@ class Kill(Command):
 	name = "kill"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
-		target = matchPartial(args[1], actor.room.actors)
+		target = matchPartial(args[0], actor.room.actors)
 		if target:
 			actor.target = target
 			from heartbeat import Heartbeat
@@ -167,7 +165,7 @@ class Get(Command):
 	name = "get"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
-		item = matchPartial(args[1], actor.room.inventory.items)
+		item = matchPartial(args[0], actor.room.inventory.items)
 		if item and item.canOwn:
 			actor.room.inventory.remove(item)
 			actor.inventory.append(item)
@@ -179,7 +177,7 @@ class Drop(Command):
 	name = "drop"
 	requiresStandingDisposition = True
 	def perform(self, actor, args = []):
-		item = matchPartial(args[1], actor.inventory.items)
+		item = matchPartial(args[0], actor.inventory.items)
 		if item:
 			actor.inventory.remove(item)
 			actor.room.inventory.append(item)
@@ -212,8 +210,7 @@ class Score(Command):
 class Look(Command):
 	name = "look"
 	def perform(self, actor, args = []):
-		l = len(args)
-		if l <= 1:
+		if len(args) == 0:
 			# room and exits
 			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.title, actor.room.description, "".join(direction[:1] for direction, room in actor.room.directions.iteritems() if room))
 			# items
@@ -221,7 +218,7 @@ class Look(Command):
 			# actors
 			msg += "\n".join(_actor.long.capitalize() for _actor in actor.room.actors if _actor is not actor)+"\n"
 		else:
-			lookingAt = matchPartial(args[1:][0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
+			lookingAt = matchPartial(args[0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
 			msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
 		actor.notify(msg)
 
