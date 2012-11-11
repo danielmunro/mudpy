@@ -30,6 +30,7 @@ class Attributes(object):
 
 class ActorAttributes(Attributes):
 	def __init__(self):
+		self.id = Save.getRandomID()
 		self.maxhp = 0
 		self.maxmana = 0
 		self.maxmovement = 0

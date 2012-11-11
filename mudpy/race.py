@@ -1,4 +1,5 @@
 from attributes import Attributes
+from save import Save
 
 class Race(object):
 	SIZE_TINY = 1
@@ -14,6 +15,7 @@ class Race(object):
 	damType = 'bash'
 
 	def __init__(self):
+		self.id = Save.getRandomID()
 		self.attributes = Attributes()
 		self.abilities = []
 		self.affects = []
@@ -24,6 +26,9 @@ class Race(object):
 
 	def __str__(self):
 		return self.name
+
+	def save(self):
+		Save(self, ['name']).execute()
 
 class Human(Race):
 	name = "human"

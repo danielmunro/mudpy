@@ -109,7 +109,7 @@ class Actor(object):
 				return 0
 	
 	def save(self):
-		Save(self, ['id', 'name', 'level', 'experience', 'attributes', 'sex', 'room', 'abilities', 'inventory']).execute()
+		Save(self, ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'affects', 'sex', 'room', 'abilities', 'inventory', 'race', 'trains', 'practices', 'disposition', 'proficiencies']).execute()
 	
 	def getAbilities(self):
 		return self.abilities + self.race.abilities
