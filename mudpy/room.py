@@ -1,12 +1,11 @@
 from item import Inventory
 from random import random, choice
-from save import Save
 
 class Room(object):
 	rooms = {}
 
 	def __init__(self):
-		self.id = Save.getRandomID()
+		self.id = 0
 		self.title = ''
 		self.description = ''
 		self.actors = []
@@ -41,8 +40,8 @@ class Room(object):
 		newRoom.area = self.area
 		return newRoom
 
-	def save(self):
-		Save(self, []).execute()
+	def getFullID(self):
+		return self.area.name+":"+str(self.id)
 
 class Randomhall(Room):
 	def __init__(self):
