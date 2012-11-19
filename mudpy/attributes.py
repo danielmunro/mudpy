@@ -4,6 +4,7 @@ class Attributes(object):
 	stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
 
 	def __init__(self):
+		self.id = Save.getRandomID()
 		self.hp = 0
 		self.mana = 0
 		self.movement = 0
@@ -30,7 +31,6 @@ class Attributes(object):
 
 class ActorAttributes(Attributes):
 	def __init__(self):
-		self.id = Save.getRandomID()
 		self.maxhp = 0
 		self.maxmana = 0
 		self.maxmovement = 0
