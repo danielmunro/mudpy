@@ -13,7 +13,7 @@ class Client(Protocol):
 		self.write("By what name do you wish to be known? ");
 		self.factory.clients.append(self)
 		self.user = None
-		self.loginSteps = deque(["name", "race", "alignment"])
+		self.loginSteps = deque(["login", "name", "race", "alignment"])
 	
 	def connectionLost(self, reason):
 		self.write("Good bye!")
@@ -42,6 +42,16 @@ class Client(Protocol):
 	
 	def login(self, data):
 		next = self.loginSteps.popleft()
+		if next == "login":
+			from save import Save
+			self.user = Save.loadUser(data)
+			#self.user = None
+			if self.user:
+				self.user.client = self
+				Factory.new(Command = "look").tryPerform(self.user)
+				self.loginSteps = deque([])
+			else:
+				next = self.loginSteps.popleft()
 		if next == "name":
 			self.newUser = User()
 			self.newUser.client = self
@@ -87,9 +97,8 @@ class Client(Protocol):
 			i.attributes.hp = 1
 			i.weight = 1
 			self.user.inventory.append(i)
-			"""
-			self.user.save()
-			"""
+			from save import Save
+			Save.saveUser(self.user)
 
 class ClientFactory(tFactory):
 	protocol = Client

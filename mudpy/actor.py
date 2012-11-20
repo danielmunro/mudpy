@@ -108,9 +108,6 @@ class Actor(object):
 			except:
 				return 0
 	
-	def save(self):
-		Save(self, ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'affects', 'sex', 'room', 'abilities', 'inventory', 'race', 'trains', 'practices', 'disposition', 'proficiencies']).execute()
-	
 	def getAbilities(self):
 		return self.abilities + self.race.abilities
 
@@ -285,11 +282,14 @@ class Mob(Actor):
 		super(Mob, self).move(validDirections if validDirections else list(direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area))
 	
 class User(Actor):
+	persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'race', 'trains', 'practices', 'disposition', 'proficiencies']
+
 	def __init__(self):
 		super(User, self).__init__()
 		Heartbeat.instance.attach('stat', self)
 		self.trains = 5
 		self.practices = 5
+		self.client = None
 
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
