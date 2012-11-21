@@ -52,7 +52,8 @@ class Save:
 		from db import Db
 		db = Db()
 		db.conn.hset('Users', user.name, user.id)
-		db.conn.hset('Users', user.id+':room', user.room.getFullID())
+		db.conn.hset('UserRooms', user.id, user.room.getFullID())
+		db.conn.hset('UserRaces', user.id, user.race.name)
 	
 	@staticmethod
 	def loadUser(name):
@@ -65,14 +66,30 @@ class Save:
 			from factory import Factory
 			from room import Room
 			user = User()
+
+			# properties of user
 			properties = db.hgetall(userid)
 			for property, value in properties.iteritems():
 				setattr(user, property, value)
-			raceid = db.hget('User:race', userid)
-			racename = db.hget(raceid, 'name')
+
+			# race
+			racename = db.hget('UserRaces', userid)
 			user.race = Factory.new(Race = racename)
-			roomid = db.hget('Users', userid+':room')
+
+			# room
+			roomid = db.hget('UserRooms', userid)
 			user.room = Room.rooms[roomid]
+
+			# attributes
+			attributesid = db.hget('User:attributes', userid)
+			attributes = db.hgetall('ActorAttributes', attributesid);
+			for attribute, value in attributes.iteritems():
+				setattr(user.attributes, attribute, value)
+			attributesid = db.hget('User:trainedAttributes', userid)
+			attributes = db.hgetall('Attributes', attributesid);
+			for attribute, value in attributes.iteritems():
+				setattr(user.trainedAttributes, attribute, value)
+
 		return user
 
 	@staticmethod

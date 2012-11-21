@@ -282,7 +282,7 @@ class Mob(Actor):
 		super(Mob, self).move(validDirections if validDirections else list(direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area))
 	
 class User(Actor):
-	persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'race', 'trains', 'practices', 'disposition', 'proficiencies']
+	persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'trains', 'practices', 'disposition', 'proficiencies']
 
 	def __init__(self):
 		super(User, self).__init__()
