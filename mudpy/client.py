@@ -30,6 +30,7 @@ class Client(Protocol):
 			args = data.split(" ")
 			action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.__subclasses__())
 			if action:
+				args.pop(0)
 				action().tryPerform(self.user, args)
 			else:
 				self.user.notify("What was that?")
