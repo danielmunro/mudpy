@@ -26,9 +26,9 @@ class Save:
 				v.save()
 				db.hset(self.entity+":"+p, self.saved.id, v.id)
 			else:
-				method = 'execute'+type(v).__name__;
+				method = 'execute'+type(v).__name__
 				try:
-					getattr(self, method)(db, p, v);
+					getattr(self, method)(db, p, v)
 				except AttributeError:
 					print "Cannot save property "+str(p)+" of "+self.entity
 	

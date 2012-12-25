@@ -1,7 +1,6 @@
 from __future__ import division
 from attributes import Attributes, ActorAttributes
 from item import Inventory
-from save import Save
 from random import choice
 from room import Direction
 from heartbeat import Heartbeat
@@ -11,6 +10,7 @@ class Actor(object):
 	STARTING_STAT = 15
 
 	def __init__(self):
+		from save import Save
 		self.id = Save.getRandomID()
 		self.name = "an actor"
 		self.long = "An actor is here"

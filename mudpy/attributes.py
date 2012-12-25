@@ -2,6 +2,7 @@ from save import Save
 
 class Attributes(object):
 	stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
+	persistibleProperties = ['id', 'hp', 'mana', 'movement', 'saves', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']
 
 	def __init__(self):
 		self.id = Save.getRandomID()
@@ -27,7 +28,11 @@ class Attributes(object):
 		self.cha = 0
 	
 	def save(self):
-		Save(self, ['id', 'hp', 'mana', 'movement', 'saves', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']).execute()
+		Save(self, self.persistibleProperties).execute()
+	
+	def load(self):
+		from load import Load
+		Load(self, self.persistibleProperties).execute()
 
 class ActorAttributes(Attributes):
 	def __init__(self):
