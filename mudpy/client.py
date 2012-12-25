@@ -44,8 +44,8 @@ class Client(Protocol):
 	def login(self, data):
 		next = self.loginSteps.popleft()
 		if next == "login":
-			from save import Save
-			self.user = Save.loadUser(data)
+			from load import Load
+			self.user = Load.loadUser(data)
 			#self.user = None
 			if self.user:
 				self.user.client = self

@@ -34,6 +34,10 @@ class Inventory:
 	
 	def save(self):
 		Save(self, ['id', 'items']).execute()
+	
+	def load(self):
+		from load import Load
+		Load(self, ['id', 'items']).execute()
 
 class Item(object):
 	def __init__(self):
@@ -51,7 +55,11 @@ class Item(object):
 		return self.name
 	
 	def save(self):
-		Save(self, ['id', 'name', 'value', 'weight'])
+		Save(self, ['id', 'name', 'value', 'weight']).execute()
+	
+	def load(self):
+		from load import Load
+		Load(self, ['id', 'name', 'value', 'weight']).execute()
 
 class Door(Item):
 	def __init__(self):
