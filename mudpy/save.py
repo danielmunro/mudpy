@@ -40,7 +40,11 @@ class Save:
 	
 	def executelist(self, db, prop, val):
 		for i, k in enumerate(val):
-			db.hset(self.saved.id+':list:'+prop, i, str(k))
+			if 'save' in dir(k):
+				k.save()
+				db.hset(self.entity+":"+prop, self.saved.id, k.id)
+			else:
+				db.hset(self.saved.id+':list:'+prop, i, str(k))
 	
 	def executedict(self, db, prop, val):
 		for i, k in val.iteritems():
@@ -89,6 +93,11 @@ class Save:
 			attributes = db.hgetall('Attributes', attributesid);
 			for attribute, value in attributes.iteritems():
 				setattr(user.trainedAttributes, attribute, value)
+
+			inventoryid = db.hget('User:inventory', userid)
+			attributes = db.hgetall('Inventory', inventoryid);
+			for attribute, value in attributes.iteritems():
+				setattr(user.inventory, attribute, value)
 
 		return user
 
