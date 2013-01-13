@@ -21,8 +21,7 @@ class Heartbeat:
 		while(1):
 			time.sleep(Heartbeat.PULSE_SECONDS)
 			i += Heartbeat.PULSE_SECONDS
-			self.dispatch('pulse')
-			self.dispatch('stat')
+			self.dispatch('pulse', 'stat')
 			if i > next_tick:
 				next_tick = self.getTickLength()
 				self.dispatch('tick')
@@ -38,8 +37,9 @@ class Heartbeat:
 		except ValueError:
 			pass
 
-	def dispatch(self, event):
-		map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))
+	def dispatch(self, *events):
+		for event in events:
+			map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))
 
 	def getTickLength(self):
 		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);

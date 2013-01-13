@@ -39,10 +39,12 @@ class Save:
 		db.hset(self.saved.id, prop, val)
 	
 	def executelist(self, db, prop, val):
-		for key, value in enumerate(val):
-			value.save()
-			db.sadd(self.saved.id+":list:"+prop, value.id)
-			db.set(value.id+":type", type(value).__name__);
+		for i, k in enumerate(val):
+			if 'save' in dir(k):
+				k.save()
+				db.hset(self.entity+":"+prop, self.saved.id, k.id)
+			else:
+				db.hset(self.saved.id+':list:'+prop, i, str(k))
 	
 	def executedict(self, db, prop, val):
 		for i, k in val.iteritems():
@@ -56,6 +58,48 @@ class Save:
 		db.conn.hset('Users', user.name, user.id)
 		db.conn.hset('UserRooms', user.id, user.room.getFullID())
 		db.conn.hset('UserRaces', user.id, user.race.name)
+	
+	@staticmethod
+	def loadUser(name):
+		db = Db().conn
+		userid = db.hget('Users', name)
+		user = None
+		if userid:
+			from actor import User
+			from client import ClientFactory
+			from factory import Factory
+			from room import Room
+			user = User()
+
+			# properties of user
+			properties = db.hgetall(userid)
+			for property, value in properties.iteritems():
+				setattr(user, property, value)
+
+			# race
+			racename = db.hget('UserRaces', userid)
+			user.race = Factory.new(Race = racename)
+
+			# room
+			roomid = db.hget('UserRooms', userid)
+			user.room = Room.rooms[roomid]
+
+			# attributes
+			attributesid = db.hget('User:attributes', userid)
+			attributes = db.hgetall('ActorAttributes', attributesid);
+			for attribute, value in attributes.iteritems():
+				setattr(user.attributes, attribute, value)
+			attributesid = db.hget('User:trainedAttributes', userid)
+			attributes = db.hgetall('Attributes', attributesid);
+			for attribute, value in attributes.iteritems():
+				setattr(user.trainedAttributes, attribute, value)
+
+			inventoryid = db.hget('User:inventory', userid)
+			attributes = db.hgetall('Inventory', inventoryid);
+			for attribute, value in attributes.iteritems():
+				setattr(user.inventory, attribute, value)
+
+		return user
 
 	@staticmethod
 	def getRandomID():
