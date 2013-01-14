@@ -3,6 +3,8 @@ class Observer(object):
 	EVENT_TYPES = []
 
 	def __init__(self):
+		if len(self.EVENT_TYPES) == 0:
+			raise ObserverException("observer must define at least one event type in EVENT_TYPES")
 		self.observers = dict((event, []) for event in self.EVENT_TYPES)
 
 	def attach(self, event, observer):
@@ -16,5 +18,6 @@ class Observer(object):
 			pass
 
 	def dispatch(self, *events):
-		print "no dispatch() defined in observer"
-		raise
+		raise ObserverException("no dispatch() defined in observer")
+
+class ObserverException(Exception): pass
