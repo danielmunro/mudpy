@@ -1,6 +1,7 @@
 import random, time
+from observer import Observer
 
-class Heartbeat:
+class Heartbeat(Observer):
 	instance = None
 
 	TICK_LOWBOUND_SECONDS = 10
@@ -11,9 +12,9 @@ class Heartbeat:
 	EVENT_TYPES = ['tick', 'pulse', 'stat']
 
 	def __init__(self, reactor):
-		self.observers = dict((event, []) for event in Heartbeat.EVENT_TYPES)
 		self.reactor = reactor
 		Heartbeat.instance = self
+		super(Heartbeat, self).__init__()
 	
 	def start(self):
 		i = 0
@@ -27,19 +28,9 @@ class Heartbeat:
 				self.dispatch('tick')
 				i = 0
 	
-	def attach(self, event, observer):
-		if not observer in self.observers[event]:
-			self.observers[event].append(observer)
-	
-	def detach(self, event, observer):
-		try:
-			self.observers[event].remove(observer)
-		except ValueError:
-			pass
+	def getTickLength(self):
+		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);
 
 	def dispatch(self, *events):
 		for event in events:
 			map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))
-
-	def getTickLength(self):
-		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);
