@@ -4,12 +4,16 @@ from item import Inventory
 from random import choice
 from room import Direction
 from heartbeat import Heartbeat
+from observer import Observer
+from proficiency import Proficiency
 
-class Actor(object):
+class Actor(Observer):
 	MAX_STAT = 25
 	STARTING_STAT = 15
+	EVENT_TYPES = ['attackresolution', 'attacked', 'attack', 'move', 'sell', 'brew', 'cast']
 
 	def __init__(self):
+		super(Actor, self).__init__()
 		from save import Save
 		self.id = Save.getRandomID()
 		self.name = "an actor"
@@ -29,22 +33,11 @@ class Actor(object):
 		self.trains = 0
 		self.practices = 0
 		self.disposition = Disposition.STANDING
-		self.proficiencies = dict((proficiency, 15) for proficiency  in ['melee', 'hand to hand', 'curative', 'healing', 'light armor', 'heavy armor', 'slashing', 'piercing', 'bashing', 'staves', 'sneaking', 'evasive', 'maladictions', 'benedictions', 'sorcery', 'haggling', 'alchemy', 'elemental'])
+		self.proficiencies = dict((proficiency.name, proficiency(self)) for proficiency in Proficiency.__subclasses__());
+		
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 		self.attacks = ['reg']
-
 		Heartbeat.instance.attach('tick', self)
-	
-	def getProficiencyIn(self, proficiency):
-		try:
-			racialProf = self.race.proficiencies[proficiency]
-		except KeyError:
-			racialProf = 0
-
-		try:
-			return self.proficiencies[proficiency] + racialProf
-		except KeyError:
-			return 0 + racialProf
 	
 	def getEquipmentByPosition(self, position):
 		for _position in self.equipped:
@@ -240,6 +233,15 @@ class Actor(object):
 		a.maxmovement = 100
 		return a
 
+	def dispatch(self, *eventlist, **events):
+		for event in eventlist:
+			for observer in self.observers[event]:
+				getattr(observer, event)()
+
+		for event, args in events.iteritems():
+			for observer in self.observers[event]:
+				getattr(observer, event)(args)
+
 class Mob(Actor):
 	ROLE_TRAINER = 'trainer'
 	ROLE_ACOLYTE = 'acolyte'
@@ -290,7 +292,7 @@ class User(Actor):
 		self.trains = 5
 		self.practices = 5
 		self.client = None
-
+	
 	def prompt(self):
 		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
 	
@@ -343,9 +345,13 @@ class Disposition:
 	SLEEPING = 'sleeping'
 	INCAPACITATED = 'incapacitated'
 
+from random import uniform
 class Attack:
+	aggressor = None
+	success = False
+
 	def __init__(self, aggressor, attackname):
-		from random import uniform
+		self.aggressor = aggressor
 
 		# initial rolls for attack/defense
 		hit_roll = aggressor.getAttribute('hit') + self.getAttributeModifier(aggressor, 'dex')
@@ -367,8 +373,8 @@ class Attack:
 
 		# roll the dice and determine if the attack was successful
 		roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
-		print roll
-		if roll > 0:
+		self.success = roll > 0
+		if self.success:
 			isHit = "hits"
 			dam_roll = aggressor.getAttribute('dam') + self.getAttributeModifier(aggressor, 'str')
 			dam_roll = uniform(dam_roll/2, dam_roll)
@@ -389,6 +395,8 @@ class Attack:
 		#need to do this check again here, can't have the actor dead before the hit message
 		if roll > 0: 
 			aggressor.target.trySetAttribute('hp', aggressor.target.getAttribute('hp') - dam_roll)
+
+		aggressor.dispatch(attackresolution=self)
 	
 	def getAttributeModifier(self, actor, attributeName):
 		return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4

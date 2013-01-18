@@ -27,10 +27,14 @@ class Heartbeat(Observer):
 				next_tick = self.getTickLength()
 				self.dispatch('tick')
 				i = 0
+
+	def dispatch(self, *eventlist, **events):
+		for event in eventlist:
+			map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))
+
+		for event, args in events.iteritems():
+			for fn in list(getattr(observer, event) for observer in self.observers[event]):
+				self.reactor.callFromThread(fn, args)
 	
 	def getTickLength(self):
 		return random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS);
-
-	def dispatch(self, *events):
-		for event in events:
-			map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))

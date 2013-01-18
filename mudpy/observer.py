@@ -8,16 +8,21 @@ class Observer(object):
 		self.observers = dict((event, []) for event in self.EVENT_TYPES)
 
 	def attach(self, event, observer):
-		if not observer in self.observers[event]:
-			self.observers[event].append(observer)
+		try:
+			if not observer in self.observers[event]:
+				self.observers[event].append(observer)
+		except KeyError:
+			# observer doesn't support this type of event... technically bug
+			pass
 	
 	def detach(self, event, observer):
 		try:
 			self.observers[event].remove(observer)
 		except ValueError:
+			# observer is not actually an observer
 			pass
-
-	def dispatch(self, *events):
-		raise ObserverException("no dispatch() defined in observer")
+	
+	def dispatch(self):
+		raise("dispatch() not defined in observer")
 
 class ObserverException(Exception): pass

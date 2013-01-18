@@ -21,7 +21,7 @@ class Practice(Command):
 	name = "practice"
 	def perform(self, actor, args = []):
 		if len(args) == 0:
-			actor.notify("Your proficiencies:\n"+"\n".join(proficiency+": "+str(actor.getProficiencyIn(proficiency)) for proficiency in actor.proficiencies))
+			actor.notify("Your proficiencies:\n"+"\n".join(name+": "+str(proficiency.getLevel()) for name, proficiency in actor.proficiencies.iteritems()))
 		else:
 			from actor import Mob
 			if not any(mob.role == Mob.ROLE_ACOLYTE for mob in actor.room.mobs()):
