@@ -47,7 +47,7 @@ class Load:
 
 			# race
 			racename = db.hget('UserRaces', userid)
-			user.race = Factory.new(Race = racename)
+			user.race = Factory.new(Race = racename, newWith = user)
 
 			# room
 			roomid = db.hget('UserRooms', userid)

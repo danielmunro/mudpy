@@ -21,18 +21,18 @@ class Practice(Command):
 	name = "practice"
 	def perform(self, actor, args = []):
 		if len(args) == 0:
-			actor.notify("Your proficiencies:\n"+"\n".join(name+": "+str(proficiency.getLevel()) for name, proficiency in actor.proficiencies.iteritems()))
+			actor.notify("Your proficiencies:\n"+"\n".join(name+": "+str(proficiency.getLevel()) for name, proficiency in actor.getProficiencies().iteritems()))
 		else:
 			from actor import Mob
 			if not any(mob.role == Mob.ROLE_ACOLYTE for mob in actor.room.mobs()):
 				actor.notify("No one is here to help you practice.")
 				return;
 			proficiency = ""
-			for p in actor.proficiencies:
+			for p in actor.getProficiencies():
 				if p.find(args[0]) == 0:
 					proficiency = p
 			if proficiency:
-				actor.proficiencies[proficiency] += 1
+				actor.getProficiency(proficiency).level += 1
 				actor.notify("You get better at "+proficiency+"!")
 			else:
 				actor.notify("You cannot practice that.")

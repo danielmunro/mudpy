@@ -30,7 +30,7 @@ class Properties(Assignable):
 		if hasattr(instance, instanceProperty):
 			#hack
 			if instanceProperty == "race":
-				instance.race = Factory.new(Race = value)
+				instance.race = Factory.new(Race = value, newWith = instance)
 			else:
 				if value == "true":
 					value = True

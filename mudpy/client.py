@@ -61,7 +61,7 @@ class Client(Protocol):
 			return
 		elif next == "race":
 			try:
-				self.newUser.race = Factory.new(Race = data)
+				self.newUser.race = Factory.new(Race = data, newWith = self.newUser)
 			except NameError:
 				self.write("That is not a valid race. What is your race? ")
 				self.loginSteps.appendleft(next)

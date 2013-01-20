@@ -10,14 +10,20 @@ class Race(object):
 	size = SIZE_NORMAL
 	movementCost = 1
 	isPlayable = False
-	proficiencies = []
+	proficiencies = {}
+	startingProficiencies = {}
 	damType = 'bash'
 
-	def __init__(self):
+	def __init__(self, actor):
 		self.attributes = Attributes()
 		self.abilities = []
 		self.affects = []
 		self.setup();
+		from factory import Factory
+		for proficiency in self.startingProficiencies:
+			level = self.startingProficiencies[proficiency]
+			self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency, newWith = actor)
+			self.proficiencies[proficiency].level = level
 	
 	def setup(self):
 		pass
@@ -33,7 +39,7 @@ class Faerie(Race):
 	name = "faerie"
 	isPlayable = True
 	size = Race.SIZE_TINY
-	proficiencies = {'evasive': 5, 'maladictions': 10, 'sorcery': 10}
+	startingProficiencies = {'dodge': 5, 'maladictions': 10, 'sorcery': 10}
 
 	def setup(self):
 		from factory import Factory
@@ -51,7 +57,7 @@ class Giant(Race):
 	name = "giant"
 	isPlayable = True
 	size = Race.SIZE_GIGANTIC
-	proficiencies = {'bashing': 5, 'alchemy': 5, 'melee': 5, 'elemental': 5}
+	startingProficiencies = {'bash': 5, 'alchemy': 5, 'melee': 5, 'elemental': 5}
 
 	def setup(self):
 		from factory import Factory
@@ -69,7 +75,7 @@ class Ogre(Race):
 	name = "ogre"
 	isPlayable = True
 	size = Race.SIZE_LARGE
-	proficiencies = {'melee': 10, 'bashing': 10, 'heavy armor': 5}
+	startingProficiencies = {'melee': 10, 'bash': 10, 'heavy armor': 5}
 
 	def setup(self):
 		from factory import Factory
@@ -86,7 +92,7 @@ class Ogre(Race):
 class Volare(Race):
 	name = "volare"
 	isPlayable = True
-	proficiencies = {'curative': 10, 'healing': 10}
+	startingProficiencies = {'curative': 10, 'healing': 10}
 
 	def setup(self):
 
@@ -101,7 +107,7 @@ class Gnome(Race):
 	name = "gnome"
 	isPlayable = True
 	size = Race.SIZE_SMALL
-	proficiencies = {'evasive': 5, 'sneaking': 10, 'maladictions': 5, 'sorcery': 5}
+	startingProficiencies = {'dodge': 5, 'sneak': 10, 'maladictions': 5, 'sorcery': 5}
 
 	def setup(self):
 		from factory import Factory
@@ -117,7 +123,7 @@ class Gnome(Race):
 class Elf(Race):
 	name = "elf"
 	isPlayable = True
-	proficiencies = {'light armor': 5, 'piercing': 5, 'sorcery': 5, 'sneaking': 5, 'evasive': 5}
+	startingProficiencies = {'light armor': 5, 'pierce': 5, 'sorcery': 5, 'sneak': 5, 'dodge': 5}
 	size = Race.SIZE_SMALL
 
 	def setup(self):
@@ -134,7 +140,7 @@ class Elf(Race):
 class Kobold(Race):
 	name = "kobold"
 	isPlayable = False
-	proficiencies = {'light armor': 5, 'piercing': 5, 'sorcery': 5, 'sneaking': 5, 'evasive': 5}
+	startingProficiencies = {'light armor': 5, 'pierce': 5, 'sorcery': 5, 'sneak': 5, 'dodge': 5}
 	size = Race.SIZE_SMALL
 
 	def setup(self):
@@ -151,7 +157,7 @@ class Kobold(Race):
 class Dwarf(Race):
 	name = "dwarf"
 	inPlayable = True
-	proficiencies = {'melee': 10, 'slashing': 5, 'heavy armor': 5}
+	startingProficiencies = {'melee': 10, 'slash': 5, 'heavy armor': 5}
 	size = Race.SIZE_SMALL
 
 	def setup(self):

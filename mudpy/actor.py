@@ -5,7 +5,6 @@ from random import choice
 from room import Direction
 from heartbeat import Heartbeat
 from observer import Observer
-from proficiency import Proficiency
 
 class Actor(Observer):
 	MAX_STAT = 25
@@ -33,11 +32,21 @@ class Actor(Observer):
 		self.trains = 0
 		self.practices = 0
 		self.disposition = Disposition.STANDING
-		self.proficiencies = dict((proficiency.name, proficiency(self)) for proficiency in Proficiency.__subclasses__());
+		self.proficiencies = dict()
 		
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 		self.attacks = ['reg']
 		Heartbeat.instance.attach('tick', self)
+	
+	def getProficiencies(self):
+		d = dict(self.proficiencies)
+		d.update(self.race.proficiencies)
+		return d
+
+	def getProficiency(self, proficiency):
+		for p in self.getProficiencies():
+			if(p.name == proficiency):
+				return p
 	
 	def getEquipmentByPosition(self, position):
 		for _position in self.equipped:

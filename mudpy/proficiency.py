@@ -1,17 +1,17 @@
 class Proficiency(object):
 	name = ""
-	improvementhook = ""
+	actionhook = ""
 	improvementthreshold = 0.95
 	level = 15
 	observer = None
 
 	def __init__(self, observer):
 		self.observer = observer
-		observer.attach(self.improvementhook, self)
+		observer.attach(self.actionhook, self)
 	
 	def getLevel(self):
 		try:
-			return self.level + self.observer.race.proficiencies[self.name]
+			return self.level + self.observer.race.proficiencies[self.name].level
 		except KeyError:
 			return self.level
 	
@@ -36,7 +36,7 @@ class Proficiency(object):
 
 class Melee(Proficiency):
 	name = "melee"
-	improvementhook = "attackresolution"
+	actionhook = "attackresolution"
 
 	def attackresolution(self, attack):
 		if attack.success and self.checkimprove(attack.aggressor):
@@ -44,7 +44,7 @@ class Melee(Proficiency):
 
 class HandToHand(Proficiency):
 	name = "hand to hand"
-	improvementhook = "attackresolution"
+	actionhook = "attackresolution"
 
 	def attackresolution(self, attack):
 		if self.checkimprove(attack.aggressor, self.improvementthreshold - 0.03 if attack.success else self.improvementthreshold + 0.03):
@@ -52,112 +52,112 @@ class HandToHand(Proficiency):
 
 class LightArmor(Proficiency):
 	name = "light armor"
-	improvementhook = "attacked"
+	actionhook = "attacked"
 
 	def attacked(self, attack):
 		pass
 
 class HeavyArmor(Proficiency):
 	name = "heavy armor"
-	improvementhook = "attacked"
+	actionhook = "attacked"
 
 	def attacked(self, attack):
 		pass
 
 class Parry(Proficiency):
 	name = "parry"
-	improvementhook = "attacked"
+	actionhook = "attacked"
 
 	def attacked(self, attack):
 		pass
 
 class Dodge(Proficiency):
 	name = "dodge"
-	improvementhook = "attacked"
+	actionhook = "attacked"
 
 	def attacked(self, attack):
 		pass
 
 class Slash(Proficiency):
 	name = "slash"
-	improvementhook = "attack"
+	actionhook = "attack"
 
 	def attack(self, attack):
 		pass
 
 class Pierce(Proficiency):
 	name = "pierce"
-	improvementhook = "attack"
+	actionhook = "attack"
 
 	def attack(self, attack):
 		pass
 
 class Bash(Proficiency):
 	name = "bash"
-	improvementhook = "attack"
+	actionhook = "attack"
 
 	def attack(self, attack):
 		pass
 
 class Sneak(Proficiency):
 	name = "sneak"
-	improvementhook = "move"
+	actionhook = "move"
 
 	def move(self, attack):
 		pass
 
 class Haggle(Proficiency):
 	name = "haggle"
-	improvementhook = "sell"
+	actionhook = "sell"
 
 	def sell(self, sale):
 		pass
 
 class Alchemy(Proficiency):
 	name = "alchemy"
-	improvementhook = "brew"
+	actionhook = "brew"
 
 	def brew(self, brew):
 		pass
 
 class Curative(Proficiency):
 	name = "curative"
-	improvementhook = "cast"
+	actionhook = "cast"
 
 	def cast(self, casting):
 		pass
 
 class Healing(Proficiency):
 	name = "healing"
-	improvementhook = "cast"
+	actionhook = "cast"
 
 	def cast(self, casting):
 		pass
 
 class Maladictions(Proficiency):
 	name = "maladictions"
-	improvementhook = "cast"
+	actionhook = "cast"
 
 	def cast(self, casting):
 		pass
 
 class Benedictions(Proficiency):
 	name = "benedictions"
-	improvementhook = "cast"
+	actionhook = "cast"
 
 	def cast(self, casting):
 		pass
 
 class Sorcery(Proficiency):
 	name = "sorcery"
-	improvementhook = "cast"
+	actionhook = "cast"
 
 	def cast(self, casting):
 		pass
 
 class Elemental(Proficiency):
 	name = "elemental"
-	improvementhook = "cast"
+	actionhook = "cast"
 
 	def cast(self, casting):
 		pass
