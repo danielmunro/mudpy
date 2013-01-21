@@ -10,11 +10,11 @@ class Race(object):
 	size = SIZE_NORMAL
 	movementCost = 1
 	isPlayable = False
-	proficiencies = {}
 	startingProficiencies = {}
 	damType = 'bash'
 
 	def __init__(self, actor):
+		self.proficiencies = {}
 		self.attributes = Attributes()
 		self.abilities = []
 		self.affects = []
