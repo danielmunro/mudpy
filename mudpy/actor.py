@@ -1,8 +1,6 @@
 from __future__ import division
-from attributes import Attributes, ActorAttributes
-from item import Inventory
 from random import choice
-from room import Direction
+from attributes import Attributes, ActorAttributes
 from heartbeat import Heartbeat
 from observer import Observer
 
@@ -14,6 +12,7 @@ class Actor(Observer):
 	def __init__(self):
 		super(Actor, self).__init__()
 		from save import Save
+		from item import Inventory
 		self.id = Save.getRandomID()
 		self.name = "an actor"
 		self.long = "An actor is here"
@@ -155,6 +154,7 @@ class Actor(Observer):
 	
 	def move(self, validDirections = []):
 		from factory import Factory
+		from room import Direction
 		from random import choice
 		Factory.new(MoveDirection = choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
