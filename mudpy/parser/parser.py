@@ -6,12 +6,11 @@ class Parser(object):
 
 	def __init__(self, baseDir, fn):
 		self.definitions = {}
-		self.f = None
+		self.fp = None
+		self.parseFile(path+'/definitions.mud', 'parseDefinitions')
 		self.parseDir("scripts/"+baseDir, fn)
 	
 	def parseDir(self, path, fn):
-		if len(self.definitions) == 0:
-			self.parseFile(path+'/definitions.mud', 'parseDefinitions')
 		for infile in os.listdir(path):
 			parts = infile.split(".")
 			if not parts[0] in self.ignore:
@@ -34,7 +33,7 @@ class Parser(object):
 				self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
 	
 	def readline(self, preserveReturn = True):
-		line = self.f.readline()
+		line = self.fp.readline()
 		commentPos = line.find('#')
 		if commentPos > -1:
 			oline = line
@@ -51,8 +50,8 @@ class Parser(object):
 		return self.readline(False)
 
 	def parseFile(self, scriptFile, fn):
-		with open(scriptFile, 'r') as f:
-			self.f = f
+		with open(scriptFile, 'r') as fp:
+			self.fp = fp
 			line = self.readline()
 			while line:
 				line = line.strip()
