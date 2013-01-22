@@ -1,12 +1,8 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 from collections import deque
 
-from actor import User
 from command import Command, MoveDirection
-from ability import Ability
-from room import Room
 from utility import *
-from factory import Factory
 
 class Client(Protocol):
 	def connectionMade(self):
@@ -25,6 +21,7 @@ class Client(Protocol):
 		self.transport.loseConnection()
 	
 	def dataReceived(self, data):
+		from ability import Ability
 		data = data.strip()
 		if self.user:
 			args = data.split(" ")
@@ -42,6 +39,7 @@ class Client(Protocol):
 		self.transport.write(message);
 	
 	def login(self, data):
+		from factory import Factory
 		next = self.loginSteps.popleft()
 		if next == "login":
 			from load import Load
@@ -54,6 +52,7 @@ class Client(Protocol):
 			else:
 				next = self.loginSteps.popleft()
 		if next == "name":
+			from actor import User
 			self.newUser = User()
 			self.newUser.client = self
 			self.newUser.name = data
@@ -108,5 +107,6 @@ class ClientFactory(tFactory):
 	DEFAULT_ROOM = None
 
 	def __init__(self, heartbeat):
+		from room import Room
 		self.heartbeat = heartbeat
 		self.DEFAULT_ROOM = Room.rooms["midgaard:1"]
