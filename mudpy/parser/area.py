@@ -9,7 +9,7 @@ class AreaParser(Parser):
 		self.lastroom = None
 		self.lastinventory = None
 		self.lastarea = None
-		super(AreaParser, self).__init__("areas")
+		super(AreaParser, self).__init__('areas', 'parseArea')
 	
 	def parseArea(self, line):
 		if line in self.definitions:
