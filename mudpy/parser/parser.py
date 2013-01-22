@@ -2,18 +2,20 @@ import os
 from assign import Properties, Block, Attributes, Abilities
 
 class Parser(object):
-	ignore = ['definitions']
+	IGNORE = ['definitions']
+	BASEPATH = 'scripts'
 
 	def __init__(self, baseDir, fn):
 		self.definitions = {}
 		self.fp = None
+		path = self.BASEPATH+'/'+baseDir
 		self.parseFile(path+'/definitions.mud', 'parseDefinitions')
-		self.parseDir("scripts/"+baseDir, fn)
+		self.parseDir(path, fn)
 	
 	def parseDir(self, path, fn):
 		for infile in os.listdir(path):
 			parts = infile.split(".")
-			if not parts[0] in self.ignore:
+			if not parts[0] in self.IGNORE:
 				if len(parts) == 1:
 					self.parseDir(path+"/"+parts[0], fn)
 				elif parts[1] == "mud":
