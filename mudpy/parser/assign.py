@@ -78,6 +78,8 @@ class Abilities(Assignable):
 class Block(Assignable):
 	def __init__(self, propertyName, end = "\n"):
 		self.propertyName = propertyName
+		if self.propertyName == "description":
+			end = "~"
 		self.end = end
 	
 	def process(self, parser, instance):

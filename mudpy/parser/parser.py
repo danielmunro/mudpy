@@ -1,159 +1,27 @@
 import os
-from room import *
-from actor import Mob
-from item import *
-from factory import Factory
-from utility import *
+from assign import Properties, Block, Attributes, Abilities
 
-class Assignable(object):
-	def process(self, parser, instance):
-		line = parser.readcleanline()
-		if not line:
-			raise ParserException
-		parts = line.split(",")
-		for i in parts:
-			kv = i.strip().split(' ', 1)
-			if kv[0]:
-				try:
-					self.assign(instance, kv[0], self.tryParse(kv[1]))
-				except AttributeError as e:
-					print e
-	
-	def tryParse(self, value):
-		return int(value) if value.isdigit() else value
-	
-	def assign(self, instance, instanceProperty, value):
-		print "assign not implemented"
+class Parser(object):
+	ignore = ['definitions']
 
-class Properties(Assignable):
-	def assign(self, instance, instanceProperty, value):
-		if hasattr(instance, instanceProperty):
-			#hack
-			if instanceProperty == "race":
-				instance.race = Factory.new(Race = value, newWith = instance)
-			else:
-				if value == "true":
-					value = True
-				elif value == "false":
-					value = False
-				setattr(instance, instanceProperty, value)
-		elif self.aliases(instance, instanceProperty, value):
-			pass
-		else:
-			raise AttributeError('Property "'+instanceProperty+'" is not defined in '+instance.__class__.__name__)
-	
-	# this function is a hack
-	def aliases(self, instance, instanceProperty, value):
-		if isinstance(instance, Randomhall) and instanceProperty.find('Prob') > -1:
-			direction = startsWith(instanceProperty[0:1], Direction.__subclasses__())
-			instance.probabilities[direction.name] = value
-			return True
-		if isinstance(instance, Grid) and instanceProperty.find('Count') > -1:
-			direction = startsWith(instanceProperty[0:1], Direction.__subclasses__())
-			instance.counts[direction.name] = value
-		if issubclass(instance.__class__, Room) or isinstance(instance, Door):
-			direction = startsWith(instanceProperty, Direction.__subclasses__())
-			if direction:
-				instance.directions[direction.name] = value
-			return True
-		return False
-
-class Attributes(Assignable):
-	def assign(self, instance, instanceProperty, value):
-		if hasattr(instance.attributes, instanceProperty):
-			setattr(instance.attributes, instanceProperty, value)
-			if instanceProperty in ['hp', 'mana', 'movement']:
-				setattr(instance.attributes, 'max'+instanceProperty, value)
-		else:
-			raise AttributeError('Attribute "'+instanceProperty+'" is not defined in '+instance.__class__.__name__)
-
-class Abilities:
-	def process(self, parser, instance):
-		line = parser.readcleanline()
-		if not line:
-			raise ParserException
-		for i in line.split(","):
-			instance.abilities.append(Factory.new(Ability = i.strip()))
-
-class Block:
-	def __init__(self, propertyName, end = "\n"):
-		self.propertyName = propertyName
-		self.end = end
-	
-	def process(self, parser, instance):
-		setattr(instance, self.propertyName, self._process(parser, ""))
-	
-	def _process(self, parser, value):
-		line = parser.readline()
-		if line.find(self.end) > -1:
-			return value+line.rstrip(self.end+"\n")
-		else:
-			return self._process(parser, value+line)
-
-class Parser:
-	definitions = {
-		'area': [Properties()],
-		'room': [Block('title'), Block('description', '~'), Properties()],
-		'randomhall': [Block('title'), Block('description', '~'), Properties()],
-		'grid': [Block('title'), Block('description', '~'), Properties()],
-		'mob': [Block('long'), Block('description', '~'), Properties(), Attributes(), Abilities()],
-		'container': [Block('name'), Block('description', '~'), Properties()],
-		'drink': [Block('name'), Block('description', '~'), Properties()],
-		'furniture': [Block('name'), Block('description', '~'), Properties()],
-		'item': [Block('name'), Block('description', '~'), Properties()],
-		'equipment': [Block('name'), Block('description', '~'), Properties(), Attributes()],
-		'weapon': [Block('name'), Block('description', '~'), Properties(), Attributes()],
-		'food': [Block('name'), Block('description', '~'), Properties()],
-		'key': [Block('name'), Block('description', '~'), Properties()],
-		'quest': [Block('name')],
-		'door': [Block('name'), Block('description', '~'), Properties()],
-		'ability': [Block('name'), Properties()]
-	}
 	def __init__(self, baseDir):
+		self.definitions = {}
 		self.f = None
 		self.parseDir("scripts/"+baseDir)
-		self.initializeRooms()
-
-	def parseDir(self, path):
-		listing = os.listdir(path)
-		for infile in listing:
-			parts = infile.split(".")
-			if len(parts) == 1:
-				self.parseDir(path+"/"+parts[0])
-			elif parts[1] == "area":
-				self.parseArea(path+"/"+parts[0]+".area")
 	
-	def parseArea(self, areaFile):
-		with open(areaFile, 'r') as f:
-			self.f = f
-			line = self.readline()
-			while line:
-				line = line.strip()
-				if line in self.definitions:
-					_class = line.title()
-					instance = globals()[_class]()
-					try:
-						for chunk in self.definitions[line]:
-							chunk.process(self, instance)
-					except ParserException:
-						pass
-					if issubclass(instance.__class__, Room):
-						lastRoom = instance
-						lastRoom.area = lastArea
-						lastInventory = instance.inventory
-						Room.rooms[lastRoom.area.name+":"+str(lastRoom.id)] = lastRoom
-					elif isinstance(instance, Mob):
-						lastRoom.actors.append(instance)
-						lastInventory = instance.inventory
-						instance.room = lastRoom
-					elif isinstance(instance, Area):
-						lastArea = instance
-					elif isinstance(instance, Item):
-						lastInventory.append(instance)
-				elif line:
-					print '[error] "'+line+'" is not a parser definition'
-
-				line = self.readline()
+	def parseDir(self, path):
+		if len(self.definitions) == 0:
+			self.parseDefinitions(path)
+		for infile in os.listdir(path):
+			parts = infile.split(".")
+			if not parts[0] in self.ignore:
+				if len(parts) == 1:
+					self.parseDir(path+"/"+parts[0])
+				elif parts[1] == "mud":
+					self.parseFile(path+"/"+parts[0]+".mud")
+	
+	def parseFile(self, fileName):
+		raise ParserException('parseFile not defined')
 	
 	def readline(self, preserveReturn = True):
 		line = self.f.readline()
@@ -167,38 +35,28 @@ class Parser:
 		if not preserveReturn:
 			line = line.strip()
 		return line
+
+	def parseDefinitions(self, path):
+		with open(path+'/definitions.mud', 'r') as f:
+			self.f = f
+			line = self.readline()
+			while line:
+				defname = line.strip()
+				if defname:
+					self.definitions[defname] = []
+					line = self.readcleanline()
+					if not line:
+						raise ParserException
+					parts = line.split(',')
+					for att in parts:
+						ap = att.strip().split(' ', 1)
+						if len(ap) == 1:
+							self.definitions[defname].append(globals()[ap[0].title()]())
+						else:
+							self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
+				line = self.readline()
 	
 	def readcleanline(self):
 		return self.readline(False)
 	
-	def initializeRooms(self):
-		randomHalls = []
-		grids = []
-		for r, room in Room.rooms.iteritems():
-			if isinstance(room, Randomhall):
-				randomHalls.append(room)
-			if isinstance(room, Grid):
-				grids.append(room)
-			for d, direction in Room.rooms[r].directions.items():
-				if direction:
-					try:
-						if type(direction) is int:
-							direction = Room.rooms[r].area.name+":"+str(direction)
-						Room.rooms[r].directions[d] = Room.rooms[direction]
-					except KeyError:
-						print "Room id "+str(direction)+" is not defined, removing"
-						del Room.rooms[r].directions[d]
-		for room in randomHalls:
-			roomCount = room.buildDungeon()
-			while roomCount < room.rooms:
-				roomCount = room.buildDungeon(roomCount)
-		for room in grids:
-			rows = room.counts['west'] + room.counts['east']
-			rows = rows if rows > 0 else 1
-			cols = room.counts['north'] + room.counts['south']
-			cols = cols if cols > 0 else 1
-			grid = [[0 for row in range(rows)] for col in range(cols)]
-			grid[room.counts['north']-1][room.counts['west']-1] = room
-			room.buildDungeon(0, 0, grid)
-
 class ParserException(Exception): pass

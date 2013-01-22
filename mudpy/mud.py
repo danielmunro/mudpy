@@ -3,10 +3,10 @@ from twisted.internet import reactor
 
 from client import ClientFactory
 from heartbeat import Heartbeat
-from parser.parser import Parser
+from parser.area import AreaParser
 
 heartbeat = Heartbeat(reactor)
-Parser("areas").initializeRooms()
+AreaParser().initializeRooms()
 
 endpoint = TCP4ServerEndpoint(reactor, 9000)
 endpoint.listen(ClientFactory(heartbeat))
