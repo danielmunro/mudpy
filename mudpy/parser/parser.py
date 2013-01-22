@@ -1,4 +1,3 @@
-import os
 from assign import Properties, Block, Attributes, Abilities
 
 class Parser(object):
@@ -13,6 +12,7 @@ class Parser(object):
 		self.parseDir(path, fn)
 	
 	def parseDir(self, path, fn):
+		import os
 		for infile in os.listdir(path):
 			parts = infile.split(".")
 			if not parts[0] in self.IGNORE:
