@@ -5,9 +5,10 @@ class Proficiency(object):
 	level = 15
 	observer = None
 
-	def __init__(self, observer):
-		self.observer = observer
-		observer.attach(self.actionhook, self)
+	def __init__(self, observer = None):
+		if observer:
+			self.observer = observer
+			observer.attach(self.actionhook, self)
 	
 	def getLevel(self):
 		try:

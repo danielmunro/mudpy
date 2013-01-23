@@ -13,27 +13,24 @@ class Race(object):
 	startingProficiencies = {}
 	damType = 'bash'
 
-	def __init__(self, actor):
+	def __init__(self, actor = None):
 		self.proficiencies = {}
 		self.attributes = Attributes()
 		self.abilities = []
 		self.affects = []
 		self.setup();
-		from factory import Factory
-		for proficiency in self.startingProficiencies:
-			level = self.startingProficiencies[proficiency]
-			self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency, newWith = actor)
-			self.proficiencies[proficiency].level = level
+		if actor:
+			from factory import Factory
+			for proficiency in self.startingProficiencies:
+				level = self.startingProficiencies[proficiency]
+				self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency, newWith = actor)
+				self.proficiencies[proficiency].level = level
 	
 	def setup(self):
 		pass
 
 	def __str__(self):
 		return self.name
-
-class Human(Race):
-	name = "human"
-	isPlayable = True
 
 class Faerie(Race):
 	name = "faerie"

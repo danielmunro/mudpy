@@ -1,8 +1,8 @@
-from parser import Parser, ParserException
-from room import Room, Randomhall, Grid, Area
-from actor import Mob
-from item import *
+from mudpy.room import Room, Randomhall, Grid, Area
+from mudpy.actor import Mob
+from mudpy.item import *
 from assign import Properties, Block, Attributes, Abilities
+from parser import Parser, ParserException
 
 class AreaParser(Parser):
 	def __init__(self):
@@ -36,7 +36,7 @@ class AreaParser(Parser):
 		elif line:
 			print '[error] "'+line+'" is not a parser definition'
 
-	def initializeRooms(self):
+	def finishInitialization(self):
 		randomHalls = []
 		grids = []
 		for r, room in Room.rooms.iteritems():

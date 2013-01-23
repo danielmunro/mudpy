@@ -1,23 +1,25 @@
-from utility import *
-from race import *
-from ability import *
-from command import *
-from room import *
-from proficiency import *
+from mudpy.utility import *
+from mudpy.race import *
+from mudpy.ability import *
+from mudpy.command import *
+from mudpy.room import *
+from mudpy.proficiency import *
+from mudpy.parser.parser import Parser
+import copy, inspect
 
 class Factory:
 	@staticmethod
 	def new(scalar = True, newWith = None, **kwargs):
 		lookups = []
 		for _type, _class in kwargs.iteritems():
-			lookup = startsWith(_class, globals()[_type].__subclasses__());
+			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals);
 			if lookup:
-				lookups.append(lookup(newWith) if newWith else lookup())
+				lookups.append(lookup)
 			else:
 				raise NameError("Factory cannot create a new instance of: "+_type+"."+_class)
 		if scalar and len(lookups) == 1:
-			mod = __import__(lookups[0].__module__)
-			class_ = getattr(mod, lookups[0].__class__.__name__)
-			return class_(newWith) if newWith else class_()
-		else:
-			return lookups
+			class_ = lookups[0]
+			if inspect.isclass(class_):
+				return class_(newWith) if newWith else class_()
+			return copy.copy(class_)
+		return lookups

@@ -24,7 +24,7 @@ class Properties(Assignable):
 		if hasattr(instance, instanceProperty):
 			#hack
 			if instanceProperty == "race":
-				from factory import Factory
+				from mudpy.factory import Factory
 				instance.race = Factory.new(Race = value, newWith = instance)
 			else:
 				if value == "true":
@@ -39,9 +39,9 @@ class Properties(Assignable):
 	
 	# this function is a hack
 	def aliases(self, instance, instanceProperty, value):
-		from room import Randomhall, Grid, Room, Direction
-		from item import Door
-		from utility import startsWith
+		from mudpy.room import Randomhall, Grid, Room, Direction
+		from mudpy.item import Door
+		from mudpy.utility import startsWith
 		if isinstance(instance, Randomhall) and instanceProperty.find('Prob') > -1:
 			direction = startsWith(instanceProperty[0:1], Direction.__subclasses__())
 			instance.probabilities[direction.name] = value
@@ -71,7 +71,7 @@ class Abilities(Assignable):
 		if not line:
 			from parser import ParserException
 			raise ParserException
-		from factory import Factory
+		from mudpy.factory import Factory
 		for i in line.split(","):
 			instance.abilities.append(Factory.new(Ability = i.strip()))
 

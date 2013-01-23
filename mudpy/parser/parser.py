@@ -2,7 +2,8 @@ from assign import Properties, Block, Attributes, Abilities
 
 class Parser(object):
 	IGNORE = ['definitions.mud']
-	BASEPATH = 'scripts'
+	BASEPATH = 'mudpy/scripts'
+	_globals = []
 
 	def __init__(self, baseDir, fn):
 		self.definitions = {}
@@ -60,5 +61,14 @@ class Parser(object):
 	
 	def readcleanline(self):
 		return self.readline(False)
+
+	@staticmethod
+	def initializeParsers():
+		from area import AreaParser
+		from race import RaceParser
+		for subclass in ['RaceParser', 'AreaParser']:
+			locals()[subclass]().finishInitialization()
+
+	def finishInitialization(self): pass
 	
 class ParserException(Exception): pass
