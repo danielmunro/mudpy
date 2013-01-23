@@ -1,7 +1,7 @@
 from assign import Properties, Block, Attributes, Abilities
 
 class Parser(object):
-	IGNORE = ['definitions']
+	IGNORE = ['definitions.mud']
 	BASEPATH = 'scripts'
 
 	def __init__(self, baseDir, fn):
@@ -14,12 +14,12 @@ class Parser(object):
 	def parseDir(self, path, fn):
 		import os
 		for infile in os.listdir(path):
-			parts = infile.split(".")
-			if not parts[0] in self.IGNORE:
-				if len(parts) == 1:
-					self.parseDir(path+"/"+parts[0], fn)
-				elif parts[1] == "mud":
-					self.parseFile(path+"/"+parts[0]+".mud", fn)
+			if not infile in self.IGNORE:
+				fullpath = path+'/'+infile
+				if os.path.isdir(fullpath):
+					self.parseDir(fullpath, fn)
+				elif fullpath.endswith('.mud'):
+					self.parseFile(fullpath, fn)
 
 	def parseDefinitions(self, defname):
 		self.definitions[defname] = []
