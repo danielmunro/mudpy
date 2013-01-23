@@ -33,6 +33,16 @@ class Parser(object):
 				self.definitions[defname].append(globals()[ap[0].title()]())
 			else:
 				self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
+
+	def parseFile(self, scriptFile, fn):
+		with open(scriptFile, 'r') as fp:
+			self.fp = fp
+			line = self.readline()
+			while line:
+				line = line.strip()
+				if line:
+					getattr(self, fn)(line)
+				line = self.readline()
 	
 	def readline(self, preserveReturn = True):
 		line = self.fp.readline()
@@ -50,15 +60,5 @@ class Parser(object):
 	
 	def readcleanline(self):
 		return self.readline(False)
-
-	def parseFile(self, scriptFile, fn):
-		with open(scriptFile, 'r') as fp:
-			self.fp = fp
-			line = self.readline()
-			while line:
-				line = line.strip()
-				if line:
-					getattr(self, fn)(line)
-				line = self.readline()
 	
 class ParserException(Exception): pass
