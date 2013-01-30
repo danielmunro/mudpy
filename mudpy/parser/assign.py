@@ -72,8 +72,19 @@ class Abilities(Assignable):
 			from parser import ParserException
 			raise ParserException
 		from mudpy.factory import Factory
-		for i in line.split(","):
+		for i in line.split(','):
 			instance.abilities.append(Factory.new(Ability = i.strip()))
+
+class Proficiencies(Assignable):
+	def process(self, parser, instance):
+		line = parser.readcleanline()
+		if not line:
+			from parser import ParserException
+			raise ParserException
+		from mudpy.factory import Factory
+		for i in line.split(','):
+			kv = i.strip().split(' ', 1);
+			instance.addProficiency(kv[0], kv[1])
 
 class Block(Assignable):
 	def __init__(self, propertyName, end = "\n"):

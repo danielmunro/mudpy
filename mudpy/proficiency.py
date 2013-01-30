@@ -10,12 +10,6 @@ class Proficiency(object):
 			self.observer = observer
 			observer.attach(self.actionhook, self)
 	
-	def getLevel(self):
-		try:
-			return self.level + self.observer.race.proficiencies[self.name].level
-		except KeyError:
-			return self.level
-	
 	def checkimprove(self, subject, improvementthreshold):
 		if improvementthreshold is None:
 			improvementthreshold = self.improvementthreshold

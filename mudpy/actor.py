@@ -6,7 +6,6 @@ from observer import Observer
 
 class Actor(Observer):
 	MAX_STAT = 25
-	STARTING_STAT = 15
 	EVENT_TYPES = ['attackresolution', 'attacked', 'attack', 'move', 'sell', 'brew', 'cast']
 
 	def __init__(self):
@@ -46,6 +45,14 @@ class Actor(Observer):
 		for p in self.getProficiencies():
 			if(p.name == proficiency):
 				return p
+	
+	def addProficiency(self, proficiency, level):
+		try:
+			self.proficiencies[proficiency].level += level
+		except KeyError:
+			from factory import Factory
+			self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency)
+			self.proficiencies[proficiency].level = level
 	
 	def getEquipmentByPosition(self, position):
 		for _position in self.equipped:
@@ -102,7 +109,7 @@ class Actor(Observer):
 	def getMaxAttribute(self, attributeName):
 		if attributeName in self.attributes.stats:
 			racialAttr = getattr(self.race.attributes, attributeName)
-			return min(getattr(self.attributes, attributeName) + racialAttr + 4, self.STARTING_STAT + racialAttr + 8)
+			return min(getattr(self.attributes, attributeName) + racialAttr + 4,racialAttr + 8)
 		else:
 			try:
 				return getattr(self.attributes, 'max'+attributeName)
@@ -231,12 +238,6 @@ class Actor(Observer):
 		a.ac_magic = 100
 		a.hit = 1
 		a.dam = 1
-		a.str = Actor.STARTING_STAT
-		a.int = Actor.STARTING_STAT
-		a.wis = Actor.STARTING_STAT
-		a.dex = Actor.STARTING_STAT
-		a.con = Actor.STARTING_STAT
-		a.cha = Actor.STARTING_STAT
 		a.maxhp = 20
 		a.maxmana = 100
 		a.maxmovement = 100

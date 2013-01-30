@@ -1,3 +1,2 @@
 race
-properties, attributes, abilities
-#properties, attributes, proficiencies, abilities
+properties, attributes, proficiencies, abilities

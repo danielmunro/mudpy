@@ -1,4 +1,4 @@
-from assign import Properties, Block, Attributes, Abilities
+from assign import *
 
 class Parser(object):
 	IGNORE = ['definitions.mud']
