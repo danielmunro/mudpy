@@ -1,6 +1,3 @@
-from mudpy.room import Room, Randomhall, Grid, Area
-from mudpy.actor import Mob
-from mudpy.item import *
 from assign import Properties, Block, Attributes, Abilities
 from parser import Parser, ParserException
 
@@ -11,34 +8,34 @@ class AreaParser(Parser):
 		self.lastarea = None
 		super(AreaParser, self).__init__('areas', 'parseArea')
 	
-	def parseArea(self, line):
-		if line in self.definitions:
-			_class = line.title()
-			instance = globals()[_class]()
-			try:
-				for chunk in self.definitions[line]:
-					chunk.process(self, instance)
-			except ParserException:
-				pass
-			if issubclass(instance.__class__, Room):
-				self.lastroom = instance
-				self.lastroom.area = self.lastarea
-				self.lastinventory = instance.inventory
-				Room.rooms[self.lastroom.area.name+":"+str(self.lastroom.id)] = self.lastroom
-			elif isinstance(instance, Mob):
-				self.lastroom.actors.append(instance)
-				self.lastinventory = instance.inventory
-				instance.room = self.lastroom
-			elif isinstance(instance, Area):
-				self.lastarea = instance
-			elif isinstance(instance, Item):
-				self.lastinventory.append(instance)
-		elif line:
-			print '[error] "'+line+'" is not a parser definition'
+	def parseArea(self, _class):
+		from mudpy.room import Room, Randomhall, Grid, Area
+		from mudpy.actor import Mob
+		from mudpy.item import Item, Door, Key, Furniture, Container, Food, Drink, Weapon, Armor, Equipment
+		instance = locals()[_class]()
+		try:
+			for chunk in self.definitions[_class]:
+				chunk.process(self, instance)
+		except ParserException:
+			pass
+		if issubclass(instance.__class__, Room):
+			self.lastroom = instance
+			self.lastroom.area = self.lastarea
+			self.lastinventory = instance.inventory
+			Room.rooms[self.lastroom.area.name+":"+str(self.lastroom.id)] = self.lastroom
+		elif isinstance(instance, Mob):
+			self.lastroom.actors.append(instance)
+			self.lastinventory = instance.inventory
+			instance.room = self.lastroom
+		elif isinstance(instance, Area):
+			self.lastarea = instance
+		elif isinstance(instance, Item):
+			self.lastinventory.append(instance)
 
 	def finishInitialization(self):
 		randomHalls = []
 		grids = []
+		from mudpy.room import Room, Randomhall, Grid
 		for r, room in Room.rooms.iteritems():
 			if isinstance(room, Randomhall):
 				randomHalls.append(room)

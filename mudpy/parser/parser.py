@@ -9,7 +9,7 @@ class Parser(object):
 		self.definitions = {}
 		self.fp = None
 		path = self.BASEPATH+'/'+baseDir
-		self.parseFile(path+'/definitions.mud', 'parseDefinitions')
+		self.parseFile(path+'/definitions.mud', 'parseDefinitions', False)
 		self.parseDir(path, fn)
 	
 	def parseDir(self, path, fn):
@@ -23,6 +23,7 @@ class Parser(object):
 					self.parseFile(fullpath, fn)
 
 	def parseDefinitions(self, defname):
+		defname = self.getclassfromline(defname);
 		self.definitions[defname] = []
 		line = self.readcleanline()
 		if not line:
@@ -35,14 +36,17 @@ class Parser(object):
 			else:
 				self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
 
-	def parseFile(self, scriptFile, fn):
+	def parseFile(self, scriptFile, fn, enforceDefinitions = True):
 		with open(scriptFile, 'r') as fp:
 			self.fp = fp
 			line = self.readline()
 			while line:
-				line = line.strip()
+				line = self.getclassfromline(line)
 				if line:
-					getattr(self, fn)(line)
+					if enforceDefinitions and not line in self.definitions:
+						print '[error] "'+line+'" is not a parser definition'
+					else:
+						getattr(self, fn)(line)
 				line = self.readline()
 	
 	def readline(self, preserveReturn = True):
@@ -61,6 +65,10 @@ class Parser(object):
 	
 	def readcleanline(self):
 		return self.readline(False)
+
+	@staticmethod
+	def getclassfromline(line):
+		return line.strip().title()
 
 	@staticmethod
 	def initializeParsers():
