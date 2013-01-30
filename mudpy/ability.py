@@ -94,6 +94,12 @@ class SecondAttack(Ability):
 	type = "skill"
 	hook = "melee"
 
+class HandToHand(Ability):
+	name = "hand to hand"
+	level = 1
+	type = "skill"
+	hook = "melee"
+
 class DirtKick(Ability):
 	name = "dirt kick"
 	level = 1
@@ -121,6 +127,12 @@ class Sneak(Ability):
 		affect.name = "sneak"
 		affect.timeout = receiver.level
 		affect.wearOffMessage = "You stop moving silently."
+
+class Infravision(Ability):
+	name = "infravision"
+	level = 0
+	type = "skill"
+	hook = "look"
 
 class Heal(Ability):
 	name = "heal"
