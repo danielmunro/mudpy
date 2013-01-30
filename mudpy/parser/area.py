@@ -1,4 +1,3 @@
-from assign import Properties, Block, Attributes, Abilities
 from parser import Parser, ParserException
 
 class AreaParser(Parser):
