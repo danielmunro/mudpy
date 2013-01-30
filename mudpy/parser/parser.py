@@ -41,12 +41,12 @@ class Parser(object):
 			self.fp = fp
 			line = self.readline()
 			while line:
-				line = self.getclassfromline(line)
-				if line:
-					if enforceDefinitions and not line in self.definitions:
-						print '[error] "'+line+'" is not a parser definition'
+				_class = self.getclassfromline(line)
+				if _class:
+					if enforceDefinitions and not _class in self.definitions:
+						print '[error] "'+_class+'" is not a parser definition'
 					else:
-						getattr(self, fn)(line)
+						getattr(self, fn)(_class)
 				line = self.readline()
 	
 	def readline(self, preserveReturn = True):
