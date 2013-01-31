@@ -1,4 +1,4 @@
-from mudpy.parser.parser import Parser, ParserException
+from mudpy.parser.parser import Parser
 
 class RaceParser(Parser):
 	def __init__(self):

@@ -1,4 +1,4 @@
-from parser import Parser, ParserException
+from parser import Parser
 
 class AreaParser(Parser):
 	def __init__(self):
