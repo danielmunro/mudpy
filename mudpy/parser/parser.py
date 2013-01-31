@@ -8,19 +8,8 @@ class Parser(object):
 		self.definitions = {}
 		self.fp = None
 		path = self.BASEPATH+'/'+baseDir
-		self.parseFile(path+'/definitions.mud', 'parseDefinitions', enforceDefinitions = False)
+		self.parseFile(path+'/'+baseDir+'.definitions', self.parseDefinitions)
 		self.parseDir(path, fn)
-	
-	def parseDir(self, path, fn):
-		import os
-		for infile in os.listdir(path):
-			fullpath = path+'/'+infile
-			if os.path.isdir(fullpath):
-				# recurse through scripts directory tree
-				self.parseDir(fullpath, fn)
-			elif fullpath.endswith('.mud') and not fullpath.endswith('definitions.mud'):
-				# parse script
-				self.parseFile(fullpath, fn)
 
 	def parseDefinitions(self, defname):
 		defname = self.getclassfromline(defname);
@@ -35,16 +24,35 @@ class Parser(object):
 				self.definitions[defname].append(globals()[ap[0].title()]())
 			else:
 				self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
+	
+	def parseDir(self, path, fn):
+		import os
+		for infile in os.listdir(path):
+			fullpath = path+'/'+infile
+			if os.path.isdir(fullpath):
+				# recurse through scripts directory tree
+				self.parseDir(fullpath, fn)
+			elif fullpath.endswith('.mud'):
+				# parse script
+				self.parseFile(fullpath, fn)
 
-	def parseFile(self, scriptFile, fn, enforceDefinitions = True):
+	def parseFile(self, scriptFile, fn):
 		with open(scriptFile, 'r') as fp:
 			self.fp = fp
 			line = self.readline()
 			while line:
 				_class = self.getclassfromline(line)
 				if _class:
-					getattr(self, fn)(_class)
+					fn(_class)
 				line = self.readline()
+	
+	def applyDefinitionsTo(self, instance):
+		try:
+			for chunk in self.definitions[instance.__class__.__name__]:
+				chunk.process(self, instance)
+		except ParserException:
+			pass
+		return instance
 	
 	def readline(self, preserveReturn = True):
 		line = self.fp.readline()

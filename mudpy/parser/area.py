@@ -5,18 +5,13 @@ class AreaParser(Parser):
 		self.lastroom = None
 		self.lastinventory = None
 		self.lastarea = None
-		super(AreaParser, self).__init__('areas', 'parseArea')
+		super(AreaParser, self).__init__('areas', self.parseArea)
 	
 	def parseArea(self, _class):
 		from mudpy.room import Room, Randomhall, Grid, Area
 		from mudpy.actor import Mob
 		from mudpy.item import Item, Door, Key, Furniture, Container, Food, Drink, Weapon, Armor, Equipment
-		instance = locals()[_class]()
-		try:
-			for chunk in self.definitions[_class]:
-				chunk.process(self, instance)
-		except ParserException:
-			pass
+		instance = self.applyDefinitionsTo(locals()[_class]())
 		if issubclass(instance.__class__, Room):
 			self.lastroom = instance
 			self.lastroom.area = self.lastarea
