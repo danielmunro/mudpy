@@ -6,7 +6,7 @@ class Room(object):
 
 	def __init__(self):
 		self.id = 0
-		self.title = ''
+		self.name = ''
 		self.description = ''
 		self.actors = []
 		self.inventory = Inventory()
@@ -35,13 +35,16 @@ class Room(object):
 		return list(actor for actor in self.actors if isinstance(actor, Mob))
 
 	def copy(self, newRoom):
-		newRoom.title = self.title
+		newRoom.name = self.name
 		newRoom.description = self.description
 		newRoom.area = self.area
 		return newRoom
 
 	def getFullID(self):
 		return self.area.name+":"+str(self.id)
+	
+	def __str__(self):
+		return self.name
 
 class Randomhall(Room):
 	def __init__(self):

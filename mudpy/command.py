@@ -1,5 +1,6 @@
 from utility import *
 from actor import Disposition
+from debug import Debug
 
 class Command(object):
 	name = ""
@@ -212,7 +213,7 @@ class Look(Command):
 	def perform(self, actor, args = []):
 		if len(args) == 0:
 			# room and exits
-			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.title, actor.room.description, "".join(direction[:1] for direction, room in actor.room.directions.iteritems() if room))
+			msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.name, actor.room.description, "".join(direction[:1] for direction, room in actor.room.directions.iteritems() if room))
 			# items
 			msg += actor.room.inventory.inspection(' is here.')
 			# actors
@@ -265,6 +266,7 @@ class MoveDirection(Command):
 				actor.room.notify(actor, str(actor).title()+" has arrived.")
 				from factory import Factory
 				Factory.new(Command = "look").tryPerform(actor)
+				Debug.log(str(actor)+' moves to '+str(actor.room))
 			else:
 				actor.notify("You are too tired to move.")
 		else:

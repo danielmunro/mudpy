@@ -2,13 +2,13 @@ area
 properties
 
 room
-block title, block description, properties
+block name, block description, properties
 
 randomhall
-block title, block description, properties
+block name, block description, properties
 
 grid
-block title, block description, properties
+block name, block description, properties
 
 mob
 block long, block description, properties, attributes, abilities

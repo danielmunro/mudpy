@@ -1,10 +1,12 @@
 from assign import *
+from mudpy.debug import Debug
 
 class Parser(object):
 	BASEPATH = 'mudpy/scripts'
 	_globals = []
 
 	def __init__(self, baseDir, fn):
+		Debug.log('parsing scripts for '+baseDir)
 		self.definitions = {}
 		self.fp = None
 		path = self.BASEPATH+'/'+baseDir
@@ -15,8 +17,9 @@ class Parser(object):
 		defname = self.getclassfromline(defname);
 		self.definitions[defname] = []
 		line = self.readcleanline()
+		Debug.log('adding definition for '+defname+': '+line)
 		if not line:
-			raise ParserException("a definition for "+defname+" was expected but not found")
+			raise ParserException('a definition for '+defname+' was expected but not found')
 		parts = line.split(',')
 		for att in parts:
 			ap = att.strip().split(' ', 1)
@@ -37,6 +40,7 @@ class Parser(object):
 				self.parseFile(fullpath, fn)
 
 	def parseFile(self, scriptFile, fn):
+		Debug.log('parsing script file: '+scriptFile)
 		with open(scriptFile, 'r') as fp:
 			self.fp = fp
 			line = self.readline()
@@ -52,6 +56,7 @@ class Parser(object):
 				chunk.process(self, instance)
 		except ParserException:
 			pass
+		Debug.log('[new '+instance.__class__.__name__+'] '+instance.name)
 		return instance
 	
 	def readline(self, preserveReturn = True):

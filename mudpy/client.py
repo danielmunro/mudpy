@@ -3,6 +3,7 @@ from collections import deque
 
 from command import Command, MoveDirection
 from utility import *
+from debug import Debug
 
 class Client(Protocol):
 	def connectionMade(self):
@@ -10,10 +11,12 @@ class Client(Protocol):
 		self.factory.clients.append(self)
 		self.user = None
 		self.loginSteps = deque(["login", "name", "race", "alignment"])
+		Debug.log('new client connected')
 	
 	def connectionLost(self, reason):
 		self.write("Good bye!")
 		self.factory.clients.remove(self)
+		Debug.log('client disconnected')
 	
 	def disconnect(self):
 		self.factory.heartbeat.detach('tick', self.user)
@@ -49,6 +52,7 @@ class Client(Protocol):
 				self.user.client = self
 				Factory.new(Command = "look").tryPerform(self.user)
 				self.loginSteps = deque([])
+				Debug.log('client logged in as '+str(self.user))
 			else:
 				next = self.loginSteps.popleft()
 		if next == "name":
@@ -99,6 +103,7 @@ class Client(Protocol):
 			self.user.inventory.append(i)
 			from save import Save
 			Save.saveUser(self.user)
+			Debug.log('client created new user as '+str(self.user))
 
 class ClientFactory(tFactory):
 	protocol = Client
