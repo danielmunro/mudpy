@@ -1,7 +1,6 @@
 from assign import *
 
 class Parser(object):
-	IGNORE = ['definitions.mud']
 	BASEPATH = 'mudpy/scripts'
 	_globals = []
 
@@ -9,18 +8,19 @@ class Parser(object):
 		self.definitions = {}
 		self.fp = None
 		path = self.BASEPATH+'/'+baseDir
-		self.parseFile(path+'/definitions.mud', 'parseDefinitions', False)
+		self.parseFile(path+'/definitions.mud', 'parseDefinitions', enforceDefinitions = False)
 		self.parseDir(path, fn)
 	
 	def parseDir(self, path, fn):
 		import os
 		for infile in os.listdir(path):
-			if not infile in self.IGNORE:
-				fullpath = path+'/'+infile
-				if os.path.isdir(fullpath):
-					self.parseDir(fullpath, fn)
-				elif fullpath.endswith('.mud'):
-					self.parseFile(fullpath, fn)
+			fullpath = path+'/'+infile
+			if os.path.isdir(fullpath):
+				# recurse through scripts directory tree
+				self.parseDir(fullpath, fn)
+			elif fullpath.endswith('.mud') and not fullpath.endswith('definitions.mud'):
+				# parse script
+				self.parseFile(fullpath, fn)
 
 	def parseDefinitions(self, defname):
 		defname = self.getclassfromline(defname);
@@ -43,10 +43,7 @@ class Parser(object):
 			while line:
 				_class = self.getclassfromline(line)
 				if _class:
-					if enforceDefinitions and not _class in self.definitions:
-						print '[error] "'+_class+'" is not a parser definition'
-					else:
-						getattr(self, fn)(_class)
+					getattr(self, fn)(_class)
 				line = self.readline()
 	
 	def readline(self, preserveReturn = True):
