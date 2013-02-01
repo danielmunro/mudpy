@@ -13,8 +13,9 @@ class Heartbeat(Observer):
 
 	EVENT_TYPES = ['tick', 'pulse', 'stat']
 
-	def __init__(self, reactor):
+	def __init__(self, reactor, stopwatch):
 		self.reactor = reactor
+		self.stopwatch = stopwatch
 		Heartbeat.instance = self
 		super(Heartbeat, self).__init__()
 		Debug.log('heartbeat created')
@@ -30,7 +31,7 @@ class Heartbeat(Observer):
 				next_tick = random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 				stopwatch = Stopwatch()
 				self.dispatch('tick')
-				Debug.log('dispatched tick ['+str(stopwatch)+'s]')
+				Debug.log('dispatched tick ['+str(stopwatch)+'s elapsed in tick] ['+str(self.stopwatch)+'s elapsed since start]')
 				i = 0
 
 	def dispatch(self, *eventlist, **events):

@@ -8,7 +8,7 @@ from mudpy.debug import Debug
 from mudpy.stopwatch import Stopwatch
 
 stopwatch = Stopwatch()
-heartbeat = Heartbeat(reactor)
+heartbeat = Heartbeat(reactor, stopwatch)
 
 Parser.initializeParsers()
 Debug.log('scripts initialized')

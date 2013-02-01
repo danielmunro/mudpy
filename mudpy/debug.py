@@ -1,3 +1,5 @@
+from time import strftime
+
 class Debug:
 	fp = None
 
@@ -6,5 +8,5 @@ class Debug:
 		if not Debug.fp:
 			Debug.fp = open('debug.log', 'a')
 			Debug.fp.write('\nnew log started\n')
-		Debug.fp.write('['+status+'] '+message+'\n')
+		Debug.fp.write('['+strftime('%Y-%m-%d %H:%M:%S')+' '+status+'] '+message+'\n')
 		Debug.fp.flush()
