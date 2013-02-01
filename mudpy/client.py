@@ -86,22 +86,6 @@ class Client(Protocol):
 			self.user.room.actors.append(self.user)
 			Factory.new(Command = "look").tryPerform(self.user)
 			self.write("\n"+self.user.prompt())
-
-			from item import Item, Equipment 
-			i = Item()
-			i.name = 'an item'
-			i.value = 10
-			i.weight = .3
-			self.user.inventory.append(i)
-			
-			i = Equipment()
-			i.name = 'a subissue sword'
-			i.position = 'wield'
-			i.value = 0
-			i.attributes.hp = 1
-			i.weight = 1
-			self.user.inventory.append(i)
-			from save import Save
 			Save.saveUser(self.user)
 			Debug.log('client created new user as '+str(self.user))
 
