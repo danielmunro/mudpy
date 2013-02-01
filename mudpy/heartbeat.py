@@ -1,6 +1,7 @@
 import random, time
 from observer import Observer
 from debug import Debug
+from stopwatch import Stopwatch
 
 class Heartbeat(Observer):
 	instance = None
@@ -27,8 +28,9 @@ class Heartbeat(Observer):
 			self.dispatch('pulse', 'stat')
 			if i > next_tick:
 				next_tick = random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
+				stopwatch = Stopwatch()
 				self.dispatch('tick')
-				Debug.log('dispatching tick')
+				Debug.log('dispatched tick ['+str(stopwatch)+'s]')
 				i = 0
 
 	def dispatch(self, *eventlist, **events):
