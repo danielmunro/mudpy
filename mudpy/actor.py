@@ -257,8 +257,8 @@ class Mob(Actor):
 	ROLE_ACOLYTE = 'acolyte'
 
 	def __init__(self):
-		self.movement_timeout = 1
-		self.movement_timer = self.movement_timeout
+		self.movement = 0
+		self.movement_timer = self.movement
 		self.respawn = 1
 		self.auto_flee = False
 		self.area = None
@@ -267,14 +267,14 @@ class Mob(Actor):
 	
 	def tick(self):
 		super(Mob, self).tick()
-		if self.movement_timeout:
+		if self.movement:
 			self.decrementMovementTimer()
 	
 	def decrementMovementTimer(self):
 		self.movement_timer -= 1;
 		if self.movement_timer < 0:
 			self.move()
-			self.movement_timer = self.movement_timeout
+			self.movement_timer = self.movement
 	
 	def trySetAttribute(self, attribute, value):
 		if attribute == 'hp':
