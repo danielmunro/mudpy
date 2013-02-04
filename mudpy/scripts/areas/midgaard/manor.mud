@@ -13,7 +13,7 @@ id 32, s midgaard:20, n 33
 mob
 a ghost of a servant boy is floating around
 A ghost of a servant boy is here, looking for something useful to do.~
-race human, movement_timeout 3, level 8, name a ghost of a servant boy, alignment -1000
+race human, movement 3, level 8, name a ghost of a servant boy, alignment -1000
 hp 10
 
 key
@@ -39,7 +39,7 @@ canOwn false
 mob
 a ghost of a servant boy is floating around
 A ghost of a servant boy is here, looking for something useful to do.~
-race human, level 8, movement_timeout 3, name a ghost of a servant boy
+race human, level 8, movement 3, name a ghost of a servant boy
 hp 10
 
 room
@@ -60,7 +60,7 @@ material leather, regen .2
 mob
 a ghost of a servant boy is floating around
 A ghost of a servant boy is here, looking for something useful to do.~
-movement_timeout 3, level 8, race human, name a ghost of a servant boy
+movement 3, level 8, race human, name a ghost of a servant boy
 hp 10
 
 room
@@ -81,7 +81,7 @@ canOwn false, material leather
 mob
 a ghost of a servant boy is floating around
 A ghost of a servant boy is here, looking for something useful to do.~
-movement_timeout 3, level 8, race human, name a ghost of a servant boy
+movement 3, level 8, race human, name a ghost of a servant boy
 hp 10
 
 room
@@ -100,7 +100,7 @@ nourishment 0, value 1, level 5
 mob
 a ghost of a servant boy is floating around
 A ghost of a servant boy is here, looking for something useful to do.~
-movement_timeout 3, level 8, race human, name a ghost of a servant boy
+movement 3, level 8, race human, name a ghost of a servant boy
 hp 10
 
 #
@@ -115,7 +115,7 @@ id 40, d 39, n 41
 mob
 a ghost of Adelwine manor wanders here
 A ghost of Adelwine manor is here, wandering the halls in the attic.~
-movement_timeout 3, level 12, race human, name a ghost of Adelwine manor
+movement 3, level 12, race human, name a ghost of Adelwine manor
 hp 25
 
 room

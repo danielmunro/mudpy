@@ -9,7 +9,7 @@ id 45, u Adelwine Manor:44, rooms 10, uProb 0, dProb .75, exit 46
 mob
 a kobold peon is carrying mining equipment
 An ugly little kobold saunters around. He is hairy and smells like wet mold.~
-movement_timeout 2, level 15, race kobold, name a kobold peon#, count 5
+movement 2, level 15, race kobold, name a kobold peon#, count 5
 hp 35
 #second attack
 
@@ -37,7 +37,7 @@ id 46, rooms 10, uProb 0, dProb .75, exit 47
 mob
 a kobold driver is here with whip in hand
 A kobold driver is belting orders to the peons. He is responsible for keeping the mine going and won't tolerate slow downs.~
-movement_timeout 2, level 18, race kobold, name a kobold driver#, count 5
+movement 2, level 18, race kobold, name a kobold driver#, count 5
 hp 50
 #dodge, second attack
 

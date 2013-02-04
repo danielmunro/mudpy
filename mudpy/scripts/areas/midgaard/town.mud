@@ -73,7 +73,7 @@ id 3, n 2, w 4, e 7, s 18, d 75, door d 2
 mob
 a Midgaard city guard is here, patrolling the streets
 A tall guard stands here, patrolling the streets of Midgaard.~
-race human, name Midgaard city guard, level 15
+race human, name Midgaard city guard, level 15, movement 3
 hp 100
 bash, kick
 
@@ -162,6 +162,13 @@ Market Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~
 id 7, e 9, w 3, n 12, s 16
 
+mob
+a Midgaard city guard is here, patrolling the streets
+A tall guard stands here, patrolling the streets of Midgaard.~
+race human, name Midgaard city guard, level 15, movement 3
+hp 100
+bash, kick
+
 room
 Market Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~
@@ -237,12 +244,26 @@ id 27, n 9
 room
 West Gate of Midgaard
 A stone gate to the west marks the end of Midgaard. Cobblestone paths lead in all directions.~
-id 13, e 6, w 23
+id 13, e 6, w 23, s 25, n 29
+
+mob
+a Midgaard city guard is here, patrolling the streets
+A tall guard stands here, patrolling the streets of Midgaard.~
+race human, name Midgaard city guard, level 15, movement 3
+hp 100
+bash, kick
 
 room
 East Gate of Midgaard
 A stone gate to the east marks the end of Midgaard. Cobblestone paths lead in all directions.~
-id 14, w 9
+id 14, w 9, s 27, n 34
+
+mob
+a Midgaard city guard is here, patrolling the streets
+A tall guard stands here, patrolling the streets of Midgaard.~
+race human, name Midgaard city guard, level 15, movement 3
+hp 100
+bash, kick
 
 room
 Common Square
@@ -254,10 +275,17 @@ A Cobblestone Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~
 id 19, e 18, w 20, n 30, s 31
 
+mob
+a Midgaard city guard is here, patrolling the streets
+A tall guard stands here, patrolling the streets of Midgaard.~
+race human, name Midgaard city guard, level 15, movement 3
+hp 100
+bash, kick
+
 room
 A Cobblestone Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~
-id 20, e 19, n Adelwine Manor:32
+id 20, e 19, w 26, n Adelwine Manor:32
 
 room
 A Cobblestone Street
@@ -267,7 +295,7 @@ id 21, e 22, w 18, s 28, n 29
 room
 A Cobblestone Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~
-id 22, w 21, s 81
+id 22, w 21, s 81, e 27
 
 room
 The shipyard
@@ -318,3 +346,53 @@ room
 A path leading towards the woods
 A meandering path leads from fields to the east into a dark forest to the west.~
 id 24, e 23, w goblin forest:200
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the west and its shops to the east.~
+id 25, n 13, s 26
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the west and its shops to the east.~
+id 26, n 25, e 20
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the east and its shops to the west.~
+id 27, n 14, s 28
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the east and its shops to the west.~
+id 28, n 25, w 22
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the west and its shops to the east.~
+id 29, n 30, s 13
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the north and its shops to the south.~
+id 30, e 31, s 29
+
+room
+The north gate of Midgaard
+You walk along a narrow road between Midgaard's walls to the north and its shops to the south. A gated guardpost watches over traffic entering and leaving the city.~
+id 31, w 30, n 32, e 33
+
+room
+Outside the north gate of Midgaard
+A trail leads north into the mountains.~
+id 32, s 31
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the north and its shops to the south.~
+id 33, w 31, s 34
+
+room
+A walled road around Midgaard
+You walk along a narrow road between Midgaard's walls to the north and its shops to the south.~
+id 34, n 33, s 14
