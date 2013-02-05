@@ -14,7 +14,12 @@ class Assignable(object):
 					print e
 	
 	def tryParse(self, value):
-		return int(value) if value.isdigit() else value
+		if value.isdigit():
+			return int(value)
+		try:
+			return float(value)
+		except ValueError:
+			return value
 	
 	def assign(self, instance, instanceProperty, value):
 		print "assign not implemented"
@@ -57,13 +62,17 @@ class Properties(Assignable):
 		return False
 
 class Attributes(Assignable):
+	def assign(self, instance, instanceProperty, value, instanceMember = None):
+		if instanceMember == None:
+			instanceMember = 'attributes'
+		attr = getattr(instance, instanceMember)
+		setattr(attr, instanceProperty, value)
+		if instanceProperty in ['hp', 'mana', 'movement']:
+			setattr(attr, 'max'+instanceProperty, value)
+
+class Costs(Attributes):
 	def assign(self, instance, instanceProperty, value):
-		if hasattr(instance.attributes, instanceProperty):
-			setattr(instance.attributes, instanceProperty, value)
-			if instanceProperty in ['hp', 'mana', 'movement']:
-				setattr(instance.attributes, 'max'+instanceProperty, value)
-		else:
-			raise AttributeError('Attribute "'+instanceProperty+'" is not defined in '+instance.__class__.__name__)
+		super(Costs, self).assign(instance, instanceProperty, value, "costs")
 
 class Abilities(Assignable):
 	def process(self, parser, instance):
@@ -74,6 +83,16 @@ class Abilities(Assignable):
 		from mudpy.factory import Factory
 		for i in line.split(','):
 			instance.abilities.append(Factory.new(Ability = i.strip()))
+
+class Affects(Assignable):
+	def process(self, parser, instance):
+		line = parser.readcleanline()
+		if not line:
+			from parser import ParserException
+			raise ParserException
+		from mudpy.factory import Factory
+		for i in line.split(','):
+			instance.affects.append(Factory.new(Affect = i.strip()))
 
 class Proficiencies(Assignable):
 	def process(self, parser, instance):

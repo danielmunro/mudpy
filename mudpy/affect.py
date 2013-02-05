@@ -3,12 +3,13 @@ from heartbeat import Heartbeat
 from actor import User
 
 class Affect(object):
-	def __init__(self, affected):
+	def __init__(self):
 		self.name = "an affect"
-		self.wearOffMessage = ""
+		self.msgYouWearOff = ""
+		self.msgRoomWearOff = ""
 		self.attributes = Attributes()
 		self.timeout = 0
-		self.affected = affected
+		self.affected = None
 	
 	def start(self):
 		Heartbeat.instance.attach('tick', self)
@@ -17,10 +18,10 @@ class Affect(object):
 	def tick(self):
 		self.timeout -= 1
 		if self.timeout < 0:
-			Heartbeat.instance.detach(self)
+			Heartbeat.instance.detach('tick', self)
 			self.affected.affects.remove(self)
-			if isinstance(self.affected, User) and self.wearOffMessage:
-				self.affected.notify(self.wearOffMessage+"\n"+self.affected.prompt())
+			if isinstance(self.affected, User) and self.msgYouWearOff:
+				self.affected.notify(self.msgYouWearOff+"\n"+self.affected.prompt())
 
 	def __str__(self):
 		return self.name

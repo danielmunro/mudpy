@@ -24,7 +24,8 @@ class Room(object):
 			if actor == "*":
 				generalMessage = message
 			else:
-				actor.notify(message+"\n")
+				if message:
+					actor.notify(message+"\n")
 				announcedActors.append(actor)
 		if generalMessage:
 			for actor in list(set(self.actors) - set(announcedActors)):

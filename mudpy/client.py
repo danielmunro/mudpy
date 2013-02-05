@@ -28,10 +28,13 @@ class Client(Protocol):
 		data = data.strip()
 		if self.user:
 			args = data.split(" ")
-			action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.__subclasses__())
+			action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
 			if action:
 				args.pop(0)
-				action().tryPerform(self.user, args)
+				if isinstance(action, Ability):
+					action.perform(self.user, args)
+				else:
+					action().tryPerform(self.user, args)
 			else:
 				self.user.notify("What was that?")
 			self.write("\n"+self.user.prompt())
@@ -86,6 +89,7 @@ class Client(Protocol):
 			self.user.room.actors.append(self.user)
 			Factory.new(Command = "look").tryPerform(self.user)
 			self.write("\n"+self.user.prompt())
+			from save import Save
 			Save.saveUser(self.user)
 			Debug.log('client created new user as '+str(self.user))
 

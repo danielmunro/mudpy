@@ -82,9 +82,11 @@ class Parser(object):
 
 	@staticmethod
 	def initializeParsers():
+		from affect import AffectParser
+		from ability import AbilityParser
 		from area import AreaParser
 		from race import RaceParser
-		for subclass in ['RaceParser', 'AreaParser']:
+		for subclass in ['AffectParser', 'AbilityParser', 'RaceParser', 'AreaParser']:
 			locals()[subclass]().finishInitialization()
 
 	def finishInitialization(self): pass
