@@ -67,8 +67,6 @@ class Attributes(Assignable):
 			instanceMember = 'attributes'
 		attr = getattr(instance, instanceMember)
 		setattr(attr, instanceProperty, value)
-		if instanceProperty in ['hp', 'mana', 'movement']:
-			setattr(attr, 'max'+instanceProperty, value)
 
 class Costs(Attributes):
 	def assign(self, instance, instanceProperty, value):

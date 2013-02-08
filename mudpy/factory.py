@@ -12,7 +12,7 @@ class Factory:
 	def new(scalar = True, newWith = None, **kwargs):
 		lookups = []
 		for _type, _class in kwargs.iteritems():
-			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals);
+			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals, Ability.instances);
 			if lookup:
 				lookups.append(lookup)
 			else:

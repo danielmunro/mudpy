@@ -33,10 +33,3 @@ class Attributes(object):
 	def load(self):
 		from load import Load
 		Load(self, self.persistibleProperties).execute()
-
-class ActorAttributes(Attributes):
-	def __init__(self):
-		self.maxhp = 0
-		self.maxmana = 0
-		self.maxmovement = 0
-		super(ActorAttributes, self).__init__()

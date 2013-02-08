@@ -14,6 +14,10 @@ class Affect(object):
 	def start(self):
 		Heartbeat.instance.attach('tick', self)
 		self.affected.affects.append(self)
+		for attr in vars(self.attributes):
+			modifier = getattr(self.attributes, attr)
+			if modifier > 0 and modifier < 1:
+				setattr(self.attributes, attr, self.affected.getAttribute(attr) * modifier)
 	
 	def tick(self):
 		self.timeout -= 1

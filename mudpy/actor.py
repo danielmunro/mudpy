@@ -1,6 +1,6 @@
 from __future__ import division
 from random import choice
-from attributes import Attributes, ActorAttributes
+from attributes import Attributes
 from heartbeat import Heartbeat
 from observer import Observer
 
@@ -20,6 +20,9 @@ class Actor(Observer):
 		self.alignment = 0
 		self.attributes = self.getDefaultAttributes()
 		self.trainedAttributes = Attributes()
+		self.curhp = self.attributes.hp
+		self.curmana = self.attributes.mana
+		self.curmovement = self.attributes.movement
 		self.sex = "neutral"
 		self.room = None
 		self.abilities = []
@@ -83,17 +86,21 @@ class Actor(Observer):
 	
 	def tick(self):
 		modifier = 0.1 if self.disposition != Disposition.INCAPACITATED else -0.1
-		self.trySetAttribute('hp', self.getAttribute('hp') + self.getMaxAttribute('hp') * modifier)
-		self.trySetAttribute('mana', self.getAttribute('mana') + self.getMaxAttribute('mana') * modifier)
-		self.trySetAttribute('movement', self.getAttribute('movement') + self.getMaxAttribute('movement') * modifier)
+		self.curhp += self.getAttribute('hp') * modifier
+		self.curmana += self.getAttribute('mana') * modifier
+		self.curmovement += self.getAttribute('movement') * modifier
+		self.normalizestats()
 	
 	def pulse(self):
 		self.doRegularAttacks()
 	
-	def trySetAttribute(self, attributeName, amount):
-		maxAttributeAmount = self.getMaxAttribute(attributeName)
-		setattr(self.attributes, attributeName, amount if amount < maxAttributeAmount else maxAttributeAmount)
-	
+	def normalizestats(self):
+		for attr in ['hp', 'mana', 'movement']:
+			maxstat = self.getAttribute(attr)
+			actorattr = 'cur'+attr
+			if getattr(self, actorattr) > maxstat:
+				setattr(self, actorattr, maxstat)
+
 	def getUnmodifiedAttribute(self, attributeName):
 		return getattr(self.attributes, attributeName) + getattr(self.trainedAttributes, attributeName) + getattr(self.race.attributes, attributeName)
 
@@ -104,17 +111,13 @@ class Actor(Observer):
 		for equipment in self.equipped.values():
 			if equipment:
 				amount += getattr(equipment.attributes, attributeName)
-		return min(amount, self.getMaxAttribute(attributeName))
+		if attributeName in Attributes.stats:
+			return min(amount, self.getMaxAttribute(attributeName))
+		return amount
 
 	def getMaxAttribute(self, attributeName):
-		if attributeName in self.attributes.stats:
-			racialAttr = getattr(self.race.attributes, attributeName)
-			return min(getattr(self.attributes, attributeName) + racialAttr + 4,racialAttr + 8)
-		else:
-			try:
-				return getattr(self.attributes, 'max'+attributeName)
-			except:
-				return 0
+		racialAttr = getattr(self.race.attributes, attributeName)
+		return min(getattr(self.attributes, attributeName) + racialAttr + 4, racialAttr + 8)
 	
 	def getAbilities(self):
 		return self.abilities + self.race.abilities
@@ -140,7 +143,7 @@ class Actor(Observer):
 			Heartbeat.instance.detach('pulse', self)
 	
 	def status(self):
-		hppercent = self.getAttribute('hp') / self.getMaxAttribute('hp')
+		hppercent = self.curhp / self.getAttribute('hp')
 		
 		if hppercent < 0.1:
 			description = 'is in awful condition'
@@ -228,7 +231,7 @@ class Actor(Observer):
 
 	@staticmethod
 	def getDefaultAttributes():
-		a = ActorAttributes()
+		a = Attributes()
 		a.hp = 20
 		a.mana = 100
 		a.movement = 100
@@ -238,9 +241,6 @@ class Actor(Observer):
 		a.ac_magic = 100
 		a.hit = 1
 		a.dam = 1
-		a.maxhp = 20
-		a.maxmana = 100
-		a.maxmovement = 100
 		return a
 
 	def dispatch(self, *eventlist, **events):
@@ -276,13 +276,10 @@ class Mob(Actor):
 			self.move()
 			self.movement_timer = self.movement
 	
-	def trySetAttribute(self, attribute, value):
-		if attribute == 'hp':
-			if value < 0:
-				self.die()
-				return
-
-		super(Mob, self).trySetAttribute(attribute, value)
+	def normalizestats(self):
+		if self.curhp < 0:
+			self.die()
+		super(Mob, self).normalizestats()
 	
 	def die(self):
 		super(Mob, self).die()
@@ -317,20 +314,16 @@ class User(Actor):
 		if self.target:
 			self.notify(self.target.status()+"\n\n"+self.prompt())
 	
-	def trySetAttribute(self, attribute, value):
-		if attribute == 'hp':
-			curhp = self.getAttribute('hp')
-			if value < -9:
-				self.die()
-				return
-			elif value <= 0 and curhp > 0:
-				self.disposition = Disposition.INCAPACITATED
-				self.notify("You are incapacitated and will slowly die if not aided.\n")
-			elif curhp <= 0 and value > 0:
-				self.disposition = Disposition.LAYING
-
-		super(User, self).trySetAttribute(attribute, value)
-
+	def normalizestats(self):
+		if self.curhp < -9:
+			self.die()
+		elif self.curhp <= 0:
+			self.disposition = Disposition.INCAPACITATED
+			self.notify("You are incapacitated and will slowly die if not aided.\n")
+		elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
+			self.disposition = Disposition.LAYING
+			self.notify("You suddenly feel a bit better.\n")
+		super(User, self).normalizestats()
 	
 	def die(self):
 		super(User, self).die()
@@ -404,7 +397,8 @@ class Attack:
 
 		#need to do this check again here, can't have the actor dead before the hit message
 		if roll > 0: 
-			aggressor.target.trySetAttribute('hp', aggressor.target.getAttribute('hp') - dam_roll)
+			aggressor.target.curhp -= dam_roll
+			aggressor.target.normalizestats()
 
 		aggressor.dispatch(attackresolution=self)
 	
