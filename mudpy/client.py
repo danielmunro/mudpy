@@ -5,7 +5,14 @@ from command import Command, MoveDirection
 from utility import *
 from debug import Debug
 
+import time
+
 class Client(Protocol):
+	def __init__(self):
+		self.commandbuffer = []
+		from heartbeat import Heartbeat
+		Heartbeat.instance.attach('processCommand', self)
+
 	def connectionMade(self):
 		self.write("By what name do you wish to be known? ");
 		self.factory.clients.append(self)
@@ -24,22 +31,35 @@ class Client(Protocol):
 		self.transport.loseConnection()
 	
 	def dataReceived(self, data):
+		self.commandbuffer.append(data.strip())
+	
+	def processCommand(self):
 		from ability import Ability
-		data = data.strip()
-		if self.user:
-			args = data.split(" ")
-			action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
-			if action:
-				args.pop(0)
-				if isinstance(action, Ability):
-					action.perform(self.user, args)
+		if self.user and self.user.delay_counter > 0:
+			currenttime = int(time.time())
+			if currenttime > self.user.last_delay:
+				self.user.delay_counter -= 1
+				self.user.last_delay = currenttime
+			return
+
+		try:
+			data = self.commandbuffer.pop(0)
+			if self.user:
+				args = data.split(" ")
+				action = startsWith(args[0], MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
+				if action:
+					args.pop(0)
+					if isinstance(action, Ability):
+						action.perform(self.user, args)
+						self.user.delay_counter += action.delay+1
+					else:
+						action().tryPerform(self.user, args)
 				else:
-					action().tryPerform(self.user, args)
+					self.user.notify("What was that?")
+				self.write("\n"+self.user.prompt())
 			else:
-				self.user.notify("What was that?")
-			self.write("\n"+self.user.prompt())
-		else:
-			self.login(data)
+				self.login(data)
+		except IndexError: pass
 	
 	def write(self, message):
 		self.transport.write(message);

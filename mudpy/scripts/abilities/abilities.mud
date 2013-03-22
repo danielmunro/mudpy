@@ -10,7 +10,7 @@ You fail to move silently.
 
 ability
 berserk
-level 0, type skill, hook input
+level 0, type skill, hook input, delay 2
 movement .5
 berserk
 Your pulse speeds up as you are consumed by rage!

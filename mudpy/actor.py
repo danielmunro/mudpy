@@ -296,6 +296,8 @@ class User(Actor):
 	def __init__(self):
 		super(User, self).__init__()
 		Heartbeat.instance.attach('stat', self)
+		self.delay_counter = 0
+		self.last_delay = 0
 		self.trains = 5
 		self.practices = 5
 		self.client = None

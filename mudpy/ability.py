@@ -11,6 +11,7 @@ class Ability(object):
 		self.level = 0
 		self.affects = []
 		self.costs = Attributes()
+		self.delay = 0
 		self.type = "" # skill or spell
 		self.msgYouSuccess = ""
 		self.msgYouFail = ""
