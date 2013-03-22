@@ -1,71 +1,71 @@
 proficiency
-melee
-actionhook attackresolution
-
-proficiency
 hand to hand
-actionhook attackresolution
+hook attackresolution, improvechance .99
 
 proficiency
 light armor
-actionhook attacked
+hook attackstart
 
 proficiency
 heavy armor
-actionhook attacked
+hook attackstart
 
 proficiency
 parry
-actionhook attacked
+hook attackstart
 
 proficiency
 dodge
-actionhook attacked
+hook attackstart
 
 proficiency
 slash
-actionhook attack
+hook attackmodifier
 
 proficiency
 pierce
-actionhook attack
+hook attackmodifier
 
 proficiency
 bash
-actionhook attack
+hook attackmodifier
+
+proficiency
+melee
+hook attackmodifier, improvechance .99
 
 proficiency
 sneak
-actionhook move
+hook move
 
 proficiency
 haggle
-actionhook sell
+hook sell
 
 proficiency
 alchemy
-actionhook brew
+hook brew
 
 proficiency
 curative
-actionhook cast
+hook cast
 
 proficiency
 healing
-actionhook cast
+hook cast
 
 proficiency
 maladictions
-actionhook cast
+hook cast
 
 proficiency
 benedictions
-actionhook cast
+hook cast
 
 proficiency
 sorcery
-actionhook cast
+hook cast
 
 proficiency
 elemental
-actionhook cast
+hook cast

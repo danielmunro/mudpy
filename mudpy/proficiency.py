@@ -1,30 +1,64 @@
 class Proficiency(object):
-	name = ""
-	actionhook = ""
-	improvementthreshold = 0.95
-	level = 15
-	observer = None
-
 	def __init__(self, observer = None):
+		self.name = ""
+		self.hook = ""
+		self.improvechance = 0.05
+		self.level = 15
+
 		if observer:
 			self.observer = observer
-			observer.attach(self.actionhook, self)
+			observer.attach(self.hook, self)
+		else:
+			self.observer = None
 	
-	def checkimprove(self, subject, improvementthreshold):
-		if improvementthreshold is None:
-			improvementthreshold = self.improvementthreshold
+	def checkimprove(self):
 		from random import random
-		roll = random()
-		if roll > self.improvementthreshold:
+		if random() < self.improvechance:
 			self.level += 1
-			return True
-		return False
-	
-	def messageSuccess(self):
-		return "Your skill in "+str(self)+" improves!\n"
+			self.observer.notify("Your skill in "+str(self)+" improves!")
+		elif random() - 0.01 < self.improvechance:
+			self.level += 1
+			self.observer.notify("Learning from your mistakes, your skill in "+str(self)+" improves!")
 	
 	def messageLearnSuccess(self):
-		return "Learning from your mistakes, your skill in "+str(self)+" improves!\n"
+		return 
 	
 	def __str__(self):
 		return self.name
+	
+	def attackstart(self):
+		self.checkimprove()
+
+	def attackmodifier(self):
+		self.checkimprove()
+
+	def attackresolution(self):
+		self.checkimprove()
+	
+	def move(self):
+		self.checkimprove()
+	
+	def sell(self):
+		self.checkimprove()
+	
+	def brew(self):
+		self.checkimprove()
+	
+	def cast(self):
+		self.checkimprove()
+	
+	def melee(self, attack):
+		aggro = attack.aggressor
+		tar = aggro.target
+
+		try:
+			aggrolvl = aggro.proficiencies['melee']
+		except KeyError:
+			aggrolvl = 1
+
+		try:
+			tarlvl = tar.proficiencies['melee']
+		except KeyError:
+			tarlvl = 1
+
+		attack.hitroll += aggro.level * (aggrolvl / 100) - (tarlvl / 100)
