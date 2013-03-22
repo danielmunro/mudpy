@@ -10,3 +10,9 @@ class Debug:
 			Debug.fp.write('\nnew log started\n')
 		Debug.fp.write('['+strftime('%Y-%m-%d %H:%M:%S')+' '+status+'] '+message+'\n')
 		Debug.fp.flush()
+
+		# better error visibility
+		if status == 'error':
+			print message
+			import sys
+			sys.exit()
