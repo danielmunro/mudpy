@@ -6,7 +6,7 @@ from observer import Observer
 
 class Actor(Observer):
 	MAX_STAT = 25
-	EVENT_TYPES = ['attackresolution', 'attacked', 'attack', 'move', 'sell', 'brew', 'cast']
+	EVENT_TYPES = ['attackstart', 'attackmodifier', 'attackresolution', 'attack', 'move', 'sell', 'brew', 'cast']
 
 	def __init__(self):
 		super(Actor, self).__init__()
@@ -170,10 +170,10 @@ class Actor(Observer):
 	
 	def die(self):
 		if self.target:
-			self.target.awardExperienceFrom(self)
+			self.target.rewardExperienceFrom(self)
 		self.removeFromBattle()
 		self.disposition = Disposition.LAYING
-		setattr(self.attributes, 'hp', 1)
+		self.curhp = 1
 	
 	def rewardExperienceFrom(self, victim):
 		self.experience += victim.getKillExperience(self)
@@ -301,7 +301,7 @@ class User(Actor):
 		self.client = None
 	
 	def prompt(self):
-		return "%i %i %i >> " % (self.getAttribute('hp'), self.getAttribute('mana'), self.getAttribute('movement'))
+		return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
 	
 	def notify(self, message):
 		self.client.write(message)
@@ -350,11 +350,15 @@ class Disposition:
 
 from random import uniform
 class Attack:
-	aggressor = None
-	success = False
 
 	def __init__(self, aggressor, attackname):
 		self.aggressor = aggressor
+		self.success = False
+		self.hitroll = 0
+		self.damroll = 0
+		self.defroll = 0
+
+		self.aggressor.dispatch(attackstart=self)
 
 		# initial rolls for attack/defense
 		hit_roll = aggressor.getAttribute('hit') + self.getAttributeModifier(aggressor, 'dex')
@@ -374,8 +378,11 @@ class Attack:
 		except AttributeError:
 			ac = 0
 
+		self.aggressor.dispatch(attackmodifier=self)
+
 		# roll the dice and determine if the attack was successful
 		roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
+
 		self.success = roll > 0
 		if self.success:
 			isHit = "hits"
