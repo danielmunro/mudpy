@@ -18,6 +18,9 @@ class Ability(object):
 		self.msgRoomSuccess = ""
 		self.msgRoomFail = ""
 		self.hook = ""
+	
+	def tryPerform(self, invoker, args):
+		self.perform(invoker, args)
 
 	def perform(self, invoker, args):
 		try:

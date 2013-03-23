@@ -1,3 +1,5 @@
+import inspect
+
 def startsWith(needle, *haystack):
 	return checkMatch(needle, 'startswith', haystack)
 
@@ -9,4 +11,4 @@ def checkMatch(needle, function, haystack):
 		for i in h:
 			att = getattr(getattr(i, 'name').lower(), function)(needle)
 			if not att is False and (att > -1 or att is True):
-				return i
+				return i() if inspect.isclass(i) else i

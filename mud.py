@@ -14,7 +14,7 @@ Parser.initializeParsers()
 Debug.log('scripts initialized')
 
 endpoint = TCP4ServerEndpoint(reactor, 9000)
-endpoint.listen(ClientFactory(heartbeat))
+endpoint.listen(ClientFactory())
 reactor.callInThread(heartbeat.start)
 Debug.log('mud ready to accept clients ['+str(stopwatch)+'s]')
 
