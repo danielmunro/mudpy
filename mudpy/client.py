@@ -50,15 +50,16 @@ class Client(Protocol):
 		try:
 			data = self.commandbuffer.pop(0)
 			if self.user:
-				args = data.split(" ")
-				lookup = args.pop(0)
-				action = startsWith(lookup, MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
-				if action:
-					action.tryPerform(self.user, args)
-					if isinstance(action, Ability):
-						self.user.delay_counter += action.delay+1
-				else:
-					self.user.notify("What was that?")
+				if data:
+					args = data.split(" ")
+					lookup = args.pop(0)
+					action = startsWith(lookup, MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
+					if action:
+						action.tryPerform(self.user, args)
+						if isinstance(action, Ability):
+							self.user.delay_counter += action.delay+1
+					else:
+						self.user.notify("What was that?")
 				self.write("\n"+self.user.prompt())
 			else:
 				user = self.login.doStep(data)
@@ -67,7 +68,7 @@ class Client(Protocol):
 		except IndexError: pass
 	
 	def write(self, message):
-		self.transport.write(message);
+		self.transport.write(str(message));
 	
 class Login:
 
@@ -91,6 +92,7 @@ class Login:
 		if user:
 			user.client = self.client
 			Factory.new(Command = "look").tryPerform(user)
+			user.notify("\n"+user.prompt())
 			Debug.log('client logged in as '+str(user))
 			return user
 		self.newuser = User()
