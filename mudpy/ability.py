@@ -10,14 +10,12 @@ class Ability(object):
 		self.name = "an ability"
 		self.level = 0
 		self.affects = []
-		self.costs = Attributes()
+		self.costs = {}
 		self.delay = 0
 		self.type = "" # skill or spell
-		self.msgYouSuccess = ""
-		self.msgYouFail = ""
-		self.msgRoomSuccess = ""
-		self.msgRoomFail = ""
 		self.hook = ""
+		self.aggro = False
+		self.messages = {}
 	
 	def tryPerform(self, invoker, args):
 		self.perform(invoker, args)
@@ -46,34 +44,43 @@ class Ability(object):
 		return success
 
 	def announceSuccess(self, invoker, receiver):
-		if self.msgYouSuccess:
-			receiver.notify(self.msgYouSuccess)
-		if self.msgRoomSuccess:
-			receiver.room.announce({
-				receiver: None,
-				'*': self.msgRoomSuccess
-			})
+		try:
+			success = self.messages['self']['success']
+		except KeyError:
+			success = None
+		try:
+			roomSuccess = self.messages['room']['success']
+		except KeyError:
+			roomSuccess = None
+		receiver.room.announce({
+			receiver: success,
+			'*': roomSuccess
+		})
 
 	def announceFail(self, invoker, receiver):
-		if self.msgYouFail:
-			receiver.notify(self.msgYouFail)
-		if self.msgRoomFail:
-			receiver.room.announce({
-				receiver: None,
-				'*': self.msgRoomFail
-			})
+		try:
+			fail = self.messages['self']['fail']
+		except KeyError:
+			success = None
+		try:
+			roomFail = self.messages['room']['fail']
+		except KeyError:
+			roomFail = None
+		receiver.room.announce({
+			receiver: fail,
+			'*': roomFail
+		})
 	
 	def applyCost(self, invoker):
-		for attr, cost in vars(self.costs).items():
-			if not attr == "id" and cost != 0:
-				curattr = invoker.getAttribute(attr)
-				cost *= curattr if cost > 0 and cost < 1 else 1
-				if curattr < cost:
-					return False
-		for attr, cost in vars(self.costs).items():
-			if not attr == "id" and cost != 0:
-				cost *= curattr if cost > 0 and cost < 1 else 1
-				setattr(invoker.attributes, attr, curattr - cost)
+		for attr, cost in self.costs.iteritems():
+			curattr = getattr(invoker, 'cur'+attr)
+			cost *= curattr if cost > 0 and cost < 1 else 1
+			if curattr < cost:
+				return False
+		for attr, cost in self.costs.iteritems():
+			curattr = getattr(invoker, 'cur'+attr)
+			cost *= curattr if cost > 0 and cost < 1 else 1
+			setattr(invoker, 'cur'+attr, curattr-cost)
 		return True
 	
 	def __str__(self):

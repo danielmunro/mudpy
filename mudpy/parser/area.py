@@ -5,7 +5,9 @@ class AreaParser(Parser):
 		self.lastroom = None
 		self.lastinventory = None
 		self.lastarea = None
-		super(AreaParser, self).__init__('areas', self.parseArea)
+		super(AreaParser, self).__init__('areas', self.parseArea, self.parseJsonArea)
+
+	def parseJsonArea(self, instance): pass
 	
 	def parseArea(self, _class):
 		from mudpy.room import Room, Randomhall, Grid, Area

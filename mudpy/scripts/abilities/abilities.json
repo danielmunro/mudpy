@@ -1,0 +1,166 @@
+[{
+	"Ability":{
+		"properties":{
+			"name":"sneak",
+			"level":"0",
+			"type":"skill",
+			"hook":"input",
+			"costs":{
+				"movement":1
+			},
+			"messages":{
+				"self":{
+					"success":"You silently fade into the shadows.",
+					"fail":"You fail to move silently."
+				},
+				"room":{
+					"success":"%s fades into the shadows."
+				}
+			}
+		},
+		"affects":["sneak"]
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"berserk",
+			"level":"0",
+			"type":"skill",
+			"hook":"input",
+			"delay": "2",
+			"costs":{
+				"movement":0.5
+			},
+			"messages":{
+				"self":{
+					"success":"Your pulse speeds up as you are consumed by rage!",
+					"fail":"Your face gets red as you huff and stomp around."
+				},
+				"room":{
+					"success":"%s goes into a rage!",
+					"fail": "Stomps around in a huff."
+				}
+			}
+		},
+		
+		"affects":["berserk"]
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"bash",
+			"level":"0",
+			"type":"skill",
+			"hook":"input",
+			"delay": "2",
+			"aggro": "True",
+			"costs":{
+				"movement":5
+			},
+			"messages":{
+				"self":{
+					"success":"You slam into %s and send them flying!",
+					"fail":"You fall flat on your face!"
+				},
+				"room":{
+					"success":"%s slams into %s!",
+					"fail": "%s falls flat on its face!"
+				}
+			}
+		},
+		"affects":["stun"]
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"dirt kick",
+			"level":"5",
+			"type":"skill",
+			"hook":"input",
+			"delay": "1",
+			"aggro": "True",
+			"costs":{
+				"movement":3
+			},
+			"messages":{
+				"self":{
+					"success":"You kick dirt into %s's eyes!",
+					"fail":"You kick around some dirt."
+				},
+				"room":{
+					"success":"%s kicks dirt into %s's eyes!",
+					"fail": "%s kicks around some dirt."
+				}
+			}
+		}
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"kick",
+			"level":"10",
+			"type":"skill",
+			"hook":"input",
+			"delay": "1",
+			"aggro": "True",
+			"costs":{
+				"movement":2
+			},
+			"messages":{
+				"self":{
+					"success":"Your kick lands a direct hit on %s!",
+					"fail":"You kick your legs widly."
+				},
+				"room":{
+					"success":"%s kicks %s, it's a direct hit.",
+					"fail": "%s kicks and misses."
+				}
+			}
+		}
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"hand to hand",
+			"level":"0",
+			"type":"skill",
+			"hook":"hit"
+		}
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"infravision",
+			"level":"0",
+			"type":"skill",
+			"hook":"look"
+		}
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"second attack",
+			"level":"10",
+			"type":"skill",
+			"hook":"attack"
+		}
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"cure light",
+			"level":"0",
+			"type":"spell",
+			"hook":"input"
+		}
+	}
+}, {
+	"Ability":{
+		"properties":{
+			"name":"heal",
+			"level":"20",
+			"type":"spell",
+			"hook":"input"
+		}
+	}
+}]

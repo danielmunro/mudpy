@@ -1,17 +1,22 @@
 from assign import *
 from mudpy.debug import Debug
+from mudpy.ability import Ability
+
+import os, json
 
 class Parser(object):
 	BASEPATH = 'mudpy/scripts'
 	_globals = []
 
-	def __init__(self, baseDir, fn):
+	def __init__(self, baseDir, fn, jsonFn):
 		Debug.log('parsing scripts for '+baseDir)
 		self.definitions = {}
 		self.fp = None
 		path = self.BASEPATH+'/'+baseDir
-		self.parseFile(path+'/'+baseDir+'.definitions', self.parseDefinitions)
-		self.parseDir(path, fn)
+		definitions = path+'/'+baseDir+'.definitions'
+		if os.path.isfile(definitions):
+			self.parseFile(definitions, self.parseDefinitions)
+		self.parseDir(path, fn, jsonFn)
 
 	def parseDefinitions(self, defname):
 		defname = self.getclassfromline(defname);
@@ -28,16 +33,32 @@ class Parser(object):
 			else:
 				self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
 	
-	def parseDir(self, path, fn):
-		import os
+	def parseDir(self, path, fn, jsonFn):
 		for infile in os.listdir(path):
 			fullpath = path+'/'+infile
 			if os.path.isdir(fullpath):
 				# recurse through scripts directory tree
-				self.parseDir(fullpath, fn)
+				self.parseDir(fullpath, fn, jsonFn)
 			elif fullpath.endswith('.mud'):
 				# parse script
 				self.parseFile(fullpath, fn)
+			elif fullpath.endswith('.json'):
+				self.parseJson(fullpath, jsonFn)
+	
+	def parseJson(self, scriptFile, fn):
+		from mudpy.factory import Factory
+		data = json.load(open(scriptFile))
+		for item in data:
+			for _class in item:
+				instance = globals()[_class]()
+				for descriptor in item[_class]:
+					if descriptor == 'properties':
+						for prop in item[_class][descriptor]:
+							setattr(instance, prop, self.guessType(item[_class][descriptor][prop]))
+					elif descriptor == 'affects':
+						for affect in item[_class][descriptor]:
+							instance.affects.append(Factory.new(Affect=affect))
+				fn(instance)
 
 	def parseFile(self, scriptFile, fn):
 		Debug.log('parsing script file: '+scriptFile)
@@ -77,6 +98,21 @@ class Parser(object):
 		return self.readline(False)
 
 	@staticmethod
+	def guessType(value):
+		try:
+			if value.isdigit():
+				return int(value)
+			try:
+				return float(value)
+			except ValueError: pass
+		except AttributeError: pass
+		if value == "True":
+			return True
+		if value == "False":
+			return False
+		return value
+
+	@staticmethod
 	def getclassfromline(line):
 		return line.strip().title()
 
@@ -87,7 +123,7 @@ class Parser(object):
 		from ability import AbilityParser
 		from area import AreaParser
 		from race import RaceParser
-		for subclass in ['ProficiencyParser', 'AffectParser', 'AbilityParser', 'RaceParser', 'AreaParser']:
+		for subclass in ['AffectParser', 'ProficiencyParser', 'AbilityParser', 'RaceParser', 'AreaParser']:
 			locals()[subclass]().finishInitialization()
 
 	def finishInitialization(self): pass
