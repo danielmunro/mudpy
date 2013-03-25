@@ -2,6 +2,7 @@ from assign import *
 from mudpy.debug import Debug
 from mudpy.ability import Ability
 from mudpy.affect import Affect
+from mudpy.proficiency import Proficiency
 
 import os, json
 
