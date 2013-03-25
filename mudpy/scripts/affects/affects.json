@@ -1,0 +1,36 @@
+[{
+	"Affect":{
+		"properties":{
+			"name":"sneak",
+			"messages":{
+				"self":"You no longer move silently.",
+				"room":"%s appears from the shadows."
+			}
+		}
+	}
+},{
+	"Affect":{
+		"properties":{
+			"name":"berserk",
+			"messages":{
+				"self":"You calm down.",
+				"room":"%s calms down."
+			}
+		},
+		"attributes":{
+			"hp":0.1,
+			"hit":0.1,
+			"dam":0.1
+		}
+	}
+},{
+	"Affect":{
+		"properties":{
+			"name":"stun"
+		},
+		"attributes":{
+			"int":-1,
+			"dex":-1
+		}
+	}
+}]

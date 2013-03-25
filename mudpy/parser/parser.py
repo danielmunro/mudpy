@@ -1,6 +1,7 @@
 from assign import *
 from mudpy.debug import Debug
 from mudpy.ability import Ability
+from mudpy.affect import Affect
 
 import os, json
 
@@ -50,6 +51,7 @@ class Parser(object):
 		data = json.load(open(scriptFile))
 		for item in data:
 			for _class in item:
+				_class = str(_class)
 				instance = globals()[_class]()
 				for descriptor in item[_class]:
 					if descriptor == 'properties':
@@ -58,6 +60,9 @@ class Parser(object):
 					elif descriptor == 'affects':
 						for affect in item[_class][descriptor]:
 							instance.affects.append(Factory.new(Affect=affect))
+					elif descriptor == "attributes":
+						for attribute in item[_class][descriptor]:
+							setattr(instance.attributes, attribute, self.guessType(item[_class][descriptor][attribute]))
 				fn(instance)
 
 	def parseFile(self, scriptFile, fn):
