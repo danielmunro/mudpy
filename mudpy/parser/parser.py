@@ -3,6 +3,7 @@ from mudpy.debug import Debug
 from mudpy.ability import Ability
 from mudpy.affect import Affect
 from mudpy.proficiency import Proficiency
+from mudpy.race import Race
 
 import os, json
 
@@ -64,6 +65,9 @@ class Parser(object):
 					elif descriptor == "attributes":
 						for attribute in item[_class][descriptor]:
 							setattr(instance.attributes, attribute, self.guessType(item[_class][descriptor][attribute]))
+					elif descriptor == "proficiencies":
+						for prof, level in item[_class][descriptor].iteritems():
+							instance.addProficiency(prof, level)
 				fn(instance)
 
 	def parseFile(self, scriptFile, fn):

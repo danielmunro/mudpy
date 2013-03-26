@@ -1,0 +1,185 @@
+[{
+	"Race":{
+		"properties":{
+			"name":"human",
+			"isPlayable":"True"
+		}
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"faerie",
+			"isPlayable":"True",
+			"size":1
+		},
+		"attributes":{
+			"str":15,
+			"int":17,
+			"wis":17,
+			"dex":17,
+			"con":12,
+			"cha":15
+		},
+		"proficiencies":{
+			"dodge":5,
+			"maladictions":10,
+			"sorcery":10
+		}
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"ogre",
+			"isPlayable":"True",
+			"size":4
+		},
+		"attributes":{
+			"str":17,
+			"int":13,
+			"wis":16,
+			"dex":14,
+			"con":17,
+			"cha":12
+		},
+		"proficiencies":{
+			"bash":10,
+			"melee":5,
+			"heavy armor":5
+		},
+		"skills":["bash"]
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"giant",
+			"isPlayable":"True",
+			"size":5
+		},
+		"attributes":{
+			"str":19,
+			"int":12,
+			"wis":13,
+			"dex":14,
+			"con":18,
+			"cha":11
+		},
+		"proficiencies":{
+			"bash":5,
+			"melee":5,
+			"alchemy":5,
+			"elemental":5
+		},
+		"skills":["hand to hand"]
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"volare",
+			"isPlayable":"True"
+		},
+		"attributes":{
+			"str":11,
+			"int":16,
+			"wis":18,
+			"dex":15,
+			"con":13,
+			"cha":18
+		},
+		"proficiencies":{
+			"curative":10,
+			"healing":10
+		}
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"gnome",
+			"isPlayable":"True",
+			"size":2
+		},
+		"attributes":{
+			"str":12,
+			"int":17,
+			"wis":14,
+			"dex":18,
+			"con":12,
+			"cha":15
+		},
+		"proficiencies":{
+			"dodge":10,
+			"sneak":10,
+			"maladictions":5,
+			"sorcery":5
+		},
+		"skills":["sneak", "dirt kick", "infravision"]
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"elf",
+			"isPlayable":"True",
+			"size":2
+		},
+		"attributes":{
+			"str":12,
+			"int":17,
+			"wis":16,
+			"dex":18,
+			"con":12,
+			"cha":15
+		},
+		"proficiencies":{
+			"dodge":5,
+			"sneak":5,
+			"pierce":5,
+			"light armor":5,
+			"sorcery":5
+		},
+		"skills":["sneak"]
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"dwarf",
+			"isPlayable":"True",
+			"size":2
+		},
+		"attributes":{
+			"str":18,
+			"int":14,
+			"wis":16,
+			"dex":13,
+			"con":18,
+			"cha":12
+		},
+		"proficiencies":{
+			"melee":10,
+			"slash":5,
+			"heavy armor":5
+		},
+		"skills":["berserk"]
+	}
+},{
+	"Race":{
+		"properties":{
+			"name":"kobold",
+			"size":2
+		},
+		"attributes":{
+			"str":12,
+			"int":17,
+			"wis":16,
+			"dex":18,
+			"con":12,
+			"cha":15
+		},
+		"proficiencies":{
+			"light armor":5,
+			"pierce":5,
+			"sorcery":5,
+			"sneak":5,
+			"dodge":5
+		},
+		"skills":["sneak", "infravision"]
+	}
+}]

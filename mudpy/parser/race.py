@@ -8,4 +8,5 @@ class RaceParser(Parser):
 		from mudpy.race import Race
 		Parser._globals.append(self.applyDefinitionsTo(locals()[_class]()))
 	
-	def parseJsonRace(self, instance): pass
+	def parseJsonRace(self, instance):
+		Parser._globals.append(instance)
