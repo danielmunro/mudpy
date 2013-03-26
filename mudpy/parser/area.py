@@ -10,8 +10,8 @@ class AreaParser(Parser):
 	def parseJsonArea(self, instance):
 		from mudpy.room import Room, Randomhall, Grid, Area
 		if issubclass(instance.__class__, Room):
+			instance.area = self.lastarea
 			self.lastroom = instance
-			self.lastroom.area = self.lastarea
 			self.lastinventory = instance.inventory
 			Room.rooms[self.lastroom.area.name+":"+str(self.lastroom.id)] = self.lastroom
 		elif isinstance(instance, Area):
