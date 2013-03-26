@@ -15,6 +15,7 @@ class Actor(Observer):
 		self.id = Save.getRandomID()
 		self.name = "an actor"
 		self.long = "An actor is here"
+		self.description = ""
 		self.level = 0
 		self.experience = 0
 		self.alignment = 0
