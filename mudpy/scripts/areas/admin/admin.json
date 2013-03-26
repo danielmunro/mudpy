@@ -1,0 +1,15 @@
+[{
+	"Area":{
+		"properties":{
+			"name":"Purgatory"
+		}
+	}
+},{
+	"Room":{
+		"properties":{
+			"id":1,
+			"name":"Purgatory",
+			"description":"You find yourself in purgatory.\nUh oh."
+		}
+	}
+}]

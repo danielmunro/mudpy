@@ -4,6 +4,7 @@ from mudpy.ability import Ability
 from mudpy.affect import Affect
 from mudpy.proficiency import Proficiency
 from mudpy.race import Race
+from mudpy.room import Room, Randomhall, Grid, Area
 
 import os, json
 
