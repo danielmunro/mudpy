@@ -10,7 +10,7 @@ from mudpy.stopwatch import Stopwatch
 stopwatch = Stopwatch()
 heartbeat = Heartbeat(reactor, stopwatch)
 
-Parser.initializeParsers()
+Parser.parse('scripts')
 Debug.log('scripts initialized')
 
 endpoint = TCP4ServerEndpoint(reactor, 9000)

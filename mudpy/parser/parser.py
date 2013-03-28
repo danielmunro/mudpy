@@ -11,52 +11,26 @@ from mudpy.item import Item, Drink
 import os, json
 
 class Parser(object):
-	BASEPATH = 'mudpy/scripts'
+	BASEPATH = 'mudpy'
 	_globals = []
 
-	def __init__(self, baseDir, fn, jsonFn):
-		Debug.log('parsing scripts for '+baseDir)
-		self.definitions = {}
-		self.fp = None
-		path = self.BASEPATH+'/'+baseDir
-		definitions = path+'/'+baseDir+'.definitions'
-		if os.path.isfile(definitions):
-			self.parseFile(definitions, self.parseDefinitions)
-		self.parseDir(path, fn, jsonFn)
-
-	def parseDefinitions(self, defname):
-		defname = self.getclassfromline(defname);
-		self.definitions[defname] = []
-		line = self.readcleanline()
-		Debug.log('adding definition for '+defname+': '+line)
-		if not line:
-			raise ParserException('a definition for '+defname+' was expected but not found')
-		parts = line.split(',')
-		for att in parts:
-			ap = att.strip().split(' ', 1)
-			if len(ap) == 1:
-				self.definitions[defname].append(globals()[ap[0].title()]())
-			else:
-				self.definitions[defname].append(globals()[ap[0].title()](ap[1]))
-	
-	def parseDir(self, path, fn, jsonFn):
+	def parseDir(self, path):
+		Debug.log('parsing scripts for '+path)
 		for infile in os.listdir(path):
 			fullpath = path+'/'+infile
 			if os.path.isdir(fullpath):
 				# recurse through scripts directory tree
-				self.parseDir(fullpath, fn, jsonFn)
-			elif fullpath.endswith('.mud'):
-				# parse script
-				self.parseFile(fullpath, fn)
+				self.parseDir(fullpath)
 			elif fullpath.endswith('.json'):
-				self.parseJson(fullpath, jsonFn)
+				self.parseJson(fullpath)
 	
-	def parseJson(self, scriptFile, fn):
+	def parseJson(self, scriptFile):
 		Debug.log('parsing json script file: '+scriptFile)
-		data = json.load(open(scriptFile))
-		self.parseJsonObject(None, data, fn)
+		fp = open(scriptFile)
+		data = json.load(fp)
+		self._parseJson(None, data)
 	
-	def parseJsonObject(self, parent, data, fn):
+	def _parseJson(self, parent, data):
 		from mudpy.factory import Factory
 		for item in data:
 			for _class in item:
@@ -76,45 +50,19 @@ class Parser(object):
 						for prof, level in item[_class][descriptor].iteritems():
 							instance.addProficiency(prof, level)
 					elif descriptor == "mobs" or descriptor == "inventory":
-						self.parseJsonObject(instance, item[_class][descriptor], fn)
-				fn(parent, instance)
-
-	def parseFile(self, scriptFile, fn):
-		Debug.log('parsing script file: '+scriptFile)
-		with open(scriptFile, 'r') as fp:
-			self.fp = fp
-			line = self.readline()
-			while line:
-				_class = self.getclassfromline(line)
-				if _class:
-					fn(_class)
-				line = self.readline()
+						self.parseJsonObject(instance, item[_class][descriptor])
+				getattr(self, 'doneParse'+_class)(parent, instance)
 	
-	def applyDefinitionsTo(self, instance):
-		try:
-			for chunk in self.definitions[instance.__class__.__name__]:
-				chunk.process(self, instance)
-		except ParserException:
-			pass
-		Debug.log('[new '+instance.__class__.__name__+'] '+instance.name)
-		return instance
-	
-	def readline(self, preserveReturn = True):
-		line = self.fp.readline()
-		commentPos = line.find('#')
-		if commentPos > -1:
-			oline = line
-			line = line[0:commentPos]
-			if preserveReturn:
-				line += oline[-1:]
+	def doneParseAffect(self, parent, affect):
+		Parser._globals.append(affect)
 
-		if not preserveReturn:
-			line = line.strip()
+	def doneParseRace(self, parent, race):
+		Parser._globals.append(race)
 
-		return line
-	
-	def readcleanline(self):
-		return self.readline(False)
+	@staticmethod
+	def parse(path):
+		p = Parser()
+		p.parseDir(Parser.BASEPATH+'/'+path)
 
 	@staticmethod
 	def guessType(value):
@@ -130,21 +78,5 @@ class Parser(object):
 		if value == "False":
 			return False
 		return value
-
-	@staticmethod
-	def getclassfromline(line):
-		return line.strip().title()
-
-	@staticmethod
-	def initializeParsers():
-		from proficiency import ProficiencyParser
-		from affect import AffectParser
-		from ability import AbilityParser
-		from area import AreaParser
-		from race import RaceParser
-		for subclass in ['AffectParser', 'ProficiencyParser', 'AbilityParser', 'RaceParser', 'AreaParser']:
-			locals()[subclass]().finishInitialization()
-
-	def finishInitialization(self): pass
 	
 class ParserException(Exception): pass
