@@ -1,4 +1,3 @@
-from assign import *
 from mudpy.debug import Debug
 from mudpy.ability import Ability
 from mudpy.affect import Affect
@@ -10,7 +9,7 @@ from mudpy.item import Item, Drink
 
 import os, json
 
-class Parser(object):
+class Parser:
 	BASEPATH = 'mudpy'
 	_globals = []
 

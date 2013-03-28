@@ -3,9 +3,9 @@ from twisted.internet import reactor
 
 from mudpy.client import ClientFactory
 from mudpy.heartbeat import Heartbeat
-from mudpy.parser import Parser
 from mudpy.debug import Debug
 from mudpy.stopwatch import Stopwatch
+from mudpy.parser import Parser
 
 stopwatch = Stopwatch()
 heartbeat = Heartbeat(reactor, stopwatch)
