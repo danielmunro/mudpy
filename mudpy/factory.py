@@ -4,7 +4,7 @@ from mudpy.ability import *
 from mudpy.command import *
 from mudpy.room import *
 from mudpy.proficiency import *
-from mudpy.parser.parser import Parser
+from mudpy.parser import Parser
 import copy, inspect
 
 class Factory:
