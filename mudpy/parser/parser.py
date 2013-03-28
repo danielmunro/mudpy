@@ -6,7 +6,7 @@ from mudpy.proficiency import Proficiency
 from mudpy.race import Race
 from mudpy.room import Room, Randomhall, Grid, Area
 from mudpy.actor import Mob
-from mudpy.item import Item
+from mudpy.item import Item, Drink
 
 import os, json
 

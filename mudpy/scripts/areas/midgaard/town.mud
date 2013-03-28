@@ -2,30 +2,6 @@ area
 name midgaard, terrain city, location outside
 
 room
-Temple Garden
-A small fountain lies to the side of the cobblestone path, which dissects an impressive garden. The temple of Midgaard is to the north, with the market square to the south.~
-id 2, n 1, s 3, w The Temple Arena:1, e 80
-
-drink
-an ornate fountain
-An ornately carved fountain is the centerpiece to the temple garden.~
-contents water, uses -1, canOwn false
-
-item
-a small plaque
-A small brass plaque is here, affixed to the temple wall, it reads:
-Welcome to Midgaard.~
-canOwn false
-
-mob
-an adept of Mojo walks the garden
-An adept of Mojo is here, wearing a white linen robe and tending to the temple.~
-id 1, race volare, name an adept of Mojo, role questmaster
-
-#quest
-#adelwine
-
-room
 Entrance to the Cleric's Guild
 The foyer to the cleric's guild is a large room built out of heavy stone bricks. A bronze plaque hangs on the farthest wall, next to the door leading deeper further into the guild.~
 id 80, w 2

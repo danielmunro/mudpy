@@ -71,4 +71,49 @@
 			}
 		}]
 	}
+},{
+	"Room":{
+		"properties":{
+			"id":2,
+			"name":"Temple Garden",
+			"description":"A small fountain lies to the side of the cobblestone path, which dissects an impressive garden. The temple of Midgaard is to the north, with the market square to the south.",
+			"directions":{
+				"north":1,
+				"south":3,
+				"east":80,
+				"west":"The Temple Arena:1"
+			}
+		},
+		"inventory":[{
+			"Drink":{
+				"properties":{
+					"name":"an ornate fountain",
+					"description":"An ornately carved fountain is the centerpiece to the temple garden.",
+					"contents":"water",
+					"uses":-1,
+					"canOwn":"False"
+				}
+			}
+		},{
+			"Item":{
+				"properties":{
+					"name":"a small plaque",
+					"description":"A small brass plaque is here, affixed to the temple wall, it reads:\nWelcome to Midgaard.",
+					"canOwn":"False"
+				}
+			}
+		}],
+		"mobs":[{
+			"Mob":{
+				"properties":{
+					"id":1,
+					"name":"an adept of Mojo",
+					"long":"an adept of Mojo walks the garden",
+					"description":"An adept of Mojo is here, wearing a white linen robe and tending to the temple.",
+					"race":"volare",
+					"role":"questmaster"
+				}
+			}
+		}]
+	}
 }]
