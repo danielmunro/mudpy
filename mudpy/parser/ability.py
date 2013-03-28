@@ -7,6 +7,6 @@ class AbilityParser(Parser):
 	
 	def parseAbility(self, _class): pass
 
-	def parseJsonAbility(self, instance):
+	def parseJsonAbility(self, parent, instance):
 		Ability.instances.append(instance)
 

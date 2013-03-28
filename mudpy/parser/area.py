@@ -7,13 +7,21 @@ class AreaParser(Parser):
 		self.lastarea = None
 		super(AreaParser, self).__init__('areas', self.parseArea, self.parseJsonArea)
 
-	def parseJsonArea(self, instance):
+	def parseJsonArea(self, parent, instance):
 		from mudpy.room import Room, Randomhall, Grid, Area
+		from mudpy.actor import Mob
+		from mudpy.item import Item, Door, Key, Furniture, Container, Food, Drink, Weapon, Armor, Equipment
 		if issubclass(instance.__class__, Room):
 			instance.area = self.lastarea
 			self.lastroom = instance
 			self.lastinventory = instance.inventory
 			Room.rooms[self.lastroom.area.name+":"+str(self.lastroom.id)] = self.lastroom
+		elif isinstance(instance, Mob):
+			parent.actors.append(instance)
+			self.lastinventory = instance.inventory
+			instance.room = parent
+		elif isinstance(instance, Item):
+			parent.inventory.append(instance)
 		elif isinstance(instance, Area):
 			self.lastarea = instance
 	

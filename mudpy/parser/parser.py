@@ -5,6 +5,8 @@ from mudpy.affect import Affect
 from mudpy.proficiency import Proficiency
 from mudpy.race import Race
 from mudpy.room import Room, Randomhall, Grid, Area
+from mudpy.actor import Mob
+from mudpy.item import Item
 
 import os, json
 
@@ -50,8 +52,12 @@ class Parser(object):
 				self.parseJson(fullpath, jsonFn)
 	
 	def parseJson(self, scriptFile, fn):
-		from mudpy.factory import Factory
+		Debug.log('parsing json script file: '+scriptFile)
 		data = json.load(open(scriptFile))
+		self.parseJsonObject(None, data, fn)
+	
+	def parseJsonObject(self, parent, data, fn):
+		from mudpy.factory import Factory
 		for item in data:
 			for _class in item:
 				_class = str(_class)
@@ -69,7 +75,9 @@ class Parser(object):
 					elif descriptor == "proficiencies":
 						for prof, level in item[_class][descriptor].iteritems():
 							instance.addProficiency(prof, level)
-				fn(instance)
+					elif descriptor == "mobs" or descriptor == "inventory":
+						self.parseJsonObject(instance, item[_class][descriptor], fn)
+				fn(parent, instance)
 
 	def parseFile(self, scriptFile, fn):
 		Debug.log('parsing script file: '+scriptFile)

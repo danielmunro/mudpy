@@ -6,5 +6,5 @@ class ProficiencyParser(Parser):
 	
 	def parseProficiency(self, _class): pass
 	
-	def parseJsonProficiency(self, instance):
+	def parseJsonProficiency(self, parent, instance):
 		Parser._globals.append(instance)

@@ -1,0 +1,62 @@
+[{
+	"Area":{
+		"properties":{
+			"name":"midgaard",
+			"terrain":"city",
+			"location":"outside"
+		}
+	}
+},{
+	"Room":{
+		"properties":{
+			"id":1,
+			"name":"Temple of Midgaard",
+			"description":"A large temple surrounds you, with sculptures of gods adorning the walls.",
+			"directions":{
+				"south":2,
+				"north":82
+			}
+		},
+		"mobs":[{
+			"Mob":{
+				"properties":{
+					"name":"Hassan",
+					"long":"Hassan stands here, waiting to dispense some justice",
+					"description":"Standing at over 12 feet tall, with an earth-like consistency, Hassan has an intimidating appearance even for a giant.",
+					"race":"giant",
+					"level":41
+				},
+				"attributes":{
+					"hp":10000,
+					"mana":500,
+					"movement":500,
+					"hit":4,
+					"dam":20,
+					"saves":-10
+				},
+				"skills":["berserk","bash","kick","dirt kick","heal"]
+			}
+		}]
+	}
+},{
+	"Room":{
+		"properties":{
+			"id":82,
+			"name":"The temple altar",
+			"description":"A sacrificial pit sits in the middle of a large altar room, with acolytes of the temple performing ceremonial duties.",
+			"directions":{
+				"south":1
+			}
+		},
+		"inventory":[{
+			"Item":{
+				"properties":{
+					"name":"a sacrificial pit",
+					"description":"A pit is here, containing treasures donated from other adventurers.",
+					"material":"stone",
+					"canOwn":"False"
+				}
+			}
+		}]
+	}
+}]

@@ -4,9 +4,7 @@ class RaceParser(Parser):
 	def __init__(self):
 		super(RaceParser, self).__init__('races', self.parseRace, self.parseJsonRace)
 	
-	def parseRace(self, _class):
-		from mudpy.race import Race
-		Parser._globals.append(self.applyDefinitionsTo(locals()[_class]()))
+	def parseRace(self, _class): pass
 	
-	def parseJsonRace(self, instance):
+	def parseJsonRace(self, parent, instance):
 		Parser._globals.append(instance)

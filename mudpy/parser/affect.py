@@ -6,5 +6,5 @@ class AffectParser(Parser):
 	
 	def parseAffect(self, _class): pass
 	
-	def parseJsonAffect(self, instance):
+	def parseJsonAffect(self, parent, instance):
 		Parser._globals.append(instance)

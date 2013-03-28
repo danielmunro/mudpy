@@ -2,18 +2,6 @@ area
 name midgaard, terrain city, location outside
 
 room
-Temple of Midgaard
-A large temple surrounds you, with sculptures of gods adorning the walls.~
-id 1, s 2, n 82
-
-mob
-Hassan stands here, waiting to dispense some justice
-Standing at over 12 feet tall, with an earth-like consistency, Hassan has an intimidating appearance even for a giant.~
-race giant, level 41, name Hassan
-hp 10000, movement 500, hit 4, dam 20, saves -10
-berserk, bash, kick, dirt kick, heal
-
-room
 The temple altar
 A sacrificial pit sits in the middle of a large altar room, with acolytes of the temple performing ceremonial duties.~
 id 82, s 1
