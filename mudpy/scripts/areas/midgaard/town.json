@@ -57,6 +57,18 @@
 					"canOwn":"False"
 				}
 			}
+		}],
+		"mobs":[{
+			"Mob":{
+				"properties":{
+					"name":"an acolyte of the temple",
+					"long":"an acolyte of the temple stands before you, ready to help you practice",
+					"description":"Something about an acolyte.",
+					"role":"acolyte",
+					"level":10,
+					"race":"human"
+				}
+			}
 		}]
 	}
 }]

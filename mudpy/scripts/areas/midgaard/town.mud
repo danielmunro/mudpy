@@ -2,24 +2,6 @@ area
 name midgaard, terrain city, location outside
 
 room
-The temple altar
-A sacrificial pit sits in the middle of a large altar room, with acolytes of the temple performing ceremonial duties.~
-id 82, s 1
-
-container
-a sacrifical pit
-A pit is here, containing treasures donated from other adventurers.~
-material stone, canOwn false
-
-mob
-an acolyte stands here, ready to help you practice
-Something about an acolyte.~
-name an acolyte of the temple, role acolyte, level 10, race human
-
-#proficiencies
-#* novice
-
-room
 Temple Garden
 A small fountain lies to the side of the cobblestone path, which dissects an impressive garden. The temple of Midgaard is to the north, with the market square to the south.~
 id 2, n 1, s 3, w The Temple Arena:1, e 80
