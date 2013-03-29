@@ -61,10 +61,12 @@ class Parser:
 							instance.addProficiency(prof, level)
 					elif descriptor == "mobs" or descriptor == "inventory":
 						self._parseJson(instance, item[_class][descriptor])
-				getattr(self, 'doneParse'+_class)(parent, instance)
-	
-	def doneParseAffect(self, parent, affect):
-		Parser._globals.append(affect)
+				try:
+					getattr(self, 'doneParse'+_class)(parent, instance)
+				except AttributeError:
+					print "error"
+					import sys
+					sys.exit()
 
 	def doneParseRace(self, parent, race):
 		Parser._globals.append(race)
