@@ -1,4 +1,10 @@
 [{
+	"Depends":{
+		"properties":{
+			"on":["proficiencies.json"]
+		}
+	}
+},{
 	"Race":{
 		"properties":{
 			"name":"human",

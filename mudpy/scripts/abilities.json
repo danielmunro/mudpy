@@ -1,4 +1,10 @@
 [{
+	"Depends":{
+		"properties":{
+			"on":["affects.json"]
+		}
+	}
+},{
 	"Ability":{
 		"properties":{
 			"name":"sneak",
