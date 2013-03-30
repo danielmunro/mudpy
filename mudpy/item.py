@@ -1,4 +1,4 @@
-from save import Save
+from persistence import *
 
 class Inventory:
 	def __init__(self):
@@ -35,7 +35,6 @@ class Inventory:
 		Save(self, ['id', 'items']).execute()
 	
 	def load(self):
-		from load import Load
 		Load(self, ['id', 'items']).execute()
 
 class Item(object):
@@ -57,7 +56,6 @@ class Item(object):
 		Save(self, ['id', 'name', 'value', 'weight']).execute()
 	
 	def load(self):
-		from load import Load
 		Load(self, ['id', 'name', 'value', 'weight']).execute()
 
 class Door(Item):

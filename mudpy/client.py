@@ -4,8 +4,7 @@ from command import Command, MoveDirection
 from utility import startsWith
 from debug import Debug
 from heartbeat import Heartbeat
-from load import Load
-from save import Save
+from persistence import *
 from actor import User
 from ability import Ability
 from factory import Factory

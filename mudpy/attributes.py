@@ -1,5 +1,4 @@
-from save import Save
-from load import Load
+from persistence import *
 
 class Attributes(object):
 	stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']

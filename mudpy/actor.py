@@ -1,6 +1,6 @@
 from __future__ import division
 from observer import Observer
-from save import Save
+from persistence import Save
 from attributes import Attributes
 from item import Inventory
 from heartbeat import Heartbeat
