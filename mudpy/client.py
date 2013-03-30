@@ -1,7 +1,7 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
 from command import Command, MoveDirection
-from utility import *
+from utility import startsWith
 from debug import Debug
 from heartbeat import Heartbeat
 from load import Load

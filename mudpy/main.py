@@ -1,10 +1,10 @@
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
-from mudpy.client import ClientFactory
-from mudpy.heartbeat import Heartbeat
-from mudpy.debug import Debug
-from mudpy.parser import Parser
+from client import ClientFactory
+from heartbeat import Heartbeat
+from debug import Debug
+from parser import Parser
 
 heartbeat = Heartbeat(reactor)
 

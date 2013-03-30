@@ -1,18 +1,17 @@
-from mudpy.debug import Debug
-from mudpy.ability import Ability
-from mudpy.affect import Affect
-from mudpy.proficiency import Proficiency
-from mudpy.race import Race
-from mudpy.room import Room, Randomhall, Grid, Area
-from mudpy.actor import Mob
-from mudpy.item import Item, Drink
-from mudpy.depends import Depends, DependencyException
+from debug import Debug
+from ability import Ability
+from affect import Affect
+from proficiency import Proficiency
+from race import Race
+from room import Room, Randomhall, Grid, Area
+from actor import Mob
+from item import Item, Drink
+from depends import Depends, DependencyException
 from factory import Factory
 
 import os, json
 
 class Parser:
-	BASEPATH = 'mudpy'
 	INITFILE = 'init.json'
 	_globals = []
 
@@ -138,7 +137,7 @@ class Parser:
 	@staticmethod
 	def startParse(path):
 		p = Parser()
-		p.parse(Parser.BASEPATH+'/'+path)
+		p.parse(path)
 		while len(p.deferred):
 			startlen = len(p.loaded)
 			deferred = p.deferred

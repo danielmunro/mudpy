@@ -4,6 +4,8 @@ from save import Save
 from attributes import Attributes
 from item import Inventory
 from heartbeat import Heartbeat
+from room import Direction
+from random import choice, randint, uniform
 
 class Actor(Observer):
 	MAX_STAT = 25
@@ -53,6 +55,7 @@ class Actor(Observer):
 		try:
 			self.proficiencies[proficiency].level += level
 		except KeyError:
+			from factory import Factory
 			self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency)
 			self.proficiencies[proficiency].level = level
 	
@@ -162,6 +165,7 @@ class Actor(Observer):
 		return str(self).title()+' '+description+'.'
 	
 	def move(self, validDirections = []):
+		from factory import Factory
 		Factory.new(MoveDirection = choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):

@@ -1,4 +1,4 @@
-from utility import *
+from utility import matchPartial
 from actor import Disposition
 from debug import Debug
 
@@ -12,8 +12,7 @@ class Command(object):
 			self.perform(actor, args)
 
 	def perform(self):
-		print "perform() not defined"
-		raise
+		Debug.log("perform() not defined", "error")
 	
 	def __str__(self):
 		return self.name
@@ -79,8 +78,7 @@ class Wear(Command):
 		if equipment:
 			currentEq = actor.getEquipmentByPosition(equipment.position)
 			if currentEq:
-				from factory import Factory
-				Factory.new(Command = "remove").perform(actor, [currentEq.name])
+				Remove().perform(actor, [currentEq.name])
 			if actor.setEquipment(equipment):
 				actor.notify("You wear "+str(equipment)+".")
 				actor.inventory.remove(equipment)
@@ -264,8 +262,7 @@ class MoveDirection(Command):
 				actor.room = newRoom
 				actor.room.actors.append(actor)
 				actor.room.notify(actor, str(actor).title()+" has arrived.")
-				from factory import Factory
-				Factory.new(Command = "look").tryPerform(actor)
+				Look().tryPerform(actor)
 				Debug.log(str(actor)+' moves to '+str(actor.room))
 			else:
 				actor.notify("You are too tired to move.")
@@ -273,8 +270,7 @@ class MoveDirection(Command):
 			actor.notify("Alas, nothing is there.")
 	
 	def getNewRoom(self, actor):
-		print "getNewRoom is not defined"
-		raise 
+		Debug.log("getNewRoom is not defined", "error")
 
 class North(MoveDirection):
 	name = "north"

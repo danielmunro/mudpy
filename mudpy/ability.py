@@ -1,6 +1,4 @@
-from utility import *
-from affect import Affect
-from heartbeat import Heartbeat
+from utility import matchPartial
 from copy import copy
 
 class Ability(object):
