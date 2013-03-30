@@ -1,6 +1,5 @@
 from utility import *
 from affect import Affect
-from attributes import Attributes
 from heartbeat import Heartbeat
 from copy import copy
 
