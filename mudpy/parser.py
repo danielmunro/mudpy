@@ -6,7 +6,6 @@ from race import Race
 from room import Room, Randomhall, Grid, Area
 from actor import Mob
 from item import Item, Drink
-from depends import Depends, DependencyException
 from factory import Factory
 
 import os, json
@@ -178,4 +177,9 @@ class Parser:
 			grid[room.counts['north']-1][room.counts['west']-1] = room
 			room.buildDungeon(0, 0, grid)
 	
+class Depends:
+	def __init__(self):
+		self.on = []
+
+class DependencyException(Exception): pass
 class ParserException(Exception): pass
