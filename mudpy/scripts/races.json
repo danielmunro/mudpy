@@ -8,14 +8,14 @@
 	"Race":{
 		"properties":{
 			"name":"human",
-			"isPlayable":"True"
+			"isPlayable":true
 		}
 	}
 },{
 	"Race":{
 		"properties":{
 			"name":"faerie",
-			"isPlayable":"True",
+			"isPlayable":true,
 			"size":1
 		},
 		"attributes":{
@@ -36,7 +36,7 @@
 	"Race":{
 		"properties":{
 			"name":"ogre",
-			"isPlayable":"True",
+			"isPlayable":true,
 			"size":4
 		},
 		"attributes":{
@@ -58,7 +58,7 @@
 	"Race":{
 		"properties":{
 			"name":"giant",
-			"isPlayable":"True",
+			"isPlayable":true,
 			"size":5
 		},
 		"attributes":{
@@ -81,7 +81,7 @@
 	"Race":{
 		"properties":{
 			"name":"volare",
-			"isPlayable":"True"
+			"isPlayable":true
 		},
 		"attributes":{
 			"str":11,
@@ -100,7 +100,7 @@
 	"Race":{
 		"properties":{
 			"name":"gnome",
-			"isPlayable":"True",
+			"isPlayable":true,
 			"size":2
 		},
 		"attributes":{
@@ -123,7 +123,7 @@
 	"Race":{
 		"properties":{
 			"name":"elf",
-			"isPlayable":"True",
+			"isPlayable":true,
 			"size":2
 		},
 		"attributes":{
@@ -147,7 +147,7 @@
 	"Race":{
 		"properties":{
 			"name":"dwarf",
-			"isPlayable":"True",
+			"isPlayable":true,
 			"size":2
 		},
 		"attributes":{

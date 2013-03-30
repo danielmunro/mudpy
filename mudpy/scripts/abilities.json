@@ -8,7 +8,7 @@
 	"Ability":{
 		"properties":{
 			"name":"sneak",
-			"level":"0",
+			"level":0,
 			"type":"skill",
 			"hook":"input",
 			"costs":{
@@ -30,10 +30,10 @@
 	"Ability":{
 		"properties":{
 			"name":"berserk",
-			"level":"0",
+			"level":0,
 			"type":"skill",
 			"hook":"input",
-			"delay": "2",
+			"delay": 2,
 			"costs":{
 				"movement":0.5
 			},
@@ -55,11 +55,11 @@
 	"Ability":{
 		"properties":{
 			"name":"bash",
-			"level":"0",
+			"level":0,
 			"type":"skill",
 			"hook":"input",
-			"delay": "2",
-			"aggro": "True",
+			"delay":2,
+			"aggro":true,
 			"costs":{
 				"movement":5
 			},
@@ -80,11 +80,11 @@
 	"Ability":{
 		"properties":{
 			"name":"dirt kick",
-			"level":"5",
+			"level":5,
 			"type":"skill",
 			"hook":"input",
-			"delay": "1",
-			"aggro": "True",
+			"delay":1,
+			"aggro":true,
 			"costs":{
 				"movement":3
 			},
@@ -104,11 +104,11 @@
 	"Ability":{
 		"properties":{
 			"name":"kick",
-			"level":"10",
+			"level":10,
 			"type":"skill",
 			"hook":"input",
-			"delay": "1",
-			"aggro": "True",
+			"delay":1,
+			"aggro":true,
 			"costs":{
 				"movement":2
 			},
@@ -128,7 +128,7 @@
 	"Ability":{
 		"properties":{
 			"name":"hand to hand",
-			"level":"0",
+			"level":0,
 			"type":"skill",
 			"hook":"hit"
 		}
@@ -137,7 +137,7 @@
 	"Ability":{
 		"properties":{
 			"name":"infravision",
-			"level":"0",
+			"level":0,
 			"type":"skill",
 			"hook":"look"
 		}
@@ -146,7 +146,7 @@
 	"Ability":{
 		"properties":{
 			"name":"second attack",
-			"level":"10",
+			"level":10,
 			"type":"skill",
 			"hook":"attack"
 		}
@@ -155,7 +155,7 @@
 	"Ability":{
 		"properties":{
 			"name":"cure light",
-			"level":"0",
+			"level":0,
 			"type":"spell",
 			"hook":"input"
 		}
@@ -164,7 +164,7 @@
 	"Ability":{
 		"properties":{
 			"name":"heal",
-			"level":"20",
+			"level":20,
 			"type":"spell",
 			"hook":"input"
 		}

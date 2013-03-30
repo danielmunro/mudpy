@@ -6,7 +6,8 @@ from mudpy.race import Race
 from mudpy.room import Room, Randomhall, Grid, Area
 from mudpy.actor import Mob
 from mudpy.item import Item, Drink
-from mudpy.depends import Depends
+from mudpy.depends import Depends, DependencyException
+from factory import Factory
 
 import os, json
 
@@ -57,7 +58,6 @@ class Parser:
 			return False
 
 	def _parseJson(self, parent, data):
-		from mudpy.factory import Factory
 		for item in data:
 			for _class in item:
 				_class = str(_class)
@@ -65,6 +65,9 @@ class Parser:
 				try:
 					for descriptor in item[_class]:
 						fn = 'descriptor'+descriptor.title()
+						value = item[_class][descriptor]
+						if isinstance(value, unicode):
+							value = str(value)
 						getattr(self, fn)(instance, item[_class][descriptor])
 					fn = 'doneParse'+_class
 					getattr(self, fn)(parent, instance)
@@ -76,7 +79,6 @@ class Parser:
 		pass
 
 	def descriptorAffects(self, instance, affects):
-		from factory import Factory
 		for affect in affects:
 			instance.affects.append(Factory.new(Affect=affect))
 
@@ -92,11 +94,11 @@ class Parser:
 	
 	def descriptorProperties(self, instance, properties):
 		for prop in properties:
-			setattr(instance, prop, self.guessType(properties[prop]))
+			setattr(instance, prop, properties[prop])
 	
 	def descriptorAttributes(self, instance, attributes):
 		for attribute in attributes:
-			setattr(instance.attributes, attribute, self.guessType(attributes[attribute]))
+			setattr(instance.attributes, attribute, attributes[attribute])
 	
 	def doneParseAffect(self, parent, affect):
 		Parser._globals.append(affect)
@@ -105,7 +107,6 @@ class Parser:
 		Parser._globals.append(race)
 	
 	def doneParseAbility(self, parent, ability):
-		from mudpy.ability import Ability
 		Ability.instances.append(ability)
 	
 	def doneParseProficiency(self, parent, proficiency):
@@ -122,7 +123,6 @@ class Parser:
 	def doneParseMob(self, parent, mob):
 		parent.actors.append(mob)
 		mob.room = parent
-		from factory import Factory
 		mob.race = Factory.new(Race=mob.race)
 
 	def doneParseRoom(self, parent, room):
@@ -174,23 +174,5 @@ class Parser:
 			grid = [[0 for row in range(rows)] for col in range(cols)]
 			grid[room.counts['north']-1][room.counts['west']-1] = room
 			room.buildDungeon(0, 0, grid)
-
-	@staticmethod
-	def guessType(value):
-		try:
-			if value.isdigit():
-				return int(value)
-			try:
-				return float(value)
-			except ValueError: pass
-		except AttributeError: pass
-		if value == "True":
-			return True
-		if value == "False":
-			return False
-		if isinstance(value, unicode):
-			return str(value)
-		return value
 	
 class ParserException(Exception): pass
-class DependencyException(Exception): pass

@@ -1,15 +1,16 @@
 from mudpy.utility import *
-from mudpy.race import *
-from mudpy.ability import *
+from mudpy.race import Race
+from mudpy.ability import Ability
 from mudpy.command import *
 from mudpy.room import *
-from mudpy.proficiency import *
-from mudpy.parser import *
+from mudpy.proficiency import Proficiency
+from mudpy.affect import Affect
 import copy, inspect
 
 class Factory:
 	@staticmethod
 	def new(scalar = True, newWith = None, **kwargs):
+		from mudpy.parser import Parser
 		lookups = []
 		for _type, _class in kwargs.iteritems():
 			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals, Ability.instances);
