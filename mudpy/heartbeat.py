@@ -13,9 +13,9 @@ class Heartbeat(Observer):
 
 	EVENT_TYPES = ['tick', 'pulse', 'stat', 'processCommand']
 
-	def __init__(self, reactor, stopwatch):
+	def __init__(self, reactor):
 		self.reactor = reactor
-		self.stopwatch = stopwatch
+		self.stopwatch = Stopwatch()
 		Heartbeat.instance = self
 		super(Heartbeat, self).__init__()
 		Debug.log('heartbeat created')
