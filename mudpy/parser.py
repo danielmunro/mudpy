@@ -139,11 +139,15 @@ class Parser:
 	def startParse(path):
 		p = Parser()
 		p.parse(Parser.BASEPATH+'/'+path)
-		for fullpath in p.deferred:
-			try:
+		while len(p.deferred):
+			startlen = len(p.loaded)
+			deferred = p.deferred
+			p.deferred = []
+			for fullpath in deferred:
 				p.parse(fullpath)
-			except DependencyException:
-				Debug.log(fullpath+" dependencies cannot be met", "error")
+			endlen = len(p.loaded)
+			if startlen == endlen:
+				Debug.log("dependencies cannot be met", "error")
 
 		#build out the room tree
 		randomHalls = []
