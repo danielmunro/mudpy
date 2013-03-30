@@ -1,8 +1,9 @@
 from __future__ import division
-from random import choice
-from attributes import Attributes
-from heartbeat import Heartbeat
 from observer import Observer
+from save import Save
+from attributes import Attributes
+from item import Inventory
+from heartbeat import Heartbeat
 
 class Actor(Observer):
 	MAX_STAT = 25
@@ -10,8 +11,6 @@ class Actor(Observer):
 
 	def __init__(self):
 		super(Actor, self).__init__()
-		from save import Save
-		from item import Inventory
 		self.id = Save.getRandomID()
 		self.name = "an actor"
 		self.long = "An actor is here"
@@ -54,7 +53,6 @@ class Actor(Observer):
 		try:
 			self.proficiencies[proficiency].level += level
 		except KeyError:
-			from factory import Factory
 			self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency)
 			self.proficiencies[proficiency].level = level
 	
@@ -164,9 +162,6 @@ class Actor(Observer):
 		return str(self).title()+' '+description+'.'
 	
 	def move(self, validDirections = []):
-		from factory import Factory
-		from room import Direction
-		from random import choice
 		Factory.new(MoveDirection = choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
@@ -186,7 +181,6 @@ class Actor(Observer):
 				gain += 1
 	
 	def getKillExperience(self, killer):
-		from random import randint
 		leveldiff = self.level - killer.level
 		experience = 200 + 30 * leveldiff
 		if leveldiff > 5:
@@ -331,7 +325,6 @@ class User(Actor):
 	def die(self):
 		super(User, self).die()
 		self.room.actors.remove(self)
-		from room import Room
 		self.room = Room.rooms["midgaard:82"]
 		self.room.actors.append(self)
 		self.room.announce({
@@ -351,7 +344,6 @@ class Disposition:
 	SLEEPING = 'sleeping'
 	INCAPACITATED = 'incapacitated'
 
-from random import uniform
 class Attack:
 
 	def __init__(self, aggressor, attackname):

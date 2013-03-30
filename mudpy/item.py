@@ -1,5 +1,4 @@
 from save import Save
-from attributes import Attributes
 
 class Inventory:
 	def __init__(self):

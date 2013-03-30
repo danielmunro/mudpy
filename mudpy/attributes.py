@@ -1,4 +1,5 @@
 from save import Save
+from load import Load
 
 class Attributes(object):
 	stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
@@ -31,5 +32,4 @@ class Attributes(object):
 		Save(self, self.persistibleProperties).execute()
 	
 	def load(self):
-		from load import Load
 		Load(self, self.persistibleProperties).execute()

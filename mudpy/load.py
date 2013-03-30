@@ -1,7 +1,4 @@
 from db import Db
-from item import *
-from affect import *
-from ability import *
 
 class Load:
 
