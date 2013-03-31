@@ -87,7 +87,13 @@ class Actor(Observer):
 		pass
 	
 	def tick(self):
-		modifier = 0.1 if self.disposition != Disposition.INCAPACITATED else -0.1
+		modifier = uniform(0.05, 0.125)
+		if self.disposition == Disposition.INCAPACITATED:
+			modifier = -modifier
+		elif self.disposition == Disposition.LAYING:
+			modifier += uniform(0.01, 0.05)
+		elif self.disposition == Disposition.SLEEPING:
+			modifier += uniform(0.05, 0.1)
 		self.curhp += self.getAttribute('hp') * modifier
 		self.curmana += self.getAttribute('mana') * modifier
 		self.curmovement += self.getAttribute('movement') * modifier
