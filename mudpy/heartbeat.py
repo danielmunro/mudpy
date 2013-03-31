@@ -22,14 +22,14 @@ class Heartbeat(Observer):
 	
 	def start(self):
 		next_pulse = time.time()+Heartbeat.PULSE_SECONDS
-		next_tick = time.clock()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
+		next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 		while(1):
 			self.dispatch('processCommand')
-			if time.clock() >= next_pulse:
+			if time.time() >= next_pulse:
 				next_pulse += Heartbeat.PULSE_SECONDS
 				self.dispatch('pulse', 'stat')
-			if time.clock() >= next_tick:
-				next_tick = time.clock()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
+			if time.time() >= next_tick:
+				next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 				stopwatch = Stopwatch()
 				self.dispatch('tick')
 				Debug.log('dispatched tick ['+str(stopwatch)+'s elapsed in tick] ['+str(self.stopwatch)+'s elapsed since start]')
