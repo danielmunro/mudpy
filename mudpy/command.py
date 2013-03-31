@@ -143,6 +143,10 @@ class Kill(Command):
 			actor.target = target
 			from heartbeat import Heartbeat
 			Heartbeat.instance.attach('pulse', actor)
+			actor.room.announce({
+				actor: 'You scream and attack!',
+				'*': str(actor)+' screams and attacks '+str(target)+'!'
+			})
 		else:
 			actor.notify("They aren't here.")
 
