@@ -25,7 +25,7 @@ class Inventory:
 		msg = ""
 		for i in iter(self.items):
 			itemDisplayName = str(i)
-			msg += ("("+str(self.itemCount[itemDisplayName])+") " if self.itemCount[itemDisplayName] > 1 else "")+itemDisplayName.capitalize()+appendToItemDisplayName+"\n"
+			msg += ("("+str(self.itemCount[itemDisplayName])+") " if self.itemCount[itemDisplayName] > 1 else "")+itemDisplayName[0].upper()+itemDisplayName[1:]+appendToItemDisplayName+"\n"
 		return msg
 	
 	def getWeight(self):
@@ -123,3 +123,5 @@ class Weapon(Equipment):
 		self.weaponType = ""
 		self.damageType = ""
 		super(Weapon, self).__init__()
+
+class Corpse(Container): pass
