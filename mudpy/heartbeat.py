@@ -25,10 +25,10 @@ class Heartbeat(Observer):
 		next_tick = time.clock()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 		while(1):
 			self.dispatch('processCommand')
-			if time.clock() == next_pulse:
+			if time.clock() >= next_pulse:
 				next_pulse += Heartbeat.PULSE_SECONDS
 				self.dispatch('pulse', 'stat')
-			if time.clock() == next_tick:
+			if time.clock() >= next_tick:
 				next_tick = time.clock()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 				stopwatch = Stopwatch()
 				self.dispatch('tick')
