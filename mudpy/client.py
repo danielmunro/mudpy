@@ -119,7 +119,7 @@ class Login:
 		else:
 			self.newuser.notify("That is not a valid alignment. What is your alignment? ")
 			return False
-		self.newuser.room = Room.rooms["midgaard:1"]
+		self.newuser.room = Room.rooms[Room.DEFAULTROOMID]
 		self.newuser.room.actors.append(self.newuser)
 		Factory.new(Command = "look").tryPerform(self.newuser)
 		self.newuser.notify("\n"+self.newuser.prompt())

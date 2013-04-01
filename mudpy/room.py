@@ -3,6 +3,8 @@ from random import random, choice
 
 class Room(object):
 	rooms = {}
+	DEFAULTROOMID = "midgaard:1"
+	REGENROOMID = "midgaard:82"
 
 	def __init__(self):
 		self.id = 0

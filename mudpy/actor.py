@@ -2,9 +2,9 @@ from __future__ import division
 from observer import Observer
 from persistence import Save
 from attributes import Attributes
-from item import Inventory
+from item import Inventory, Corpse
 from heartbeat import Heartbeat
-from room import Direction
+from room import Direction, Room
 from random import choice, randint, uniform
 
 class Actor(Observer):
@@ -180,6 +180,15 @@ class Actor(Observer):
 		self.removeFromBattle()
 		self.disposition = Disposition.LAYING
 		self.curhp = 1
+		corpse = Corpse()
+		corpse.name = "the corpse of "+str(self)
+		corpse.description = "The corpse of "+str(self)+" lies here."
+		corpse.weight = self.race.size * 20
+		corpse.material = "flesh"
+		for item in self.inventory.items:
+			self.inventory.remove(item)
+			corpse.inventory.append(item)
+		self.room.inventory.append(corpse)
 	
 	def rewardExperienceFrom(self, victim):
 		self.experience += victim.getKillExperience(self)
@@ -199,7 +208,7 @@ class Actor(Observer):
 		if aligndiff > 0.5:
 			mod = randint(15, 35) / 100
 			experience *= 1 + aligndiff - mod
-		experience = randint(experience * 0.8, experience * 1.2)
+		experience = uniform(experience * 0.8, experience * 1.2)
 		return experience if experience > 0 else 0
 
 	def getExperiencePerLevel(self):
@@ -335,7 +344,7 @@ class User(Actor):
 	def die(self):
 		super(User, self).die()
 		self.room.actors.remove(self)
-		self.room = Room.rooms["midgaard:82"]
+		self.room = Room.rooms[Room.REGENROOMID]
 		self.room.actors.append(self)
 		self.room.announce({
 			self: "You feel a rejuvinating rush as you pass through this mortal plane.",
@@ -346,6 +355,9 @@ class User(Actor):
 	def levelUp(self):
 		super(User, self).levelUp()
 		self.notify("You leveled up!")
+	
+	def __str__(self):
+		return self.name.title()
 
 class Disposition:
 	STANDING = 'standing'
