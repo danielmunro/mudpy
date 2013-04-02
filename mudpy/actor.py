@@ -15,7 +15,7 @@ class Actor(Observer):
 		super(Actor, self).__init__()
 		self.id = Save.getRandomID()
 		self.name = "an actor"
-		self.long = "An actor is here"
+		self.long = ""
 		self.description = ""
 		self.level = 0
 		self.experience = 0
@@ -232,6 +232,9 @@ class Actor(Observer):
 		elif self.alignment >= 1000:
 			return "good"
 	
+	def lookedAt(self):
+		return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
+	
 	@staticmethod
 	def getDamageVerb(dam_roll):
 		if dam_roll < 5:
@@ -355,7 +358,7 @@ class User(Actor):
 	def levelUp(self):
 		super(User, self).levelUp()
 		self.notify("You leveled up!")
-	
+
 	def __str__(self):
 		return self.name.title()
 

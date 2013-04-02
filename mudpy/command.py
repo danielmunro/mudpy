@@ -219,7 +219,7 @@ class Look(Command):
 			# items
 			msg += actor.room.inventory.inspection(' is here.')
 			# actors
-			msg += "\n".join(_actor.long.capitalize() for _actor in actor.room.actors if _actor is not actor)+"\n"
+			msg += "\n".join(_actor.lookedAt().capitalize() for _actor in actor.room.actors if _actor is not actor)+"\n"
 		else:
 			lookingAt = matchPartial(args[0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
 			msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
