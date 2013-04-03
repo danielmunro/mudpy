@@ -15,58 +15,53 @@ class Ability(object):
 		self.messages = {}
 	
 	def tryPerform(self, invoker, args):
-		self.perform(invoker, args)
-
-	def perform(self, invoker, args):
 		try:
 			receiver = matchPartial(args[-1], invoker.room.actors)
 		except IndexError:
 			receiver = invoker
 		if self.applyCost(invoker):
 			if self.rollsSuccess(invoker, receiver):
-				self.announceSuccess(invoker, receiver)
-				if self.affects:
-					for affect in self.affects:
-						a = copy(affect)
-						a.affected = receiver
-						a.start()
+				self.perform(invoker, receiver, args)
 			else:
-				self.announceFail(invoker, receiver)
+				receiver.room.announce(self.getMessages('fail', invoker, receiver))
 		else:
 			invoker.notify("You do not have enough energy to do that.")
 
+	def perform(self, invoker, receiver, args):
+		receiver.room.announce(self.getMessages('success', invoker, receiver))
+		for affect in self.affects:
+			a = copy(affect)
+			a.affected = receiver
+			a.ability = self
+			a.attach('end', self)
+			a.start()
+
 	def rollsSuccess(self, invoker, receiver):
-		success = True
+		return True
 
-		return success
-
-	def announceSuccess(self, invoker, receiver):
+	def end(self, affect):
+		affect.affected.room.announce(self.getMessages('end', affect.affected))
+	
+	def getMessages(self, messagePart, invoker, receiver = None):
+		messages = self.messages[messagePart]
 		try:
-			success = self.messages['self']['success']
-		except KeyError:
-			success = None
+			messages[invoker] = messages.pop('invoker')
+			if messages[invoker].find('%s') > -1:
+				messages[invoker] = messages[invoker] % str(receiver)
+		except KeyError: pass
 		try:
-			roomSuccess = self.messages['room']['success']
-		except KeyError:
-			roomSuccess = None
-		receiver.room.announce({
-			receiver: success,
-			'*': roomSuccess
-		})
-
-	def announceFail(self, invoker, receiver):
+			messages[receiver] = messages.pop('receiver')
+			if messages[receiver].find('%s') > -1:
+				messages[receiver] = messages[receiver] % str(receiver)
+		except KeyError: pass
 		try:
-			fail = self.messages['self']['fail']
-		except KeyError:
-			success = None
-		try:
-			roomFail = self.messages['room']['fail']
-		except KeyError:
-			roomFail = None
-		receiver.room.announce({
-			receiver: fail,
-			'*': roomFail
-		})
+			messages['*'] = messages.pop('*')
+			if messages['*'].find('%s') > -1:
+				messages['*'] = messages['*'] % str(invoker)
+			if messages['*'].find('%s') > -1:
+				messages['*'] = messages['*'] % str(receiver)
+		except KeyError: pass
+		return messages
 	
 	def applyCost(self, invoker):
 		for attr, cost in self.costs.iteritems():

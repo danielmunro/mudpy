@@ -235,6 +235,9 @@ class Actor(Observer):
 	def lookedAt(self):
 		return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
 	
+	def end(self, affect):
+		self.affects.remove(affect)
+	
 	@staticmethod
 	def getDamageVerb(dam_roll):
 		if dam_roll < 5:
@@ -259,15 +262,6 @@ class Actor(Observer):
 		a.hit = 1
 		a.dam = 1
 		return a
-
-	def dispatch(self, *eventlist, **events):
-		for event in eventlist:
-			for observer in self.observers[event]:
-				getattr(observer, event)()
-
-		for event, args in events.iteritems():
-			for observer in self.observers[event]:
-				getattr(observer, event)(args)
 
 class Mob(Actor):
 	ROLE_TRAINER = 'trainer'

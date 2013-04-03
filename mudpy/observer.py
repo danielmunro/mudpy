@@ -22,7 +22,12 @@ class Observer(object):
 			# observer is not actually an observer
 			pass
 	
-	def dispatch(self):
-		raise("dispatch() not defined in observer")
+	def dispatch(self, *eventlist, **events):
+		for event in eventlist:
+			list(getattr(observer, event)() for observer in self.observers[event])
+
+		for event, args in events.iteritems():
+			for fn in list(getattr(observer, event) for observer in self.observers[event]):
+				fn(args)
 
 class ObserverException(Exception): pass

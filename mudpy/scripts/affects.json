@@ -1,21 +1,13 @@
 [{
 	"Affect":{
 		"properties":{
-			"name":"sneak",
-			"messages":{
-				"self":"You no longer move silently.",
-				"room":"%s appears from the shadows."
-			}
+			"name":"sneak"
 		}
 	}
 },{
 	"Affect":{
 		"properties":{
-			"name":"berserk",
-			"messages":{
-				"self":"You calm down.",
-				"room":"%s calms down."
-			}
+			"name":"berserk"
 		},
 		"attributes":{
 			"hp":0.1,

@@ -15,12 +15,15 @@
 				"movement":1
 			},
 			"messages":{
-				"self":{
-					"success":"You silently fade into the shadows.",
-					"fail":"You fail to move silently."
+				"success":{
+					"invoker":"You silently fade into the shadows."
 				},
-				"room":{
-					"success":"%s fades into the shadows."
+				"fail":{
+					"invoker":"You fail to move silently."
+				},
+				"end":{
+					"invoker":"You no longer move silently.",
+					"*":"%s appears from the shadows."
 				}
 			}
 		},
@@ -38,13 +41,16 @@
 				"movement":0.5
 			},
 			"messages":{
-				"self":{
-					"success":"Your pulse speeds up as you are consumed by rage!",
-					"fail":"Your face gets red as you huff and stomp around."
+				"success":{
+					"invoker":"Your pulse speeds up as you are consumed by rage!",
+					"*":"%s goes into a rage!"
 				},
-				"room":{
-					"success":"%s goes into a rage!",
-					"fail": "Stomps around in a huff."
+				"fail":{
+					"invoker":"Your face gets red as you huff and stomp around."
+				},
+				"end":{
+					"invoker":"You calm down.",
+					"*":"%s calms down."
 				}
 			}
 		},
@@ -64,13 +70,13 @@
 				"movement":5
 			},
 			"messages":{
-				"self":{
-					"success":"You slam into %s and send them flying!",
-					"fail":"You fall flat on your face!"
+				"success":{
+					"invoker":"You slam into %s and send them flying!",
+					"*":"%s slams into %s!"
 				},
-				"room":{
-					"success":"%s slams into %s!",
-					"fail": "%s falls flat on its face!"
+				"fail":{
+					"invoker":"You fall flat on your face!",
+					"*": "%s falls flat on its face!"
 				}
 			}
 		},
@@ -89,13 +95,13 @@
 				"movement":3
 			},
 			"messages":{
-				"self":{
-					"success":"You kick dirt into %s's eyes!",
-					"fail":"You kick around some dirt."
+				"success":{
+					"invoker":"You kick dirt into %s's eyes!",
+					"*":"%s kicks dirt into %s's eyes!"
 				},
-				"room":{
-					"success":"%s kicks dirt into %s's eyes!",
-					"fail": "%s kicks around some dirt."
+				"fail":{
+					"invoker":"You kick around some dirt.",
+					"*": "%s kicks around some dirt."
 				}
 			}
 		}
@@ -113,13 +119,13 @@
 				"movement":2
 			},
 			"messages":{
-				"self":{
-					"success":"Your kick lands a direct hit on %s!",
-					"fail":"You kick your legs widly."
+				"success":{
+					"invoker":"Your kick lands a direct hit on %s!",
+					"*":"%s kicks %s, it's a direct hit."
 				},
-				"room":{
-					"success":"%s kicks %s, it's a direct hit.",
-					"fail": "%s kicks and misses."
+				"fail":{
+					"invoker":"You kick your legs widly.",
+					"*": "%s kicks and misses."
 				}
 			}
 		}
