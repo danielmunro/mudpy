@@ -13,7 +13,7 @@ class Observer(object):
 		try:
 			self.observers[event].append(observer)
 		except KeyError:
-			Debug.log("Observer does not support event type: "+str(event), "error")
+			Debug.log("Observer "+str(observer)+" does not support event type: "+str(event), "error")
 	
 	def detach(self, event, observer):
 		try:
