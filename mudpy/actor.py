@@ -234,8 +234,11 @@ class Actor(Observer):
 	
 	def lookedAt(self):
 		return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
+
+	def startAffect(self, affect):
+		self.affects.append(affect)
 	
-	def end(self, affect):
+	def endAffect(self, affect):
 		self.affects.remove(affect)
 	
 	@staticmethod

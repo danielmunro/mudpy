@@ -32,15 +32,14 @@ class Ability(object):
 		for affect in self.affects:
 			a = copy(affect)
 			a.affected = receiver
-			a.ability = self
-			a.attach('end', self)
+			a.attach('endAffect', self)
 			a.start()
+	
+	def endAffect(self, affect):
+		affect.affected.room.announce(self.getMessages('end', affect.affected))
 
 	def rollsSuccess(self, invoker, receiver):
 		return True
-
-	def end(self, affect):
-		affect.affected.room.announce(self.getMessages('end', affect.affected))
 	
 	def getMessages(self, messagePart, invoker, receiver = None):
 		messages = self.messages[messagePart]
