@@ -18,7 +18,7 @@ class Client(Protocol):
 		self.commandbuffer = []
 		self.user = None
 		self.login = Login(self)
-		Heartbeat.instance.attach('processCommand', self)
+		Heartbeat.instance.attach('cycle', self.processCommand)
 
 	def connectionMade(self):
 		self.write("By what name do you wish to be known? ");

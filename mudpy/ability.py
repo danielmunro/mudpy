@@ -28,15 +28,16 @@ class Ability(object):
 			invoker.notify("You do not have enough energy to do that.")
 
 	def perform(self, invoker, receiver, args):
+
 		receiver.room.announce(self.getMessages('success', invoker, receiver))
+
+		def endAffect(ability):
+			receiver.room.announce(self.getMessages('end', receiver))
+
 		for affect in self.affects:
 			a = copy(affect)
-			a.affected = receiver
-			a.attach('endAffect', self)
-			a.start()
-	
-	def endAffect(self, affect):
-		affect.affected.room.announce(self.getMessages('end', affect.affected))
+			a.attach('end', endAffect)
+			a.start(receiver)
 
 	def rollsSuccess(self, invoker, receiver):
 		return True

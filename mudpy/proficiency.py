@@ -7,7 +7,7 @@ class Proficiency(object):
 
 		if observer:
 			self.observer = observer
-			observer.attach(self.hook, self)
+			observer.attach(self.hook, getattr(self, self.hook))
 		else:
 			self.observer = None
 	

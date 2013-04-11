@@ -9,7 +9,6 @@ from random import choice, randint, uniform
 
 class Actor(Observer):
 	MAX_STAT = 25
-	EVENT_TYPES = ['attackstart', 'attackmodifier', 'attackresolution', 'attack', 'move', 'sell', 'brew', 'cast']
 
 	def __init__(self):
 		super(Actor, self).__init__()
@@ -39,7 +38,7 @@ class Actor(Observer):
 		
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 		self.attacks = ['reg']
-		Heartbeat.instance.attach('tick', self)
+		Heartbeat.instance.attach('tick', self.tick)
 	
 	def getProficiencies(self):
 		d = dict(self.proficiencies)
@@ -140,7 +139,7 @@ class Actor(Observer):
 		if self.target:
 			if not self.target.target:
 				self.target.target = self
-				Heartbeat.instance.attach('pulse', self.target)
+				Heartbeat.instance.attach('pulse', self.target.pulse)
 
 			if self.disposition != Disposition.INCAPACITATED:
 				try:
@@ -309,7 +308,7 @@ class User(Actor):
 
 	def __init__(self):
 		super(User, self).__init__()
-		Heartbeat.instance.attach('stat', self)
+		Heartbeat.instance.attach('stat', self.stat)
 		self.delay_counter = 0
 		self.last_delay = 0
 		self.trains = 5

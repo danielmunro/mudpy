@@ -1,30 +1,29 @@
 from debug import Debug
 
 class Observer(object):
-	observers = {}
-	EVENT_TYPES = []
 
 	def __init__(self):
-		if len(self.EVENT_TYPES) == 0:
-			Debug.log("observer must define at least one event type in EVENT_TYPES", "error")
-		self.observers = dict((event, []) for event in self.EVENT_TYPES)
+		self.observers = {}
 
-	def attach(self, event, observer):
+	def attach(self, event, fn):
 		try:
-			self.observers[event].append(observer)
+			self.observers[event].append(fn)
 		except KeyError:
-			Debug.log("Observer "+str(observer)+" does not support event type: "+str(event), "error")
+			self.observers[event] = [fn]
 	
-	def detach(self, event, observer):
+	def detach(self, event, fn):
 		try:
-			self.observers[event].remove(observer)
-		except ValueError:
-			Debug.log("Observer not actually observing: "+str(observer), "notice")
+			self.observers[event].remove(fn)
+		except ValueError: pass
+	
+	def detachAll(self, *args):
+		self.observers.clear()
 	
 	def dispatch(self, *eventlist, **events):
 		for event in eventlist:
-			list(getattr(observer, event)() for observer in self.observers[event])
+			for fn in self.observers[event]:
+				fn()
 
 		for event, args in events.iteritems():
-			for fn in list(getattr(observer, event) for observer in self.observers[event]):
+			for fn in self.observers[event]:
 				fn(args)

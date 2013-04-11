@@ -11,8 +11,6 @@ class Heartbeat(Observer):
 
 	PULSE_SECONDS = 1
 
-	EVENT_TYPES = ['tick', 'pulse', 'stat', 'processCommand']
-
 	def __init__(self, reactor):
 		self.reactor = reactor
 		self.stopwatch = Stopwatch()
@@ -24,7 +22,7 @@ class Heartbeat(Observer):
 		next_pulse = time.time()+Heartbeat.PULSE_SECONDS
 		next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 		while(1):
-			self.dispatch('processCommand')
+			self.dispatch('cycle')
 			if time.time() >= next_pulse:
 				next_pulse += Heartbeat.PULSE_SECONDS
 				self.dispatch('pulse', 'stat')
@@ -36,8 +34,10 @@ class Heartbeat(Observer):
 
 	def dispatch(self, *eventlist, **events):
 		for event in eventlist:
-			map(self.reactor.callFromThread, list(getattr(observer, event) for observer in self.observers[event]))
+			try:
+				map(self.reactor.callFromThread, list(fn for fn in self.observers[event]))
+			except KeyError: pass
 
 		for event, args in events.iteritems():
-			for fn in list(getattr(observer, event) for observer in self.observers[event]):
+			for fn in self.observers[event]:
 				self.reactor.callFromThread(fn, args)
