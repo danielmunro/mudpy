@@ -1,5 +1,3 @@
-from debug import Debug
-
 class Observer(object):
 
 	def __init__(self):
