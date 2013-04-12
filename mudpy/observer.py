@@ -12,7 +12,7 @@ class Observer(object):
 	def detach(self, event, fn):
 		try:
 			self.observers[event].remove(fn)
-		except ValueError: pass
+		except (ValueError, KeyError): pass
 	
 	def detachAll(self, *args):
 		self.observers.clear()
