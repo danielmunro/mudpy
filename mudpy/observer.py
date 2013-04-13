@@ -20,9 +20,13 @@ class Observer(object):
 	
 	def dispatch(self, *eventlist, **events):
 		for event in eventlist:
-			for fn in self.observers[event]:
-				fn()
+			try:
+				for fn in self.observers[event]:
+					fn()
+			except KeyError: pass
 
 		for event, args in events.iteritems():
-			for fn in self.observers[event]:
-				fn(args)
+			try:
+				for fn in self.observers[event]:
+					fn(args)
+			except KeyError: pass

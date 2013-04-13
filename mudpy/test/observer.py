@@ -33,5 +33,11 @@ class TestObserver(unittest.TestCase):
 			self.observer.dispatch(testevent = self)
 			self.fail("failed to raise SuccessException in testDispatch")
 		except SuccessException: pass
+	
+	def testDispatchForEventWithNoListeners(self):
+		try:
+			self.observer.dispatch('testevent')
+		except KeyError:
+			self.fail("failed to catch key exception on dispatching event with no listeners")
 
 class SuccessException(Exception): pass
