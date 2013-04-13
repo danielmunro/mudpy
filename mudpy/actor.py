@@ -5,7 +5,10 @@ from attributes import Attributes
 from item import Inventory, Corpse
 from heartbeat import Heartbeat
 from room import Direction, Room
+from debug import Debug
+
 from random import choice, randint, uniform
+import time
 
 class Actor(Observer):
 	MAX_STAT = 25
@@ -38,7 +41,6 @@ class Actor(Observer):
 		
 		self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
 		self.attacks = ['reg']
-		Heartbeat.instance.attach('tick', self.tick)
 	
 	def getProficiencies(self):
 		d = dict(self.proficiencies)
@@ -314,12 +316,14 @@ class User(Actor):
 		self.trains = 5
 		self.practices = 5
 		self.client = None
+		Heartbeat.instance.attach('cycle', self.updateDelay)
 	
 	def prompt(self):
 		return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
 	
 	def notify(self, message):
-		self.client.write(message)
+		if self.client.user:
+			self.client.write(message)
 	
 	def tick(self):
 		super(User, self).tick()
@@ -351,9 +355,28 @@ class User(Actor):
 		})
 		self.notify("\n"+self.prompt())
 	
+	def updateDelay(self):
+		if self.delay_counter > 0:
+			if not self.last_delay:
+				Heartbeat.instance.detach('cycle', self.client.poll)
+			currenttime = int(time.time())
+			if currenttime > self.last_delay:
+				self.delay_counter -= 1
+				self.last_delay = currenttime
+		elif self.last_delay:
+			Heartbeat.instance.attach('cycle', self.client.poll)
+			self.last_delay = 0
+	
 	def levelUp(self):
 		super(User, self).levelUp()
 		self.notify("You leveled up!")
+	
+	def loggedin(self):
+		from factory import Factory
+		Heartbeat.instance.attach('tick', self.tick)
+		Factory.new(Command = "look").tryPerform(self)
+		self.notify("\n"+self.prompt())
+		Debug.log('client logged in as '+str(self))
 
 	def __str__(self):
 		return self.name.title()
