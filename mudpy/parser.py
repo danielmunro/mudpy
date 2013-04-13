@@ -73,10 +73,6 @@ class Parser:
 				except AttributeError:
 					Debug.log("expected function does not exist: Parser."+fn, "error")
 
-	def descriptorSkills(self, instance, skills):
-		#self._parseJson(instance, skills)
-		pass
-
 	def descriptorAffects(self, instance, affects):
 		for affect in affects:
 			instance.affects.append(Factory.new(Affect=affect))

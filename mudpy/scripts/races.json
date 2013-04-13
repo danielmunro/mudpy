@@ -52,7 +52,7 @@
 			"melee":5,
 			"heavy armor":5
 		},
-		"skills":["bash"]
+		"abilities":["bash"]
 	}
 },{
 	"Race":{
@@ -75,7 +75,7 @@
 			"alchemy":5,
 			"elemental":5
 		},
-		"skills":["hand to hand"]
+		"abilities":["hand to hand"]
 	}
 },{
 	"Race":{
@@ -117,7 +117,7 @@
 			"maladictions":5,
 			"sorcery":5
 		},
-		"skills":["sneak", "dirt kick", "infravision"]
+		"abilities":["sneak", "dirt kick", "infravision"]
 	}
 },{
 	"Race":{
@@ -141,7 +141,7 @@
 			"light armor":5,
 			"sorcery":5
 		},
-		"skills":["sneak"]
+		"abilities":["sneak"]
 	}
 },{
 	"Race":{
@@ -163,7 +163,7 @@
 			"slash":5,
 			"heavy armor":5
 		},
-		"skills":["berserk"]
+		"abilities":["berserk"]
 	}
 },{
 	"Race":{
@@ -186,6 +186,6 @@
 			"sneak":5,
 			"dodge":5
 		},
-		"skills":["sneak", "infravision"]
+		"abilities":["sneak", "infravision"]
 	}
 }]
