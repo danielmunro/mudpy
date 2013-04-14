@@ -34,7 +34,7 @@
 					"dam":20,
 					"saves":-10
 				},
-				"skills":["berserk","bash","kick","dirt kick","heal"]
+				"abilities":["berserk","bash","kick","dirt kick","heal"]
 			}
 		}]
 	}
