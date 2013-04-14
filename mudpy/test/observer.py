@@ -24,20 +24,15 @@ class TestObserver(unittest.TestCase):
 	def testDispatch(self):
 		def success(*args):
 			raise SuccessException
-		self.observer.attach('testevent', success)
-		try:
+		def testCase1():
 			self.observer.dispatch('testevent')
-			self.fail("failed to raise SuccessException in testDispatch")
-		except SuccessException: pass
-		try:
+		def testCase2():
 			self.observer.dispatch(testevent = self)
-			self.fail("failed to raise SuccessException in testDispatch")
-		except SuccessException: pass
+		self.observer.attach('testevent', success)
+		self.assertRaises(SuccessException, testCase1)
+		self.assertRaises(SuccessException, testCase2)
 	
 	def testDispatchForEventWithNoListeners(self):
-		try:
-			self.observer.dispatch('testevent')
-		except KeyError:
-			self.fail("failed to catch key exception on dispatching event with no listeners")
+		self.observer.dispatch('testevent')
 
 class SuccessException(Exception): pass
