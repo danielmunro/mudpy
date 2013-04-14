@@ -1,7 +1,7 @@
 [{
 	"Depends":{
 		"properties":{
-			"on":["proficiencies.json"]
+			"on":["proficiencies.json", "abilities.json"]
 		}
 	}
 },{
