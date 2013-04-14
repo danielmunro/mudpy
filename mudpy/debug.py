@@ -8,7 +8,7 @@ class Debug:
 		if not Debug.fp:
 			Debug.fp = open('debug.log', 'a')
 			Debug.fp.write('\nnew log started\n')
-		Debug.fp.write('['+strftime('%Y-%m-%d %H:%M:%S')+' '+status+'] '+message+'\n')
+		Debug.fp.write('['+strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+str(message)+'\n')
 		Debug.fp.flush()
 
 		# better error visibility
