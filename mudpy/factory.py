@@ -28,17 +28,14 @@ class Factory:
 		return lookups
 
 	@staticmethod
-	def newFromWireframe(scalar = True, **kwargs):
-		instances = []
+	def newFromWireframe(instance, name):
+		try:
+			wireframes = Factory.wireframes[instance.__class__.__name__][name]
+		except KeyError:
+			raise FactoryException("Factory does not know how to create "+name)
 		from parser import Parser
 		p = Parser()
-		for key, name in kwargs.iteritems():
-			try:
-				wireframes = Factory.wireframes[key][name]
-			except KeyError:
-				raise FactoryException("Wireframe not defined: "+key)
-			instances = instances + p._parseJson(wireframes)
-		return instances[0] if scalar else instances
+		return p.buildFromDefinition(instance, wireframes[instance.__class__.__name__])
 
 	@staticmethod
 	def addWireframes(wireframes):
@@ -46,9 +43,9 @@ class Factory:
 			for key, blob in wireframe.iteritems():
 				name = blob['properties']['name']
 				try:
-					Factory.wireframes[key][name] = [wireframe]
+					Factory.wireframes[key][name] = wireframe
 				except KeyError:
 					Factory.wireframes[key] = {}
-					Factory.wireframes[key][name] = [wireframe]
+					Factory.wireframes[key][name] = wireframe
 
 class FactoryException(Exception): pass

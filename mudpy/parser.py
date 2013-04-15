@@ -8,7 +8,6 @@ from actor import Mob
 from item import Item, Drink
 from factory import Factory
 from heartbeat import Heartbeat
-from test.factory import FooMock
 
 import os, json
 
@@ -65,29 +64,30 @@ class Parser:
 		for item in data:
 			for _class in item:
 				_class = str(_class)
-				instance = globals()[_class]() if not _class == "Factory" else Factory
-				for descriptor in item[_class]:
-					fn = 'descriptor'+descriptor.title()
-					value = item[_class][descriptor]
-					if isinstance(value, unicode):
-						value = str(value)
-					try:
-						getattr(self, fn)(instance, item[_class][descriptor])
-					except AttributeError as e:
-						Debug.log(e, "error")
-				fn = 'doneParse'+_class
-				try:
-					getattr(self, fn)(parent, instance)
-				except AttributeError: pass
-				instances.append(instance)
+				instances.append(self.buildFromDefinition(globals()[_class](), item[_class], parent))
 		return instances
+
+	def buildFromDefinition(self, instance, properties, parent = None):
+		for descriptor in properties:
+			fn = 'descriptor'+descriptor.title()
+			value = properties[descriptor]
+			if isinstance(value, unicode):
+				value = str(value)
+			try:
+				getattr(self, fn)(instance, properties[descriptor])
+			except AttributeError: pass
+		fn = 'doneParse'+instance.__class__.__name__
+		try:
+			getattr(self, fn)(parent, instance)
+		except AttributeError: pass
+		return instance
 	
 	def descriptorWireframes(self, Factory, wireframes):
 		Factory.addWireframes(wireframes)
 	
 	def descriptorAbilities(self, instance, abilities):
 		for ability in abilities:
-			instance.abilities.append(Factory.newFromWireframe(Ability=ability))
+			instance.abilities.append(Factory.newFromWireframe(Ability(), ability))
 
 	def descriptorAffects(self, instance, affects):
 		for affect in affects:

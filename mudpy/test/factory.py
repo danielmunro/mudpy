@@ -4,7 +4,7 @@ from mudpy.mudpy.factory import Factory, FactoryException
 
 class FooMock:
 	def __init__(self):
-		self.name = "0"
+		self.name = ""
 		self.level = 0
 		self.type = ""
 		self.hook = ""
@@ -49,7 +49,7 @@ class TestFactory(unittest.TestCase):
 		self.assertIn("FooMock", Factory.wireframes.keys())
 
 	def testNewWireframe(self):
-		foo = Factory.newFromWireframe(FooMock="bar")
+		foo = Factory.newFromWireframe(FooMock(), "bar")
 		self.assertIsInstance(foo, FooMock)
 		self.assertEquals("bar", foo.name)
 		self.assertEquals(1, foo.level)
@@ -62,5 +62,5 @@ class TestFactory(unittest.TestCase):
 	
 	def testWireframeDoesNotExist(self):
 		def newClassDoesNotExist():
-			return Factory.newFromWireframe(ClassDoesNotExist = 'classdoesnotexist')
+			return Factory.newFromWireframe(FooMock(), 'classdoesnotexist')
 		self.assertRaises(FactoryException, newClassDoesNotExist)
