@@ -91,7 +91,7 @@ class Parser:
 
 	def descriptorAffects(self, instance, affects):
 		for affect in affects:
-			instance.affects.append(Factory.new(Affect=affect))
+			instance.affects.append(Factory.newFromWireframe(Affect(), affect))
 
 	def descriptorProficiencies(self, actor, proficiencies):
 		for proficiency in proficiencies:

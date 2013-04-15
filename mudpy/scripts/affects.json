@@ -1,28 +1,32 @@
 [{
-	"Affect":{
-		"properties":{
-			"name":"sneak"
-		}
-	}
-},{
-	"Affect":{
-		"properties":{
-			"name":"berserk"
-		},
-		"attributes":{
-			"hp":0.1,
-			"hit":0.1,
-			"dam":0.1
-		}
-	}
-},{
-	"Affect":{
-		"properties":{
-			"name":"stun"
-		},
-		"attributes":{
-			"int":-1,
-			"dex":-1
-		}
+	"Factory":{
+		"wireframes":[{
+			"Affect":{
+				"properties":{
+					"name":"sneak"
+				}
+			}
+		},{
+			"Affect":{
+				"properties":{
+					"name":"berserk"
+				},
+				"attributes":{
+					"hp":0.1,
+					"hit":0.1,
+					"dam":0.1
+				}
+			}
+		},{
+			"Affect":{
+				"properties":{
+					"name":"stun"
+				},
+				"attributes":{
+					"int":-1,
+					"dex":-1
+				}
+			}
+		}]
 	}
 }]

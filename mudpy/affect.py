@@ -13,7 +13,6 @@ class Affect(Observer):
 	def start(self, receiver):
 		self.attach('start', receiver.startAffect)
 		self.attach('end', receiver.endAffect)
-		self.attach('end', self.detachAll)
 		Heartbeat.instance.attach('tick', self.tick)
 		self.setAttributesFromReceiver(receiver)
 		self.dispatch(start = self)

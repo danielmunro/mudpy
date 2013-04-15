@@ -16,6 +16,7 @@
 					"costs":{
 						"movement":1
 					},
+					"affects":["sneak"],
 					"messages":{
 						"success":{
 							"invoker":"You silently fade into the shadows."
@@ -28,8 +29,7 @@
 							"*":"%s appears from the shadows."
 						}
 					}
-				},
-				"affects":["sneak"]
+				}
 			}
 		}, {
 			"Ability":{
@@ -42,6 +42,7 @@
 					"costs":{
 						"movement":0.5
 					},
+					"affects":["berserk"],
 					"messages":{
 						"success":{
 							"invoker":"Your pulse speeds up as you are consumed by rage!",
@@ -55,9 +56,8 @@
 							"*":"%s calms down."
 						}
 					}
-				},
+				}
 				
-				"affects":["berserk"]
 			}
 		}, {
 			"Ability":{
@@ -71,6 +71,7 @@
 					"costs":{
 						"movement":5
 					},
+					"affects":["stun"],
 					"messages":{
 						"success":{
 							"invoker":"You slam into %s and send them flying!",
@@ -81,8 +82,7 @@
 							"*": "%s falls flat on its face!"
 						}
 					}
-				},
-				"affects":["stun"]
+				}
 			}
 		}, {
 			"Ability":{

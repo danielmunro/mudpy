@@ -30,6 +30,8 @@ class Ability(Observer):
 			invoker.notify("You do not have enough energy to do that.")
 
 	def perform(self, invoker, receiver, args):
+		from factory import Factory
+		from affect import Affect
 
 		receiver.room.announce(self.getMessages('success', invoker, receiver))
 
@@ -38,10 +40,10 @@ class Ability(Observer):
 		def endAffect(ability):
 			receiver.room.announce(self.getMessages('end', receiver))
 
-		for affect in self.affects:
-			a = copy(affect)
-			a.attach('end', endAffect)
-			a.start(receiver)
+		for affectname in self.affects:
+			affect = Factory.newFromWireframe(Affect(), affectname)
+			affect.attach('end', endAffect)
+			affect.start(receiver)
 
 	def rollsSuccess(self, invoker, receiver):
 		return True # chosen by coin toss, guaranteed to be random
