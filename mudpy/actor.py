@@ -373,7 +373,7 @@ class User(Actor):
 	
 	def loggedin(self):
 
-		def performAbility(self, ability):
+		def performAbility(ability):
 			self.delay_counter += ability.delay+1
 
 		from factory import Factory
@@ -382,7 +382,7 @@ class User(Actor):
 		self.notify("\n"+self.prompt())
 		Debug.log('client logged in as '+str(self))
 		for ability in self.getAbilities():
-			ability.attach('perform', self.performAbility)
+			ability.attach('perform', performAbility)
 
 	def __str__(self):
 		return self.name.title()
