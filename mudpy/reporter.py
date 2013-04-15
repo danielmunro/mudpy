@@ -1,6 +1,7 @@
 class Reporter:
 
 	def getMessages(self, messagePart, invoker, receiver = None):
+		messages = self.messages[messagePart]
 		try:
 			messages[invoker] = messages.pop('invoker')
 			if messages[invoker].find('%s') > -1:
