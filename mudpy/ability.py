@@ -1,7 +1,8 @@
 from utility import matchPartial
+from observer import Observer
 from copy import copy
 
-class Ability(object):
+class Ability(Observer):
 	instances = []
 	def __init__(self):
 		self.name = "an ability"
@@ -13,6 +14,7 @@ class Ability(object):
 		self.hook = ""
 		self.aggro = False
 		self.messages = {}
+		super(Ability, self).__init__()
 	
 	def tryPerform(self, invoker, args):
 		try:
@@ -31,6 +33,8 @@ class Ability(object):
 
 		receiver.room.announce(self.getMessages('success', invoker, receiver))
 
+		self.dispatch(perform=self)
+
 		def endAffect(ability):
 			receiver.room.announce(self.getMessages('end', receiver))
 
@@ -40,7 +44,7 @@ class Ability(object):
 			a.start(receiver)
 
 	def rollsSuccess(self, invoker, receiver):
-		return True
+		return True # chosen by coin toss, guaranteed to be random
 	
 	def getMessages(self, messagePart, invoker, receiver = None):
 		messages = self.messages[messagePart]
