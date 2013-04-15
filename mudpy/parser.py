@@ -8,6 +8,7 @@ from actor import Mob
 from item import Item, Drink
 from factory import Factory
 from heartbeat import Heartbeat
+from test.factory import FooMock
 
 import os, json
 
@@ -45,10 +46,13 @@ class Parser:
 	def parseJson(self, scriptFile):
 		Debug.log('parsing json file: '+scriptFile)
 		fp = open(scriptFile)
-		data = json.load(fp)
+		try:
+			data = json.load(fp)
+		except ValueError:
+			Debug.log("script file is not properly formatted: "+scriptFile, "error")
 		path, filename = os.path.split(scriptFile)
 		try:
-			self._parseJson(None, data)
+			self._parseJson(data)
 			self.loaded.append(filename)
 			return True
 		except DependencyException:
@@ -56,22 +60,34 @@ class Parser:
 			self.deferred.append(path if filename == self.INITFILE else scriptFile)
 			return False
 
-	def _parseJson(self, parent, data):
+	def _parseJson(self, data, parent = None):
+		instances = []
 		for item in data:
 			for _class in item:
 				_class = str(_class)
-				instance = globals()[_class]()
-				try:
-					for descriptor in item[_class]:
-						fn = 'descriptor'+descriptor.title()
-						value = item[_class][descriptor]
-						if isinstance(value, unicode):
-							value = str(value)
+				instance = globals()[_class]() if not _class == "Factory" else Factory
+				for descriptor in item[_class]:
+					fn = 'descriptor'+descriptor.title()
+					value = item[_class][descriptor]
+					if isinstance(value, unicode):
+						value = str(value)
+					try:
 						getattr(self, fn)(instance, item[_class][descriptor])
-					fn = 'doneParse'+_class
+					except AttributeError as e:
+						Debug.log(e, "error")
+				fn = 'doneParse'+_class
+				try:
 					getattr(self, fn)(parent, instance)
-				except AttributeError:
-					Debug.log("expected function does not exist: Parser."+fn, "error")
+				except AttributeError: pass
+				instances.append(instance)
+		return instances
+	
+	def descriptorWireframes(self, Factory, wireframes):
+		Factory.addWireframes(wireframes)
+	
+	def descriptorAbilities(self, instance, abilities):
+		for ability in abilities:
+			instance.abilities.append(Factory.newFromWireframe(Ability=ability))
 
 	def descriptorAffects(self, instance, affects):
 		for affect in affects:
@@ -82,10 +98,10 @@ class Parser:
 			actor.addProficiency(proficiency, proficiencies[proficiency])
 
 	def descriptorInventory(self, instance, inventory):
-		self._parseJson(instance, inventory)
+		self._parseJson(inventory, instance)
 	
 	def descriptorMobs(self, instance, mobs):
-		self._parseJson(instance, mobs)
+		self._parseJson(mobs, instance)
 	
 	def descriptorProperties(self, instance, properties):
 		for prop in properties:

@@ -5,174 +5,178 @@
 		}
 	}
 },{
-	"Ability":{
-		"properties":{
-			"name":"sneak",
-			"level":0,
-			"type":"skill",
-			"hook":"input",
-			"costs":{
-				"movement":1
-			},
-			"messages":{
-				"success":{
-					"invoker":"You silently fade into the shadows."
+	"Factory":{
+		"wireframes":[{
+			"Ability":{
+				"properties":{
+					"name":"sneak",
+					"level":0,
+					"type":"skill",
+					"hook":"input",
+					"costs":{
+						"movement":1
+					},
+					"messages":{
+						"success":{
+							"invoker":"You silently fade into the shadows."
+						},
+						"fail":{
+							"invoker":"You fail to move silently."
+						},
+						"end":{
+							"invoker":"You no longer move silently.",
+							"*":"%s appears from the shadows."
+						}
+					}
 				},
-				"fail":{
-					"invoker":"You fail to move silently."
+				"affects":["sneak"]
+			}
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"berserk",
+					"level":0,
+					"type":"skill",
+					"hook":"input",
+					"delay": 2,
+					"costs":{
+						"movement":0.5
+					},
+					"messages":{
+						"success":{
+							"invoker":"Your pulse speeds up as you are consumed by rage!",
+							"*":"%s goes into a rage!"
+						},
+						"fail":{
+							"invoker":"Your face gets red as you huff and stomp around."
+						},
+						"end":{
+							"invoker":"You calm down.",
+							"*":"%s calms down."
+						}
+					}
 				},
-				"end":{
-					"invoker":"You no longer move silently.",
-					"*":"%s appears from the shadows."
+				
+				"affects":["berserk"]
+			}
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"bash",
+					"level":0,
+					"type":"skill",
+					"hook":"input",
+					"delay":2,
+					"aggro":true,
+					"costs":{
+						"movement":5
+					},
+					"messages":{
+						"success":{
+							"invoker":"You slam into %s and send them flying!",
+							"*":"%s slams into %s!"
+						},
+						"fail":{
+							"invoker":"You fall flat on your face!",
+							"*": "%s falls flat on its face!"
+						}
+					}
+				},
+				"affects":["stun"]
+			}
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"dirt kick",
+					"level":5,
+					"type":"skill",
+					"hook":"input",
+					"delay":1,
+					"aggro":true,
+					"costs":{
+						"movement":3
+					},
+					"messages":{
+						"success":{
+							"invoker":"You kick dirt into %s's eyes!",
+							"*":"%s kicks dirt into %s's eyes!"
+						},
+						"fail":{
+							"invoker":"You kick around some dirt.",
+							"*": "%s kicks around some dirt."
+						}
+					}
 				}
 			}
-		},
-		"affects":["sneak"]
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"berserk",
-			"level":0,
-			"type":"skill",
-			"hook":"input",
-			"delay": 2,
-			"costs":{
-				"movement":0.5
-			},
-			"messages":{
-				"success":{
-					"invoker":"Your pulse speeds up as you are consumed by rage!",
-					"*":"%s goes into a rage!"
-				},
-				"fail":{
-					"invoker":"Your face gets red as you huff and stomp around."
-				},
-				"end":{
-					"invoker":"You calm down.",
-					"*":"%s calms down."
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"kick",
+					"level":10,
+					"type":"skill",
+					"hook":"input",
+					"delay":1,
+					"aggro":true,
+					"costs":{
+						"movement":2
+					},
+					"messages":{
+						"success":{
+							"invoker":"Your kick lands a direct hit on %s!",
+							"*":"%s kicks %s, it's a direct hit."
+						},
+						"fail":{
+							"invoker":"You kick your legs widly.",
+							"*": "%s kicks and misses."
+						}
+					}
 				}
 			}
-		},
-		
-		"affects":["berserk"]
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"bash",
-			"level":0,
-			"type":"skill",
-			"hook":"input",
-			"delay":2,
-			"aggro":true,
-			"costs":{
-				"movement":5
-			},
-			"messages":{
-				"success":{
-					"invoker":"You slam into %s and send them flying!",
-					"*":"%s slams into %s!"
-				},
-				"fail":{
-					"invoker":"You fall flat on your face!",
-					"*": "%s falls flat on its face!"
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"hand to hand",
+					"level":0,
+					"type":"skill",
+					"hook":"hit"
 				}
 			}
-		},
-		"affects":["stun"]
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"dirt kick",
-			"level":5,
-			"type":"skill",
-			"hook":"input",
-			"delay":1,
-			"aggro":true,
-			"costs":{
-				"movement":3
-			},
-			"messages":{
-				"success":{
-					"invoker":"You kick dirt into %s's eyes!",
-					"*":"%s kicks dirt into %s's eyes!"
-				},
-				"fail":{
-					"invoker":"You kick around some dirt.",
-					"*": "%s kicks around some dirt."
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"infravision",
+					"level":0,
+					"type":"skill",
+					"hook":"look"
 				}
 			}
-		}
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"kick",
-			"level":10,
-			"type":"skill",
-			"hook":"input",
-			"delay":1,
-			"aggro":true,
-			"costs":{
-				"movement":2
-			},
-			"messages":{
-				"success":{
-					"invoker":"Your kick lands a direct hit on %s!",
-					"*":"%s kicks %s, it's a direct hit."
-				},
-				"fail":{
-					"invoker":"You kick your legs widly.",
-					"*": "%s kicks and misses."
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"second attack",
+					"level":10,
+					"type":"skill",
+					"hook":"attack"
 				}
 			}
-		}
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"hand to hand",
-			"level":0,
-			"type":"skill",
-			"hook":"hit"
-		}
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"infravision",
-			"level":0,
-			"type":"skill",
-			"hook":"look"
-		}
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"second attack",
-			"level":10,
-			"type":"skill",
-			"hook":"attack"
-		}
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"cure light",
-			"level":0,
-			"type":"spell",
-			"hook":"input"
-		}
-	}
-}, {
-	"Ability":{
-		"properties":{
-			"name":"heal",
-			"level":20,
-			"type":"spell",
-			"hook":"input"
-		}
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"cure light",
+					"level":0,
+					"type":"spell",
+					"hook":"input"
+				}
+			}
+		}, {
+			"Ability":{
+				"properties":{
+					"name":"heal",
+					"level":20,
+					"type":"spell",
+					"hook":"input"
+				}
+			}
+		}]
 	}
 }]
