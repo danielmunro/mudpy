@@ -50,8 +50,6 @@ class Client(Protocol):
 				action = startsWith(lookup, MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
 				if action:
 					action.tryPerform(self.user, args)
-					if isinstance(action, Ability):
-						self.user.delay_counter += action.delay+1
 				else:
 					self.user.notify("What was that?")
 			self.write("\n"+self.user.prompt())
@@ -86,8 +84,7 @@ class Login:
 			try:
 				self.newuser.race = Factory.new(Race = data, newWith = self.newuser)
 			except NameError:
-				self.client.write("That is not a valid race. What is your race? ")
-				raise LoginException
+				raise LoginException("That is not a valid race. What is your race? ")
 			self.client.write("What alignment are you (good/neutral/evil)? ")
 		
 		def alignment(data):
@@ -98,8 +95,7 @@ class Login:
 			elif "evil".find(data) == 0:
 				self.newuser.alignment = -1000
 			else:
-				self.client.write("That is not a valid alignment. What is your alignment? ")
-				raise LoginException
+				raise LoginException("That is not a valid alignment. What is your alignment? ")
 			self.newuser.room = Room.rooms[Room.DEFAULTROOMID]
 			self.newuser.room.actors.append(self.newuser)
 			Save.saveUser(self.newuser)
@@ -112,7 +108,8 @@ class Login:
 		try:
 			locals()[step](data)
 			self.done.append(step)
-		except LoginException:
+		except LoginException as e:
+			self.client.write(e)
 			self.todo.insert(0, step)
 
 class ClientFactory(tFactory):

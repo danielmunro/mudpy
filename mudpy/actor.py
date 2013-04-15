@@ -372,11 +372,17 @@ class User(Actor):
 		self.notify("You leveled up!")
 	
 	def loggedin(self):
+
+		def performAbility(self, ability):
+			self.delay_counter += ability.delay+1
+
 		from factory import Factory
 		Heartbeat.instance.attach('tick', self.tick)
 		Factory.new(Command = "look").tryPerform(self)
 		self.notify("\n"+self.prompt())
 		Debug.log('client logged in as '+str(self))
+		for ability in self.getAbilities():
+			ability.attach('perform', self.performAbility)
 
 	def __str__(self):
 		return self.name.title()
