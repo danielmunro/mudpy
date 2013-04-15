@@ -18,15 +18,8 @@
 					},
 					"affects":["sneak"],
 					"messages":{
-						"success":{
-							"invoker":"You silently fade into the shadows."
-						},
 						"fail":{
 							"invoker":"You fail to move silently."
-						},
-						"end":{
-							"invoker":"You no longer move silently.",
-							"*":"%s appears from the shadows."
 						}
 					}
 				}
@@ -44,16 +37,8 @@
 					},
 					"affects":["berserk"],
 					"messages":{
-						"success":{
-							"invoker":"Your pulse speeds up as you are consumed by rage!",
-							"*":"%s goes into a rage!"
-						},
 						"fail":{
 							"invoker":"Your face gets red as you huff and stomp around."
-						},
-						"end":{
-							"invoker":"You calm down.",
-							"*":"%s calms down."
 						}
 					}
 				}

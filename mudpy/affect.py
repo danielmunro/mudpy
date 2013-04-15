@@ -1,13 +1,15 @@
 from attributes import Attributes
 from heartbeat import Heartbeat
 from observer import Observer
+from reporter import Reporter
 
-class Affect(Observer):
+class Affect(Observer, Reporter):
 
 	def __init__(self):
 		self.name = "an affect"
 		self.attributes = Attributes()
 		self.timeout = 0
+		self.messages = {}
 		super(Affect, self).__init__()
 	
 	def start(self, receiver):

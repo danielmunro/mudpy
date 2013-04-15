@@ -237,9 +237,11 @@ class Actor(Observer):
 		return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
 
 	def startAffect(self, affect):
+		self.room.announce(affect.getMessages('success', self))
 		self.affects.append(affect)
 	
 	def endAffect(self, affect):
+		self.room.announce(affect.getMessages('end', self))
 		self.affects.remove(affect)
 	
 	@staticmethod
