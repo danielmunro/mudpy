@@ -1,5 +1,4 @@
 from debug import Debug
-from ability import Ability
 from affect import Affect
 from proficiency import Proficiency
 from race import Race
@@ -86,6 +85,7 @@ class Parser:
 		Factory.addWireframes(wireframes)
 	
 	def descriptorAbilities(self, instance, abilities):
+		from ability import Ability
 		for ability in abilities:
 			instance.abilities.append(Factory.newFromWireframe(Ability(), ability))
 
@@ -116,9 +116,6 @@ class Parser:
 
 	def doneParseRace(self, parent, race):
 		Parser._globals.append(race)
-	
-	def doneParseAbility(self, parent, ability):
-		Ability.instances.append(ability)
 	
 	def doneParseProficiency(self, parent, proficiency):
 		Parser._globals.append(proficiency)
