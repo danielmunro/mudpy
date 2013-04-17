@@ -21,11 +21,16 @@ class Observer(object):
 		for event in eventlist:
 			try:
 				for fn in self.observers[event]:
-					fn()
+					handled = fn()
+					if handled:
+						break
 			except KeyError: pass
 
 		for event, args in events.iteritems():
 			try:
 				for fn in self.observers[event]:
-					fn(args)
+					handled = fn(args)
+					if handled:
+						break
 			except KeyError: pass
+		return handled
