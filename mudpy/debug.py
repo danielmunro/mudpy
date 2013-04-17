@@ -13,6 +13,6 @@ class Debug:
 
 		# better error visibility
 		if status == 'error':
-			print message
-			import sys
-			sys.exit()
+			raise DebugException(message)
+
+class DebugException(Exception): pass
