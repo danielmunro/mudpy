@@ -385,6 +385,11 @@ class User(Actor):
 		Debug.log('client logged in as '+str(self))
 		for ability in self.getAbilities():
 			ability.attach('perform', performAbility)
+			def checkInput(args):
+				if ability.name.startswith(args[1]):
+					ability.tryPerform(self, args[2:])
+					return True
+			self.client.attach('input', checkInput)
 
 	def __str__(self):
 		return self.name.title()

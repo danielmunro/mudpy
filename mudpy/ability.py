@@ -4,7 +4,7 @@ from reporter import Reporter
 from copy import copy
 
 class Ability(Observer, Reporter):
-	instances = []
+
 	def __init__(self):
 		self.name = "an ability"
 		self.level = 0
@@ -23,6 +23,7 @@ class Ability(Observer, Reporter):
 		except IndexError:
 			receiver = invoker
 		if self.applyCost(invoker):
+			invoker.delay_counter += self.delay + 1
 			if self.rollsSuccess(invoker, receiver):
 				self.perform(invoker, receiver, args)
 			else:
@@ -33,8 +34,6 @@ class Ability(Observer, Reporter):
 	def perform(self, invoker, receiver, args):
 		from factory import Factory
 		from affect import Affect
-
-		self.dispatch(perform=self)
 
 		for affectname in self.affects:
 			Factory.newFromWireframe(Affect(), affectname).start(receiver)

@@ -15,7 +15,7 @@ class Factory:
 		from parser import Parser
 		lookups = []
 		for _type, _class in kwargs.iteritems():
-			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals, Ability.instances);
+			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals);
 			if lookup:
 				lookups.append(lookup)
 			else:
@@ -47,5 +47,19 @@ class Factory:
 				except KeyError:
 					Factory.wireframes[key] = {}
 					Factory.wireframes[key][name] = wireframe
+	
+	@staticmethod
+	def matchWireframe(name, keys, scalar = True):
+		matches = []
+		if not isinstance(keys, list):
+			keys = [keys]
+		for key in keys:
+			for wireframename, wireframe in Factory.wireframes[key].iteritems():
+				if wireframename.startswith(name):
+					matches.append({'key':key, 'wireframe':wireframename})
+		try:
+			return matches[0] if scalar else matches
+		except KeyError:
+			return None
 
 class FactoryException(Exception): pass

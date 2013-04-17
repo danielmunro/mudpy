@@ -1,6 +1,6 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
-from command import Command, MoveDirection
+from command import Command
 from utility import startsWith
 from debug import Debug
 from heartbeat import Heartbeat
@@ -9,24 +9,24 @@ from actor import User
 from ability import Ability
 from factory import Factory
 from room import Room
+from observer import Observer
 
 from collections import deque
 
-class Client(Protocol):
+class Client(Observer, Protocol):
 	def __init__(self):
 		self.commandbuffer = []
 		self.user = None
 		self.login = Login(self)
 		Heartbeat.instance.attach('cycle', self.poll)
+		super(Client, self).__init__()
 
 	def connectionMade(self):
 		self.write("By what name do you wish to be known? ");
-		self.factory.clients.append(self)
 		Debug.log('new client connected')
 	
 	def connectionLost(self, reason):
 		self.write("Good bye!")
-		self.factory.clients.remove(self)
 		Debug.log('client disconnected')
 	
 	def disconnect(self):
@@ -42,19 +42,17 @@ class Client(Protocol):
 			data = self.commandbuffer.pop(0)
 		except IndexError:
 			return
+	
+		if not self.user:
+			return self.login.step(data)
+		elif data:
+			args = data.split(" ")
+			args.insert(0, self.user)
+			handled = self.dispatch(input=args)
+			if not handled:
+				self.user.notify("What was that?")
 
-		if self.user:
-			if data:
-				args = data.split(" ")
-				lookup = args.pop(0)
-				action = startsWith(lookup, MoveDirection.__subclasses__(), Command.__subclasses__(), Ability.instances)
-				if action:
-					action.tryPerform(self.user, args)
-				else:
-					self.user.notify("What was that?")
-			self.write("\n"+self.user.prompt())
-		else:
-			self.login.step(data)
+		self.write("\n"+self.user.prompt())
 	
 	def write(self, message):
 		self.transport.write(str(message));
@@ -115,5 +113,14 @@ class Login:
 class ClientFactory(tFactory):
 	protocol = Client
 	clients = []
+
+	def buildProtocol(self, addr):
+		client = Client()
+		client.attach('input', Command.checkInput)
+		self.clients.append(self)
+		return client
+	
+	def clientConnectionLost(self, connector, reason):
+		self.clients.remove(self)
 
 class LoginException(Exception): pass

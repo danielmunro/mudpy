@@ -1,4 +1,4 @@
-from utility import matchPartial
+from utility import matchPartial, startsWith
 from actor import Disposition
 from debug import Debug
 
@@ -13,6 +13,13 @@ class Command(object):
 
 	def perform(self):
 		Debug.log("perform() not defined", "error")
+	
+	@staticmethod
+	def checkInput(args):
+		action = startsWith(args[1], MoveDirection.__subclasses__(), Command.__subclasses__())
+		if action:
+			action.tryPerform(args[0], args[2:])
+			return True
 	
 	def __str__(self):
 		return self.name
