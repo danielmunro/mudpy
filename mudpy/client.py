@@ -1,6 +1,6 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
-from command import Command
+import command
 from debug import Debug
 from heartbeat import Heartbeat
 from persistence import *
@@ -113,7 +113,7 @@ class ClientFactory(tFactory):
 
 	def buildProtocol(self, addr):
 		client = Client()
-		client.attach('input', Command.checkInput)
+		client.attach('input', command.checkInput)
 		return client
 
 class LoginException(Exception): pass
