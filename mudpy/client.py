@@ -112,15 +112,10 @@ class Login:
 
 class ClientFactory(tFactory):
 	protocol = Client
-	clients = []
 
 	def buildProtocol(self, addr):
 		client = Client()
 		client.attach('input', Command.checkInput)
-		self.clients.append(self)
 		return client
-	
-	def clientConnectionLost(self, connector, reason):
-		self.clients.remove(self)
 
 class LoginException(Exception): pass
