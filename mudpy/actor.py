@@ -1,11 +1,11 @@
 from __future__ import division
+import debug
 from observer import Observer
 from persistence import Save
 from attributes import Attributes
 from item import Inventory, Corpse
 from heartbeat import Heartbeat
 from room import Direction, Room
-from debug import Debug
 
 from random import choice, randint, uniform
 import time
@@ -382,7 +382,7 @@ class User(Actor):
 		Heartbeat.instance.attach('tick', self.tick)
 		Factory.new(Command = "look").tryPerform(self)
 		self.notify("\n"+self.prompt())
-		Debug.log('client logged in as '+str(self))
+		debug.log('client logged in as '+str(self))
 		for ability in self.getAbilities():
 			ability.attach('perform', performAbility)
 			def checkInput(args):

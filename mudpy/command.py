@@ -1,6 +1,6 @@
 from utility import matchPartial, startsWith
 from actor import Disposition
-from debug import Debug
+import debug
 
 def checkInput(args):
 	action = startsWith(args[1], MoveDirection.__subclasses__(), Command.__subclasses__())
@@ -18,7 +18,7 @@ class Command(object):
 			self.perform(actor, args)
 
 	def perform(self):
-		Debug.log("perform() not defined", "error")
+		debug.log("perform() not defined", "error")
 	
 	def __str__(self):
 		return self.name
@@ -273,14 +273,14 @@ class MoveDirection(Command):
 				actor.room.actors.append(actor)
 				actor.room.notify(actor, str(actor).title()+" has arrived.")
 				Look().tryPerform(actor)
-				Debug.log(str(actor)+' moves to '+str(actor.room))
+				debug.log(str(actor)+' moves to '+str(actor.room))
 			else:
 				actor.notify("You are too tired to move.")
 		else:
 			actor.notify("Alas, nothing is there.")
 	
 	def getNewRoom(self, actor):
-		Debug.log("getNewRoom is not defined", "error")
+		debug.log("getNewRoom is not defined", "error")
 
 class North(MoveDirection):
 	name = "north"

@@ -2,7 +2,7 @@ from attributes import Attributes
 from heartbeat import Heartbeat
 from observer import Observer
 from reporter import Reporter
-from debug import Debug
+import debug
 
 class Affect(Observer, Reporter):
 
@@ -18,7 +18,7 @@ class Affect(Observer, Reporter):
 			self.attach('start', receiver.startAffect)
 			self.attach('end', receiver.endAffect)
 		except AttributeError:
-			Debug.log(str(receiver)+" does not have startAffect() and/or endAffect() defined", "error")
+			debug.log(str(receiver)+" does not have startAffect() and/or endAffect() defined", "error")
 		Heartbeat.instance.attach('tick', self.tick)
 		self.setAttributesFromReceiver(receiver)
 		self.dispatch(start = self)

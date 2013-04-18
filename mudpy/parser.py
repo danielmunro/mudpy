@@ -1,4 +1,4 @@
-from debug import Debug
+import debug
 from affect import Affect
 from proficiency import Proficiency
 from race import Race
@@ -27,7 +27,7 @@ class Parser:
 			self.parseJson(path) # parse the json file
 
 	def parseDir(self, path):
-		Debug.log('recurse through path: '+path)
+		debug.log('recurse through path: '+path)
 
 		# check that dependencies for the directory have been met
 		init = path+'/'+self.INITFILE
@@ -42,19 +42,19 @@ class Parser:
 			self.parse(fullpath)
 
 	def parseJson(self, scriptFile):
-		Debug.log('parsing json file: '+scriptFile)
+		debug.log('parsing json file: '+scriptFile)
 		fp = open(scriptFile)
 		try:
 			data = json.load(fp)
 		except ValueError:
-			Debug.log("script file is not properly formatted: "+scriptFile, "error")
+			debug.log("script file is not properly formatted: "+scriptFile, "error")
 		path, filename = os.path.split(scriptFile)
 		try:
 			self._parseJson(data)
 			self.loaded.append(filename)
 			return True
 		except DependencyException:
-			Debug.log(scriptFile+' deferred')
+			debug.log(scriptFile+' deferred')
 			self.deferred.append(path if filename == self.INITFILE else scriptFile)
 			return False
 
@@ -156,7 +156,7 @@ class Parser:
 				p.parse(fullpath)
 			endlen = len(p.loaded)
 			if startlen == endlen:
-				Debug.log("dependencies cannot be met", "error")
+				debug.log("dependencies cannot be met", "error")
 
 		#build out the room tree
 		randomHalls = []

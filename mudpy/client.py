@@ -1,7 +1,7 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
 import command
-from debug import Debug
+import debug
 from heartbeat import Heartbeat
 from persistence import *
 from actor import User
@@ -21,11 +21,11 @@ class Client(Observer, Protocol):
 
 	def connectionMade(self):
 		self.write("By what name do you wish to be known? ");
-		Debug.log('new client connected')
+		debug.log('new client connected')
 	
 	def connectionLost(self, reason):
 		self.write("Good bye!")
-		Debug.log('client disconnected')
+		debug.log('client disconnected')
 	
 	def disconnect(self):
 		Heartbeat.instance.detach('tick', self.user)
@@ -96,7 +96,7 @@ class Login:
 			self.newuser.room.actors.append(self.newuser)
 			Save.saveUser(self.newuser)
 			self.client.user = self.newuser
-			Debug.log('client created new user as '+str(self.newuser))
+			debug.log('client created new user as '+str(self.newuser))
 			self.newuser.loggedin()
 
 		step = self.todo.pop(0)
