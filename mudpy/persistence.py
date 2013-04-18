@@ -36,6 +36,7 @@ class Load:
 		userid = db.hget('Users', name)
 		user = None
 		if userid:
+			from race import Race
 			from actor import User
 			from client import ClientFactory
 			from factory import Factory
@@ -46,7 +47,7 @@ class Load:
 
 			# race
 			racename = db.hget('UserRaces', userid)
-			user.race = Factory.new(Race = racename, newWith = user)
+			user.race = Factory.newFromWireframe(Race(user), racename)
 
 			# room
 			roomid = db.hget('UserRooms', userid)

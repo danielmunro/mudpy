@@ -114,9 +114,6 @@ class Parser:
 	def doneParseAffect(self, parent, affect):
 		Parser._globals.append(affect)
 
-	def doneParseRace(self, parent, race):
-		Parser._globals.append(race)
-	
 	def doneParseProficiency(self, parent, proficiency):
 		Parser._globals.append(proficiency)
 	
@@ -131,7 +128,7 @@ class Parser:
 	def doneParseMob(self, parent, mob):
 		parent.actors.append(mob)
 		mob.room = parent
-		mob.race = Factory.new(Race=mob.race)
+		mob.race = Factory.newFromWireframe(Race(mob), mob.race)
 		Heartbeat.instance.attach('tick', mob.tick)
 
 	def doneParseRoom(self, parent, room):

@@ -5,9 +5,10 @@ import debug
 from heartbeat import Heartbeat
 from persistence import *
 from actor import User
-from factory import Factory
+from factory import Factory, FactoryException
 from room import Room
 from observer import Observer
+from race import Race
 
 from collections import deque
 
@@ -78,8 +79,8 @@ class Login:
 		
 		def race(data):
 			try:
-				self.newuser.race = Factory.new(Race = data, newWith = self.newuser)
-			except NameError:
+				self.newuser.race = Factory.newFromWireframe(Race(self.newuser), data)
+			except FactoryException:
 				raise LoginException("That is not a valid race. What is your race? ")
 			self.client.write("What alignment are you (good/neutral/evil)? ")
 		
