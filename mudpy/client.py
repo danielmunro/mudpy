@@ -1,12 +1,10 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
 from command import Command
-from utility import startsWith
 from debug import Debug
 from heartbeat import Heartbeat
 from persistence import *
 from actor import User
-from ability import Ability
 from factory import Factory
 from room import Room
 from observer import Observer
