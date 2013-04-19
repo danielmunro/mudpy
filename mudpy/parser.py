@@ -1,9 +1,8 @@
 import debug, heartbeat
 from affect import Affect
 from proficiency import Proficiency
-from race import Race
 from room import Room, Randomhall, Grid, Area
-from actor import Mob
+from actor import Mob, Race
 from item import Item, Drink
 from factory import Factory
 
@@ -84,7 +83,7 @@ class Parser:
 		Factory.addWireframes(wireframes)
 	
 	def descriptorAbilities(self, instance, abilities):
-		from ability import Ability
+		from actor import Ability
 		for ability in abilities:
 			instance.abilities.append(Factory.newFromWireframe(Ability(), ability))
 

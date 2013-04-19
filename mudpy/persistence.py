@@ -8,8 +8,7 @@ def loadUser(name):
 	userid = conn.hget('Users', name)
 	user = None
 	if userid:
-		from race import Race
-		from actor import User
+		from actor import User, Race
 		from client import ClientFactory
 		from factory import Factory
 		from room import Room

@@ -1,11 +1,9 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
-import command, debug, persistence, heartbeat
-from actor import User
+import command, debug, persistence, heartbeat, actor
 from factory import Factory, FactoryException
 from room import Room
 from observer import Observer
-from race import Race
 
 from collections import deque
 
@@ -69,14 +67,14 @@ class Login:
 				self.client.user = user
 				user.loggedin()
 				return
-			self.newuser = User()
+			self.newuser = actor.User()
 			self.newuser.client = self.client
 			self.newuser.name = data
 			self.client.write("What is your race? ")
 		
 		def race(data):
 			try:
-				self.newuser.race = Factory.newFromWireframe(Race(), data)
+				self.newuser.race = Factory.newFromWireframe(actor.Race(), data)
 			except FactoryException:
 				raise LoginException("That is not a valid race. What is your race? ")
 			self.client.write("What alignment are you (good/neutral/evil)? ")

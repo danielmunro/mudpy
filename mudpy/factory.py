@@ -1,10 +1,6 @@
 from utility import startsWith
-from race import Race
-from ability import Ability
-from room import *
-from command import *
-from proficiency import Proficiency
-from affect import Affect
+from room import Direction
+from command import MoveDirection, Command
 import copy, inspect
 
 class Factory:

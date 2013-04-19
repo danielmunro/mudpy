@@ -1,6 +1,7 @@
 from __future__ import division
 import debug, heartbeat
 from observer import Observer
+from reporter import Reporter
 from persistence import Save
 from attributes import Attributes
 from item import Inventory, Corpse
@@ -463,3 +464,86 @@ class Attack:
 	
 	def getAttributeModifier(self, actor, attributeName):
 		return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4
+
+class Ability(Observer, Reporter):
+
+	def __init__(self):
+		self.name = "an ability"
+		self.level = 0
+		self.affects = []
+		self.costs = {}
+		self.delay = 0
+		self.type = "" # skill or spell
+		self.hook = ""
+		self.aggro = False
+		self.messages = {}
+		super(Ability, self).__init__()
+	
+	def tryPerform(self, invoker, args):
+		try:
+			receiver = matchPartial(args[-1], invoker.room.actors)
+		except IndexError:
+			receiver = invoker
+		if self.applyCost(invoker):
+			invoker.delay_counter += self.delay + 1
+			if self.rollsSuccess(invoker, receiver):
+				self.perform(invoker, receiver, args)
+			else:
+				receiver.room.announce(self.getMessages('fail', invoker, receiver))
+		else:
+			invoker.notify("You do not have enough energy to do that.")
+
+	def perform(self, invoker, receiver, args):
+		from factory import Factory
+		from affect import Affect
+
+		for affectname in self.affects:
+			Factory.newFromWireframe(Affect(), affectname).start(receiver)
+
+	def rollsSuccess(self, invoker, receiver):
+		return True # chosen by coin toss, guaranteed to be random
+	
+	def applyCost(self, invoker):
+		for attr, cost in self.costs.iteritems():
+			curattr = getattr(invoker, 'cur'+attr)
+			cost *= curattr if cost > 0 and cost < 1 else 1
+			if curattr < cost:
+				return False
+		for attr, cost in self.costs.iteritems():
+			curattr = getattr(invoker, 'cur'+attr)
+			cost *= curattr if cost > 0 and cost < 1 else 1
+			setattr(invoker, 'cur'+attr, curattr-cost)
+		return True
+	
+	def __str__(self):
+		return self.name;
+
+class Race:
+	SIZE_TINY = 1
+	SIZE_SMALL = 2
+	SIZE_NORMAL = 3
+	SIZE_LARGE = 4
+	SIZE_GIGANTIC = 5
+
+	def __init__(self):
+		self.name = "critter"
+		self.size = self.SIZE_NORMAL
+		self.movementCost = 1
+		self.isPlayable = False
+		self.damType = "bash"
+		self.proficiencies = {}
+		self.attributes = Attributes()
+		self.abilities = []
+		self.affects = []
+	
+	def addProficiency(self, proficiency, level):
+		try:
+			self.proficiencies[proficiency].level += level
+		except KeyError:
+			from factory import Factory
+			from proficiency import Proficiency
+			self.proficiencies[proficiency] = Factory.newFromWireframe(Proficiency(), proficiency)
+			self.proficiencies[proficiency].level = level
+
+	def __str__(self):
+		return self.name
