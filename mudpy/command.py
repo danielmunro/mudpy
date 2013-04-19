@@ -147,8 +147,8 @@ class Kill(Command):
 		target = matchPartial(args[0], actor.room.actors)
 		if target:
 			actor.target = target
-			from heartbeat import Heartbeat
-			Heartbeat.instance.attach('pulse', actor.pulse)
+			import heartbeat
+			heartbeat.instance.attach('pulse', actor.pulse)
 			actor.room.announce({
 				actor: 'You scream and attack!',
 				'*': str(actor)+' screams and attacks '+str(target)+'!'

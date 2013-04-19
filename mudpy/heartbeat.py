@@ -3,9 +3,9 @@ import debug
 from observer import Observer
 from stopwatch import Stopwatch
 
-class Heartbeat(Observer):
-	instance = None
+instance = None
 
+class Heartbeat(Observer):
 	TICK_LOWBOUND_SECONDS = 10
 	TICK_HIGHBOUND_SECONDS = 15
 

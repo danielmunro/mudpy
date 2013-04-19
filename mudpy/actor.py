@@ -1,10 +1,9 @@
 from __future__ import division
-import debug
+import debug, heartbeat
 from observer import Observer
 from persistence import Save
 from attributes import Attributes
 from item import Inventory, Corpse
-from heartbeat import Heartbeat
 from room import Direction, Room
 
 from random import choice, randint, uniform
@@ -142,7 +141,7 @@ class Actor(Observer):
 		if self.target:
 			if not self.target.target:
 				self.target.target = self
-				Heartbeat.instance.attach('pulse', self.target.pulse)
+				heartbeat.instance.attach('pulse', self.target.pulse)
 
 			if self.disposition != Disposition.INCAPACITATED:
 				try:
@@ -150,7 +149,7 @@ class Actor(Observer):
 					self.doRegularAttacks(recursedAttackIndex + 1)
 				except IndexError: pass
 		else:
-			Heartbeat.instance.detach('pulse', self)
+			heartbeat.instance.detach('pulse', self)
 	
 	def status(self):
 		hppercent = self.curhp / self.getAttribute('hp')
@@ -313,13 +312,13 @@ class User(Actor):
 
 	def __init__(self):
 		super(User, self).__init__()
-		Heartbeat.instance.attach('stat', self.stat)
+		heartbeat.instance.attach('stat', self.stat)
 		self.delay_counter = 0
 		self.last_delay = 0
 		self.trains = 5
 		self.practices = 5
 		self.client = None
-		Heartbeat.instance.attach('cycle', self.updateDelay)
+		heartbeat.instance.attach('cycle', self.updateDelay)
 	
 	def prompt(self):
 		return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
@@ -361,13 +360,13 @@ class User(Actor):
 	def updateDelay(self):
 		if self.delay_counter > 0:
 			if not self.last_delay:
-				Heartbeat.instance.detach('cycle', self.client.poll)
+				heartbeat.instance.detach('cycle', self.client.poll)
 			currenttime = int(time.time())
 			if currenttime > self.last_delay:
 				self.delay_counter -= 1
 				self.last_delay = currenttime
 		elif self.last_delay:
-			Heartbeat.instance.attach('cycle', self.client.poll)
+			heartbeat.instance.attach('cycle', self.client.poll)
 			self.last_delay = 0
 	
 	def levelUp(self):
@@ -380,7 +379,7 @@ class User(Actor):
 			self.delay_counter += ability.delay+1
 
 		from factory import Factory
-		Heartbeat.instance.attach('tick', self.tick)
+		heartbeat.instance.attach('tick', self.tick)
 		Factory.new(Command = "look").tryPerform(self)
 		self.notify("\n"+self.prompt())
 		debug.log('client logged in as '+str(self))

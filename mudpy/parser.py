@@ -1,4 +1,4 @@
-import debug
+import debug, heartbeat
 from affect import Affect
 from proficiency import Proficiency
 from race import Race
@@ -6,7 +6,6 @@ from room import Room, Randomhall, Grid, Area
 from actor import Mob
 from item import Item, Drink
 from factory import Factory
-from heartbeat import Heartbeat
 
 import os, json
 
@@ -123,7 +122,7 @@ class Parser:
 		parent.actors.append(mob)
 		mob.room = parent
 		mob.race = Factory.newFromWireframe(Race(), mob.race)
-		Heartbeat.instance.attach('tick', mob.tick)
+		heartbeat.instance.attach('tick', mob.tick)
 
 	def doneParseRoom(self, parent, room):
 		room.area = self.lastarea
