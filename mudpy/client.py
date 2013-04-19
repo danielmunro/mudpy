@@ -79,7 +79,7 @@ class Login:
 		
 		def race(data):
 			try:
-				self.newuser.race = Factory.newFromWireframe(Race(self.newuser), data)
+				self.newuser.race = Factory.newFromWireframe(Race(), data)
 			except FactoryException:
 				raise LoginException("That is not a valid race. What is your race? ")
 			self.client.write("What alignment are you (good/neutral/evil)? ")

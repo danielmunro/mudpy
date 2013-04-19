@@ -1,33 +1,22 @@
 from attributes import Attributes
 
-class Race(object):
+class Race:
 	SIZE_TINY = 1
 	SIZE_SMALL = 2
 	SIZE_NORMAL = 3
 	SIZE_LARGE = 4
 	SIZE_GIGANTIC = 5
-	name = "critter"
-	size = SIZE_NORMAL
-	movementCost = 1
-	isPlayable = False
-	startingProficiencies = {}
-	damType = 'bash'
 
-	def __init__(self, actor = None):
+	def __init__(self):
+		self.name = "critter"
+		self.size = self.SIZE_NORMAL
+		self.movementCost = 1
+		self.isPlayable = False
+		self.damType = "bash"
 		self.proficiencies = {}
 		self.attributes = Attributes()
 		self.abilities = []
 		self.affects = []
-		self.setup();
-		if actor:
-			from factory import Factory
-			for proficiency in self.startingProficiencies:
-				level = self.startingProficiencies[proficiency]
-				self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency, newWith = actor)
-				self.proficiencies[proficiency].level = level
-	
-	def setup(self):
-		pass
 	
 	def addProficiency(self, proficiency, level):
 		try:

@@ -122,7 +122,7 @@ class Parser:
 	def doneParseMob(self, parent, mob):
 		parent.actors.append(mob)
 		mob.room = parent
-		mob.race = Factory.newFromWireframe(Race(mob), mob.race)
+		mob.race = Factory.newFromWireframe(Race(), mob.race)
 		Heartbeat.instance.attach('tick', mob.tick)
 
 	def doneParseRoom(self, parent, room):
