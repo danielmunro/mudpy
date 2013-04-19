@@ -1,6 +1,38 @@
-import time, hashlib
-from random import randint
-from db import Db
+import time, hashlib, random, redis
+
+def db():
+	return redis.Redis(host='localhost', port=6379, db=10)
+
+def loadUser(name):
+	db = db()
+	userid = db.hget('Users', name)
+	user = None
+	if userid:
+		from race import Race
+		from actor import User
+		from client import ClientFactory
+		from factory import Factory
+		from room import Room
+		user = User()
+		user.id = userid
+		Load(user, user.persistibleProperties).execute()
+
+		# race
+		racename = db.hget('UserRaces', userid)
+		user.race = Factory.newFromWireframe(Race(), racename)
+
+		# room
+		roomid = db.hget('UserRooms', userid)
+		user.room = Room.rooms[roomid]
+		user.room.actors.append(user)
+	return user
+
+def saveUser(user):
+	Save(user, user.persistibleProperties).execute()
+	db = db()
+	db.hset('Users', user.name, user.id)
+	db.hset('UserRooms', user.id, user.room.getFullID())
+	db.hset('UserRaces', user.id, user.race.name)
 
 class Load:
 
@@ -11,7 +43,7 @@ class Load:
 	
 	def execute(self):
 		# get connection
-		db = Db().conn
+		db = db()
 
 		for p in self.properties:
 			v = getattr(self.loaded, p)
@@ -30,31 +62,6 @@ class Load:
 				except AttributeError:
 					print "Cannot load property "+str(p)+" of "+str(self.loaded)+" using method "+method
 	
-	@staticmethod
-	def loadUser(name):
-		db = Db().conn
-		userid = db.hget('Users', name)
-		user = None
-		if userid:
-			from race import Race
-			from actor import User
-			from client import ClientFactory
-			from factory import Factory
-			from room import Room
-			user = User()
-			user.id = userid
-			Load(user, user.persistibleProperties).execute()
-
-			# race
-			racename = db.hget('UserRaces', userid)
-			user.race = Factory.newFromWireframe(Race(), racename)
-
-			# room
-			roomid = db.hget('UserRooms', userid)
-			user.room = Room.rooms[roomid]
-			user.room.actors.append(user)
-		return user
-
 	def executestr(self, userid, db, prop):
 		return db.hget(userid, prop);
 	
@@ -84,7 +91,7 @@ class Save:
 	
 	def execute(self):
 		# get connection
-		db = Db().conn
+		db = db()
 
 		# ensure the object has an id
 		if not self.saved.id:
@@ -125,14 +132,5 @@ class Save:
 			db.hset(self.saved.id+':dict:'+prop, i, str(k))
 	
 	@staticmethod
-	def saveUser(user):
-		Save(user, user.persistibleProperties).execute()
-		from db import Db
-		db = Db()
-		db.conn.hset('Users', user.name, user.id)
-		db.conn.hset('UserRooms', user.id, user.room.getFullID())
-		db.conn.hset('UserRaces', user.id, user.race.name)
-
-	@staticmethod
 	def getRandomID():
-		return hashlib.sha224(str(time.time())+":"+str(randint(0, 1000000))).hexdigest()
+		return hashlib.sha224(str(time.time())+":"+str(random.randint(0, 1000000))).hexdigest()

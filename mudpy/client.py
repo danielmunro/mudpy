@@ -2,8 +2,8 @@ from twisted.internet.protocol import Factory as tFactory, Protocol
 
 import command
 import debug
+import persistence
 from heartbeat import Heartbeat
-from persistence import *
 from actor import User
 from factory import Factory, FactoryException
 from room import Room
@@ -66,7 +66,7 @@ class Login:
 	
 	def step(self, data):
 		def login(data):
-			user = Load.loadUser(data)
+			user = persistence.loadUser(data)
 			if user:
 				user.client = self.client
 				self.client.user = user
@@ -95,7 +95,7 @@ class Login:
 				raise LoginException("That is not a valid alignment. What is your alignment? ")
 			self.newuser.room = Room.rooms[Room.DEFAULTROOMID]
 			self.newuser.room.actors.append(self.newuser)
-			Save.saveUser(self.newuser)
+			persistence.saveUser(self.newuser)
 			self.client.user = self.newuser
 			debug.log('client created new user as '+str(self.newuser))
 			self.newuser.loggedin()
