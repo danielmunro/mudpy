@@ -57,7 +57,8 @@ class Actor(Observer):
 			self.proficiencies[proficiency].level += level
 		except KeyError:
 			from factory import Factory
-			self.proficiencies[proficiency] = Factory.new(Proficiency = proficiency)
+			from proficiency import Proficiency
+			self.proficiencies[proficiency] = Factory.newFromWireframe(Proficiency(), proficiency)
 			self.proficiencies[proficiency].level = level
 	
 	def getEquipmentByPosition(self, position):

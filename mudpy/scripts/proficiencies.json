@@ -1,121 +1,125 @@
 [{
-	"Proficiency":{
-		"properties":{
-			"name":"parry",
-			"hook":"attackstart"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"dodge",
-			"hook":"attackstart"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"light armor",
-			"hook":"attacked"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"heavy armor",
-			"hook":"attacked"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"slash",
-			"hook":"attackmodifier"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"pierce",
-			"hook":"attackmodifier"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"bash",
-			"hook":"attackmodifier"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"melee",
-			"improvechance":0.99,
-			"hook":"attackmodifier"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"sneak",
-			"hook":"move"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"haggle",
-			"hook":["buy", "sell"]
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"alchemy",
-			"hook":"brew"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"curative",
-			"hook":"cast"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"healing",
-			"hook":"cast"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"maladictions",
-			"hook":"cast"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"benedictions",
-			"hook":"cast"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"sorcery",
-			"hook":"cast"
-		}
-	}
-},{
-	"Proficiency":{
-		"properties":{
-			"name":"elemental",
-			"hook":"cast"
-		}
+	"Factory":{
+		"wireframes":[{
+			"Proficiency":{
+				"properties":{
+					"name":"parry",
+					"hook":"attackstart"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"dodge",
+					"hook":"attackstart"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"light armor",
+					"hook":"attacked"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"heavy armor",
+					"hook":"attacked"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"slash",
+					"hook":"attackmodifier"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"pierce",
+					"hook":"attackmodifier"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"bash",
+					"hook":"attackmodifier"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"melee",
+					"improvechance":0.99,
+					"hook":"attackmodifier"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"sneak",
+					"hook":"move"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"haggle",
+					"hook":["buy", "sell"]
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"alchemy",
+					"hook":"brew"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"curative",
+					"hook":"cast"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"healing",
+					"hook":"cast"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"maladictions",
+					"hook":"cast"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"benedictions",
+					"hook":"cast"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"sorcery",
+					"hook":"cast"
+				}
+			}
+		},{
+			"Proficiency":{
+				"properties":{
+					"name":"elemental",
+					"hook":"cast"
+				}
+			}
+		}]
 	}
 }]

@@ -111,12 +111,6 @@ class Parser:
 		for attribute in attributes:
 			setattr(instance.attributes, attribute, attributes[attribute])
 	
-	def doneParseAffect(self, parent, affect):
-		Parser._globals.append(affect)
-
-	def doneParseProficiency(self, parent, proficiency):
-		Parser._globals.append(proficiency)
-	
 	def doneParseDepends(self, parent, depends):
 		deps = [dep for dep in depends.on if not dep in self.loaded]
 		if len(deps):

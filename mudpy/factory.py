@@ -15,7 +15,7 @@ class Factory:
 		from parser import Parser
 		lookups = []
 		for _type, _class in kwargs.iteritems():
-			lookup = startsWith(_class, globals()[_type].__subclasses__(), Parser._globals);
+			lookup = startsWith(_class, globals()[_type].__subclasses__())
 			if lookup:
 				lookups.append(lookup)
 			else:
