@@ -4,8 +4,8 @@ def db():
 	return redis.Redis(host='localhost', port=6379, db=10)
 
 def loadUser(name):
-	db = db()
-	userid = db.hget('Users', name)
+	conn = db()
+	userid = conn.hget('Users', name)
 	user = None
 	if userid:
 		from race import Race
@@ -18,21 +18,21 @@ def loadUser(name):
 		Load(user, user.persistibleProperties).execute()
 
 		# race
-		racename = db.hget('UserRaces', userid)
+		racename = conn.hget('UserRaces', userid)
 		user.race = Factory.newFromWireframe(Race(), racename)
 
 		# room
-		roomid = db.hget('UserRooms', userid)
+		roomid = conn.hget('UserRooms', userid)
 		user.room = Room.rooms[roomid]
 		user.room.actors.append(user)
 	return user
 
 def saveUser(user):
 	Save(user, user.persistibleProperties).execute()
-	db = db()
-	db.hset('Users', user.name, user.id)
-	db.hset('UserRooms', user.id, user.room.getFullID())
-	db.hset('UserRaces', user.id, user.race.name)
+	conn = db()
+	conn.hset('Users', user.name, user.id)
+	conn.hset('UserRooms', user.id, user.room.getFullID())
+	conn.hset('UserRaces', user.id, user.race.name)
 
 class Load:
 
@@ -43,45 +43,43 @@ class Load:
 	
 	def execute(self):
 		# get connection
-		db = db()
+		conn = db()
 
 		for p in self.properties:
 			v = getattr(self.loaded, p)
 			if 'load' in dir(v):
-				v.id = db.hget(self.entity+":"+p, self.loaded.id)
+				v.id = conn.hget(self.entity+":"+p, self.loaded.id)
 				v.load()
 			else:
 				method = 'execute'+type(v).__name__
 				try:
 					if p == 'items':
-						items = getattr(self, method)(self.loaded.id, db, p)
+						items = getattr(self, method)(self.loaded.id, conn, p)
 						for i in items:
 							self.loaded.append(i)
 					else:
-						setattr(self.loaded, p, getattr(self, method)(self.loaded.id, db, p))
+						setattr(self.loaded, p, getattr(self, method)(self.loaded.id, conn, p))
 				except AttributeError:
 					print "Cannot load property "+str(p)+" of "+str(self.loaded)+" using method "+method
 	
-	def executestr(self, userid, db, prop):
-		return db.hget(userid, prop);
+	def executestr(self, userid, conn, prop):
+		return conn.hget(userid, prop);
 	
-	def executeint(self, userid, db, prop):
-		return int(db.hget(userid, prop) or 0);
+	def executeint(self, userid, conn, prop):
+		return int(conn.hget(userid, prop) or 0);
 
-	def executelist(self, userid, db, prop):
+	def executelist(self, userid, conn, prop):
 		l = list()
-		for value in db.smembers(userid+':list:'+prop):
-			t = db.get(value+":type")
+		for value in conn.smembers(userid+':list:'+prop):
+			t = conn.get(value+":type")
 			toAdd = globals()[t]()
 			toAdd.id = value
 			toAdd.load()
 			l.append(toAdd)
 		return l
 
-		#return list(value for key, value in db.hgetall(userid+':list:'+prop).iteritems())
-
-	def executedict(self, userid, db, prop):
-		return dict((key, value) for key, value in db.hgetall(userid+':dict:'+prop).iteritems())
+	def executedict(self, userid, conn, prop):
+		return dict((key, value) for key, value in conn.hgetall(userid+':dict:'+prop).iteritems())
 
 class Save:
 	def __init__(self, saved, properties):
@@ -91,45 +89,45 @@ class Save:
 	
 	def execute(self):
 		# get connection
-		db = db()
+		conn = db()
 
 		# ensure the object has an id
 		if not self.saved.id:
 			self.saved.id = self.getRandomID()
 
 		# save the object's id in the entity set
-		db.sadd(self.entity, self.saved.id)
+		conn.sadd(self.entity, self.saved.id)
 
 		# loop through persistable properties and save in applicable data structure
 		for p in self.properties:
 			v = getattr(self.saved, p)
 			if 'save' in dir(v):
 				v.save()
-				db.hset(self.entity+":"+p, self.saved.id, v.id)
+				conn.hset(self.entity+":"+p, self.saved.id, v.id)
 			else:
 				method = 'execute'+type(v).__name__
 				try:
-					getattr(self, method)(db, p, v)
+					getattr(self, method)(conn, p, v)
 				except AttributeError:
 					print "Cannot save property "+str(p)+" of "+self.entity
 	
-	def executestr(self, db, prop, val):
-		db.hset(self.saved.id, prop, val)
+	def executestr(self, conn, prop, val):
+		conn.hset(self.saved.id, prop, val)
 
-	def executeint(self, db, prop, val):
-		db.hset(self.saved.id, prop, val)
+	def executeint(self, conn, prop, val):
+		conn.hset(self.saved.id, prop, val)
 	
-	def executelist(self, db, prop, val):
+	def executelist(self, conn, prop, val):
 		for i, k in enumerate(val):
 			if 'save' in dir(k):
 				k.save()
-				db.hset(self.entity+":"+prop, self.saved.id, k.id)
+				conn.hset(self.entity+":"+prop, self.saved.id, k.id)
 			else:
-				db.hset(self.saved.id+':list:'+prop, i, str(k))
+				conn.hset(self.saved.id+':list:'+prop, i, str(k))
 	
-	def executedict(self, db, prop, val):
+	def executedict(self, conn, prop, val):
 		for i, k in val.iteritems():
-			db.hset(self.saved.id+':dict:'+prop, i, str(k))
+			conn.hset(self.saved.id+':dict:'+prop, i, str(k))
 	
 	@staticmethod
 	def getRandomID():
