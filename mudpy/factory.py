@@ -2,7 +2,7 @@ import debug, heartbeat
 from affect import Affect
 from proficiency import Proficiency
 from room import Room, Randomhall, Grid, Area
-from actor import Mob, Race
+from actor import Mob, Race, Ability
 from item import Item, Drink
 
 import os, json, operator
@@ -176,7 +176,6 @@ class Parser:
 		add(wireframes)
 	
 	def descriptorAbilities(self, instance, abilities):
-		from actor import Ability
 		for ability in abilities:
 			instance.abilities.append(new(Ability(), ability))
 
