@@ -95,8 +95,6 @@ def parse(path):
 		grid[room.counts['north']-1][room.counts['west']-1] = room
 		room.buildDungeon(0, 0, grid)
 
-class FactoryException(Exception): pass
-
 class Parser:
 	INITFILE = 'init.json'
 	_globals = []
@@ -231,3 +229,4 @@ class Depends:
 
 class DependencyException(Exception): pass
 class ParserException(Exception): pass
+class FactoryException(Exception): pass
