@@ -111,7 +111,8 @@
 					"long":"an adept of Mojo walks the garden",
 					"description":"An adept of Mojo is here, wearing a white linen robe and tending to the temple.",
 					"race":"volare",
-					"role":"questmaster"
+					"role":"questmaster",
+					"movement":1
 				}
 			}
 		}]
