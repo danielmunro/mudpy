@@ -5,7 +5,7 @@ import debug
 def checkInput(args):
 	import factory
 	try:
-		action = factory.Factory.newFromWireframe(Command(), factory.Factory.matchWireframe(args[1], 'Command')['wireframe'])
+		action = factory.new(Command(), factory.match(args[1], 'Command')['wireframe'])
 	except (factory.FactoryException, TypeError) as e:
 		return False
 	action.tryPerform(args[0], args[2:])
@@ -71,7 +71,7 @@ def moveDirection(actor, args, direction):
 		actor.room.actors.append(actor)
 		actor.room.notify(actor, str(actor).capitalize()+" has arrived.")
 		import factory
-		factory.Factory.newFromWireframe(Command(), "look").tryPerform(actor)
+		factory.new(Command(), "look").tryPerform(actor)
 		debug.log(str(actor)+' moves to '+str(actor.room))
 	else:
 		actor.notify("You are too tired to move.")

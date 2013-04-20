@@ -99,7 +99,6 @@ class Grid(Room):
 					grid[y-1][x].setIfEmpty('south', grid[y][x])
 	
 	def setIfEmpty(self, direction, roomToSet):
-		from factory import Factory
 		rdir = globals()[direction].reverse
 		if self.directions[direction] is None:
 			self.directions[direction] = roomToSet

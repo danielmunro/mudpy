@@ -8,9 +8,9 @@ def loadUser(name):
 	userid = conn.hget('Users', name)
 	user = None
 	if userid:
+		import factory
 		from actor import User, Race
 		from client import ClientFactory
-		from factory import Factory
 		from room import Room
 		user = User()
 		user.id = userid
@@ -18,7 +18,7 @@ def loadUser(name):
 
 		# race
 		racename = conn.hget('UserRaces', userid)
-		user.race = Factory.newFromWireframe(Race(), racename)
+		user.race = factory.new(Race(), racename)
 
 		# room
 		roomid = conn.hget('UserRooms', userid)

@@ -56,9 +56,9 @@ class Actor(Observer):
 		try:
 			self.proficiencies[proficiency].level += level
 		except KeyError:
-			from factory import Factory
+			import factory
 			from proficiency import Proficiency
-			self.proficiencies[proficiency] = Factory.newFromWireframe(Proficiency(), proficiency)
+			self.proficiencies[proficiency] = factory.new(Proficiency(), proficiency)
 			self.proficiencies[proficiency].level = level
 	
 	def getEquipmentByPosition(self, position):
@@ -173,9 +173,8 @@ class Actor(Observer):
 		return str(self).title()+' '+description+'.'
 	
 	def move(self, validDirections = []):
-		from factory import Factory
-		import command
-		Factory.newFromWireframe(command.Command(), choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
+		import command, factory
+		factory.new(command.Command(), choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
 		if self.target:
@@ -380,10 +379,10 @@ class User(Actor):
 		def performAbility(ability):
 			self.delay_counter += ability.delay+1
 
-		from factory import Factory
+		import factory
 		from command import Command
 		heartbeat.instance.attach('tick', self.tick)
-		Factory.newFromWireframe(Command(), "look").tryPerform(self)
+		factory.new(Command(), "look").tryPerform(self)
 		self.notify("\n"+self.prompt())
 		debug.log('client logged in as '+str(self))
 		for ability in self.getAbilities():
@@ -497,11 +496,11 @@ class Ability(Observer, Reporter):
 			invoker.notify("You do not have enough energy to do that.")
 
 	def perform(self, invoker, receiver, args):
-		from factory import Factory
+		import factory
 		from affect import Affect
 
 		for affectname in self.affects:
-			Factory.newFromWireframe(Affect(), affectname).start(receiver)
+			factory.new(Affect(), affectname).start(receiver)
 
 	def rollsSuccess(self, invoker, receiver):
 		return True # chosen by coin toss, guaranteed to be random
@@ -543,9 +542,9 @@ class Race:
 		try:
 			self.proficiencies[proficiency].level += level
 		except KeyError:
-			from factory import Factory
+			import factory
 			from proficiency import Proficiency
-			self.proficiencies[proficiency] = Factory.newFromWireframe(Proficiency(), proficiency)
+			self.proficiencies[proficiency] = factory.new(Proficiency(), proficiency)
 			self.proficiencies[proficiency].level = level
 
 	def __str__(self):

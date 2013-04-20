@@ -1,10 +1,9 @@
-import debug, heartbeat
+import debug, heartbeat, factory
 from affect import Affect
 from proficiency import Proficiency
 from room import Room, Randomhall, Grid, Area
 from actor import Mob, Race
 from item import Item, Drink
-from factory import Factory
 
 import os, json
 
@@ -61,7 +60,11 @@ class Parser:
 		for item in data:
 			for _class in item:
 				_class = str(_class)
-				instances.append(self.buildFromDefinition(globals()[_class](), item[_class], parent))
+				try:
+					instance = globals()[_class]()
+				except KeyError:
+					instance = None
+				instances.append(self.buildFromDefinition(instance, item[_class], parent))
 		return instances
 
 	def buildFromDefinition(self, instance, properties, parent = None):
@@ -79,17 +82,17 @@ class Parser:
 		except AttributeError: pass
 		return instance
 	
-	def descriptorWireframes(self, Factory, wireframes):
-		Factory.addWireframes(wireframes)
+	def descriptorWireframes(self, none, wireframes):
+		factory.add(wireframes)
 	
 	def descriptorAbilities(self, instance, abilities):
 		from actor import Ability
 		for ability in abilities:
-			instance.abilities.append(Factory.newFromWireframe(Ability(), ability))
+			instance.abilities.append(factory.new(Ability(), ability))
 
 	def descriptorAffects(self, instance, affects):
 		for affect in affects:
-			instance.affects.append(Factory.newFromWireframe(Affect(), affect))
+			instance.affects.append(factory.new(Affect(), affect))
 
 	def descriptorProficiencies(self, actor, proficiencies):
 		for proficiency in proficiencies:
@@ -120,7 +123,7 @@ class Parser:
 	def doneParseMob(self, parent, mob):
 		parent.actors.append(mob)
 		mob.room = parent
-		mob.race = Factory.newFromWireframe(Race(), mob.race)
+		mob.race = factory.new(Race(), mob.race)
 		heartbeat.instance.attach('tick', mob.tick)
 
 	def doneParseRoom(self, parent, room):
