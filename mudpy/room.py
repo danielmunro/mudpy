@@ -100,7 +100,7 @@ class Grid(Room):
 	
 	def setIfEmpty(self, direction, roomToSet):
 		from factory import Factory
-		rdir = Factory.new(Direction = direction).reverse
+		rdir = globals()[direction].reverse
 		if self.directions[direction] is None:
 			self.directions[direction] = roomToSet
 			if roomToSet.directions[rdir] is None:

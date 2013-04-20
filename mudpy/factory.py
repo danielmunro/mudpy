@@ -1,27 +1,10 @@
 from utility import startsWith
 from room import Direction
-from command import MoveDirection, Command
+from command import Command
 import copy, inspect
 
 class Factory:
 	wireframes = {}
-
-	@staticmethod
-	def new(scalar = True, newWith = None, **kwargs):
-		from parser import Parser
-		lookups = []
-		for _type, _class in kwargs.iteritems():
-			lookup = startsWith(_class, globals()[_type].__subclasses__())
-			if lookup:
-				lookups.append(lookup)
-			else:
-				raise NameError("Factory cannot create a new instance of: "+_type+"."+_class)
-		if scalar and len(lookups) == 1:
-			class_ = lookups[0]
-			if inspect.isclass(class_):
-				return class_(newWith) if newWith else class_()
-			return copy.copy(class_)
-		return lookups
 
 	@staticmethod
 	def newFromWireframe(instance, name):
@@ -52,10 +35,17 @@ class Factory:
 		for key in keys:
 			for wireframename, wireframe in Factory.wireframes[key].iteritems():
 				if wireframename.startswith(name):
-					matches.append({'key':key, 'wireframe':wireframename})
+					match = {'key':key, 'wireframe':wireframename}
+					try:
+						match['priority'] = wireframe['priority']
+					except KeyError:
+						match['priority'] = 0
+					matches.append(match)
+		import operator
+		matches = sorted(matches, key=operator.itemgetter('priority'))
 		try:
 			return matches[0] if scalar else matches
-		except KeyError:
+		except IndexError:
 			return None
 
 class FactoryException(Exception): pass

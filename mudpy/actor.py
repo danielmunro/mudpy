@@ -174,7 +174,8 @@ class Actor(Observer):
 	
 	def move(self, validDirections = []):
 		from factory import Factory
-		Factory.new(MoveDirection = choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
+		import command
+		Factory.newFromWireframe(command.Command(), choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
 		if self.target:
@@ -380,8 +381,9 @@ class User(Actor):
 			self.delay_counter += ability.delay+1
 
 		from factory import Factory
+		from command import Command
 		heartbeat.instance.attach('tick', self.tick)
-		Factory.new(Command = "look").tryPerform(self)
+		Factory.newFromWireframe(Command(), "look").tryPerform(self)
 		self.notify("\n"+self.prompt())
 		debug.log('client logged in as '+str(self))
 		for ability in self.getAbilities():
@@ -480,6 +482,7 @@ class Ability(Observer, Reporter):
 		super(Ability, self).__init__()
 	
 	def tryPerform(self, invoker, args):
+		from utility import matchPartial
 		try:
 			receiver = matchPartial(args[-1], invoker.room.actors)
 		except IndexError:
