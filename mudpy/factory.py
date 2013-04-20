@@ -1,8 +1,5 @@
 import debug, heartbeat
-from affect import Affect
-from proficiency import Proficiency
 from room import Room, Randomhall, Grid, Area
-from actor import Mob, Race, Ability
 from item import Item, Drink
 
 import os, json, operator
@@ -174,12 +171,14 @@ class Parser:
 		add(wireframes)
 	
 	def descriptorAbilities(self, instance, abilities):
+		import actor
 		for ability in abilities:
-			instance.abilities.append(new(Ability(), ability))
+			instance.abilities.append(new(actor.Ability(), ability))
 
 	def descriptorAffects(self, instance, affects):
-		for affect in affects:
-			instance.affects.append(new(Affect(), affect))
+		import affect
+		for aff in affects:
+			instance.affects.append(new(affect.Affect(), aff))
 
 	def descriptorProficiencies(self, actor, proficiencies):
 		for proficiency in proficiencies:
@@ -208,9 +207,10 @@ class Parser:
 		self.lastarea = area
 
 	def doneParseMob(self, parent, mob):
+		import actor
 		parent.actors.append(mob)
 		mob.room = parent
-		mob.race = new(Race(), mob.race)
+		mob.race = new(actor.Race(), mob.race)
 		heartbeat.instance.attach('tick', mob.tick)
 
 	def doneParseRoom(self, parent, room):
