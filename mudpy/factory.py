@@ -1,8 +1,3 @@
-from utility import startsWith
-from room import Direction
-from command import Command
-import copy, inspect
-
 class Factory:
 	wireframes = {}
 
