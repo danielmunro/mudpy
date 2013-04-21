@@ -7,6 +7,11 @@ from actor import Mob, Ability
 import os, json, operator
 
 wireframes = {}
+depends = []
+loaded = []
+deferred = []
+lastarea = None
+INITFILE = 'init.json'
 
 def new(instance, name):
 	global wireframes
@@ -15,8 +20,7 @@ def new(instance, name):
 		found = wireframes[instance.__class__.__name__][name]
 	except KeyError:
 		raise FactoryException("Factory does not know how to create "+name)
-	p = Parser()
-	return p.buildFromDefinition(instance, found[instance.__class__.__name__])
+	return buildFromDefinition(instance, found[instance.__class__.__name__])
 
 def add(newwireframes):
 	global wireframes
@@ -53,15 +57,16 @@ def match(name, keys, scalar = True):
 		return None
 
 def parse(path):
-	p = Parser()
-	p.parse(path)
-	while len(p.deferred):
-		startlen = len(p.loaded)
-		deferred = p.deferred
-		p.deferred = []
-		for fullpath in deferred:
-			p.parse(fullpath)
-		endlen = len(p.loaded)
+	global deferred, loaded
+
+	_parse(path)
+	while len(deferred):
+		startlen = len(loaded)
+		_deferred = deferred
+		deferred = []
+		for fullpath in _deferred:
+			_parse(fullpath)
+		endlen = len(loaded)
 		if startlen == endlen:
 			debug.log("dependencies cannot be met", "error")
 
@@ -95,136 +100,133 @@ def parse(path):
 		grid[room.counts['north']-1][room.counts['west']-1] = room
 		room.buildDungeon(0, 0, grid)
 
-class Parser:
-	INITFILE = 'init.json'
+def _parse(path):
+	global INITFILE
 
-	def __init__(self):
-		self.loaded = []
-		self.deferred = []
-		self.depends = []
+	debug.log('recurse through path: '+path)
 
-	def parse(self, path):
-		if os.path.isdir(path):
-			self.parseDir(path) # recurse through scripts directory tree
-		elif path.endswith('.json'):
-			self.parseJson(path) # parse the json file
+	if path.endswith('.json'):
+		return parseJson(path) # parse the json file
 
-	def parseDir(self, path):
-		debug.log('recurse through path: '+path)
+	# check that dependencies for the directory have been met
+	init = path+'/'+INITFILE
+	if os.path.isfile(init) and not parseJson(init):
+		return
 
-		# check that dependencies for the directory have been met
-		init = path+'/'+self.INITFILE
-		if os.path.isfile(init) and not self.parseJson(init):
-			return
-
+	if os.path.isdir(path):
 		# parse through this directory
 		for infile in os.listdir(path):
 			fullpath = path+'/'+infile
 			if fullpath == init:
 				continue # skip the init file
-			self.parse(fullpath)
+			_parse(fullpath)
 
-	def parseJson(self, scriptFile):
-		debug.log('parsing json file: '+scriptFile)
-		fp = open(scriptFile)
-		try:
-			data = json.load(fp)
-		except ValueError:
-			debug.log("script file is not properly formatted: "+scriptFile, "error")
-		path, filename = os.path.split(scriptFile)
-		try:
-			self._parseJson(data)
-			self.loaded.append(filename)
-			return True
-		except DependencyException:
-			debug.log(scriptFile+' deferred')
-			self.deferred.append(path if filename == self.INITFILE else scriptFile)
-			return False
+def parseJson(scriptFile):
+	global loaded, deferred
 
-	def _parseJson(self, data, parent = None):
-		instances = []
-		for item in data:
-			for _class in item:
-				_class = str(_class)
-				try:
-					instance = globals()[_class]()
-				except KeyError as e:
-					instance = None
-				instances.append(self.buildFromDefinition(instance, item[_class], parent))
-		return instances
+	debug.log('parsing json file: '+scriptFile)
+	fp = open(scriptFile)
+	try:
+		data = json.load(fp)
+	except ValueError:
+		debug.log("script file is not properly formatted: "+scriptFile, "error")
+	path, filename = os.path.split(scriptFile)
+	try:
+		_parseJson(data)
+		loaded.append(filename)
+		return True
+	except DependencyException:
+		debug.log(scriptFile+' deferred')
+		deferred.append(path if filename == INITFILE else scriptFile)
+		return False
 
-	def buildFromDefinition(self, instance, properties, parent = None):
-		for descriptor in properties:
-			fn = 'descriptor'+descriptor.title()
-			value = properties[descriptor]
-			if isinstance(value, unicode):
-				value = str(value)
+def _parseJson(data, parent = None):
+	instances = []
+	for item in data:
+		for _class in item:
+			_class = str(_class)
 			try:
-				getattr(self, fn)(instance, properties[descriptor])
-			except AttributeError as e:
-				debug.log(e, "notice")
-		fn = 'doneParse'+instance.__class__.__name__
+				instance = globals()[_class]()
+			except KeyError as e:
+				instance = None
+			instances.append(buildFromDefinition(instance, item[_class], parent))
+	return instances
+
+def buildFromDefinition(instance, properties, parent = None):
+	for descriptor in properties:
+		fn = 'descriptor'+descriptor.title()
+		value = properties[descriptor]
+		if isinstance(value, unicode):
+			value = str(value)
 		try:
-			getattr(self, fn)(parent, instance)
-		except AttributeError as e:
-			debug.log(e, "notice")
-		return instance
-	
-	def descriptorWireframes(self, none, wireframes):
-		add(wireframes)
-	
-	def descriptorAbilities(self, instance, abilities):
-		import actor
-		for ability in abilities:
-			instance.abilities.append(new(actor.Ability(), ability))
+			globals()[fn](instance, properties[descriptor])
+		except KeyError: pass
+	fn = 'doneParse'+instance.__class__.__name__
+	try:
+		globals()[fn](parent, instance)
+	except KeyError: pass
+	return instance
 
-	def descriptorAffects(self, instance, affects):
-		import affect
-		for aff in affects:
-			instance.affects.append(new(affect.Affect(), aff))
+def descriptorWireframes(none, wireframes):
+	add(wireframes)
 
-	def descriptorProficiencies(self, actor, proficiencies):
-		for proficiency in proficiencies:
-			actor.addProficiency(proficiency, proficiencies[proficiency])
+def descriptorAbilities(instance, abilities):
+	for ability in abilities:
+		instance.abilities.append(new(Ability(), ability))
 
-	def descriptorInventory(self, instance, inventory):
-		self._parseJson(inventory, instance)
-	
-	def descriptorMobs(self, instance, mobs):
-		self._parseJson(mobs, instance)
-	
-	def descriptorProperties(self, instance, properties):
-		for prop in properties:
-			setattr(instance, prop, properties[prop])
-	
-	def descriptorAttributes(self, instance, attributes):
-		for attribute in attributes:
-			setattr(instance.attributes, attribute, attributes[attribute])
-	
-	def doneParseDepends(self, parent, depends):
-		deps = [dep for dep in depends.on if not dep in self.loaded]
-		if len(deps):
-			raise DependencyException
-	
-	def doneParseArea(self, parent, area):
-		self.lastarea = area
+def descriptorAffects(instance, affects):
+	import affect
+	for aff in affects:
+		instance.affects.append(new(affect.Affect(), aff))
 
-	def doneParseMob(self, parent, mob):
-		import actor
-		parent.actors.append(mob)
-		mob.room = parent
-		mob.race = new(actor.Race(), mob.race)
-		heartbeat.instance.attach('tick', mob.tick)
+def descriptorProficiencies(actor, proficiencies):
+	for proficiency in proficiencies:
+		actor.addProficiency(proficiency, proficiencies[proficiency])
 
-	def doneParseRoom(self, parent, room):
-		room.area = self.lastarea
-		Room.rooms[room.area.name+":"+str(room.id)] = room
+def descriptorInventory(instance, inventory):
+	_parseJson(inventory, instance)
 
-	def doneParseItem(self, parent, item):
-		parent.inventory.append(item)
+def descriptorMobs(instance, mobs):
+	_parseJson(mobs, instance)
 
-	def doneParseDrink(self, parent, drink):
-		parent.inventory.append(drink)
+def descriptorProperties(instance, properties):
+	for prop in properties:
+		setattr(instance, prop, properties[prop])
+
+def descriptorAttributes(instance, attributes):
+	for attribute in attributes:
+		setattr(instance.attributes, attribute, attributes[attribute])
+
+def doneParseDepends(parent, depends):
+	global loaded
+
+	deps = [dep for dep in depends.on if not dep in loaded]
+	if len(deps):
+		raise DependencyException
+
+def doneParseArea(parent, area):
+	global lastarea
+
+	lastarea = area
+
+def doneParseMob(parent, mob):
+	import actor
+	parent.actors.append(mob)
+	mob.room = parent
+	mob.race = new(actor.Race(), mob.race)
+	heartbeat.instance.attach('tick', mob.tick)
+
+def doneParseRoom(parent, room):
+	global lastarea
+
+	room.area = lastarea
+	Room.rooms[room.area.name+":"+str(room.id)] = room
+
+def doneParseItem(parent, item):
+	parent.inventory.append(item)
+
+def doneParseDrink(parent, drink):
+	parent.inventory.append(drink)
 	
 class Depends:
 	def __init__(self):
