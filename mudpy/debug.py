@@ -14,5 +14,7 @@ def log(message, status = "info"):
 	# better error visibility and testing
 	if status == 'error':
 		raise DebugException(message)
+	elif status == 'notice':
+		print message
 
 class DebugException(Exception): pass
