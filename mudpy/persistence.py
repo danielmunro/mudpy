@@ -14,7 +14,7 @@ def loadUser(name):
 		from room import Room
 		user = User()
 		user.id = userid
-		Load(user, user.persistibleProperties).execute()
+		load(user, user.persistibleProperties)
 
 		# race
 		racename = conn.hget('UserRaces', userid)
@@ -27,107 +27,95 @@ def loadUser(name):
 	return user
 
 def saveUser(user):
-	Save(user, user.persistibleProperties).execute()
+	save(user, user.persistibleProperties)
 	conn = db()
 	conn.hset('Users', user.name, user.id)
 	conn.hset('UserRooms', user.id, user.room.getFullID())
 	conn.hset('UserRaces', user.id, user.race.name)
-
-class Load:
-
-	def __init__(self, loaded, properties):
-		self.loaded = loaded
-		self.properties = properties
-		self.entity = loaded.__class__.__name__
 	
-	def execute(self):
-		# get connection
-		conn = db()
+def getRandomID():
+	return hashlib.sha224(str(time.time())+":"+str(random.randint(0, 1000000))).hexdigest()
 
-		for p in self.properties:
-			v = getattr(self.loaded, p)
-			if 'load' in dir(v):
-				v.id = conn.hget(self.entity+":"+p, self.loaded.id)
-				v.load()
-			else:
-				method = 'execute'+type(v).__name__
-				try:
-					if p == 'items':
-						items = getattr(self, method)(self.loaded.id, conn, p)
-						for i in items:
-							self.loaded.append(i)
-					else:
-						setattr(self.loaded, p, getattr(self, method)(self.loaded.id, conn, p))
-				except AttributeError:
-					print "Cannot load property "+str(p)+" of "+str(self.loaded)+" using method "+method
+def load(loaded, properties):
+	# get connection
+	conn = db()
+	entity = loaded.__class__.__name__
+
+	for p in properties:
+		v = getattr(loaded, p)
+		if 'load' in dir(v):
+			v.id = conn.hget(entity+":"+p, loaded.id)
+			v.load()
+		else:
+			method = '_load'+type(v).__name__
+			try:
+				if p == 'items':
+					items = globals()[method](loaded.id, conn, p)
+					for i in items:
+						loaded.append(i)
+				else:
+					setattr(loaded, p, globals()[method](loaded.id, conn, p))
+			except AttributeError:
+				print "Cannot load property "+str(p)+" of "+str(loaded)+" using method "+method
+
+def _loadstr(userid, conn, prop):
+	return conn.hget(userid, prop);
+
+def _loadint(userid, conn, prop):
+	return int(conn.hget(userid, prop) or 0);
+
+def _loadlist(userid, conn, prop):
+	l = list()
+	for value in conn.smembers(userid+':list:'+prop):
+		t = conn.get(value+":type")
+		toAdd = globals()[t]()
+		toAdd.id = value
+		toAdd.load()
+		l.append(toAdd)
+	return l
+
+def _loaddict(userid, conn, prop):
+	return dict((key, value) for key, value in conn.hgetall(userid+':dict:'+prop).iteritems())
+
+def save(saved, properties):
+	# get connection
+	conn = db()
+	entity = saved.__class__.__name__
+
+	# ensure the object has an id
+	if not saved.id:
+		saved.id = getRandomID()
+
+	# save the object's id in the entity set
+	conn.sadd(entity, saved.id)
+
+	# loop through persistable properties and save in applicable data structure
+	for p in properties:
+		v = getattr(saved, p)
+		if 'save' in dir(v):
+			v.save()
+			conn.hset(entity+":"+p, saved.id, v.id)
+		else:
+			method = 'save'+type(v).__name__
+			try:
+				globals()[method](saved, conn, p, v)
+			except AttributeError:
+				print "Cannot save property "+str(p)+" of "+entity
 	
-	def executestr(self, userid, conn, prop):
-		return conn.hget(userid, prop);
-	
-	def executeint(self, userid, conn, prop):
-		return int(conn.hget(userid, prop) or 0);
+def _savestr(saved, conn, prop, val):
+	conn.hset(saved.id, prop, val)
 
-	def executelist(self, userid, conn, prop):
-		l = list()
-		for value in conn.smembers(userid+':list:'+prop):
-			t = conn.get(value+":type")
-			toAdd = globals()[t]()
-			toAdd.id = value
-			toAdd.load()
-			l.append(toAdd)
-		return l
+def _saveint(saved, conn, prop, val):
+	conn.hset(saved.id, prop, val)
 
-	def executedict(self, userid, conn, prop):
-		return dict((key, value) for key, value in conn.hgetall(userid+':dict:'+prop).iteritems())
+def _savelist(saved, conn, prop, val):
+	for i, k in enumerate(val):
+		if 'save' in dir(k):
+			k.save()
+			conn.hset(entity+":"+prop, saved.id, k.id)
+		else:
+			conn.hset(saved.id+':list:'+prop, i, str(k))
 
-class Save:
-	def __init__(self, saved, properties):
-		self.saved = saved
-		self.properties = properties
-		self.entity = saved.__class__.__name__
-	
-	def execute(self):
-		# get connection
-		conn = db()
-
-		# ensure the object has an id
-		if not self.saved.id:
-			self.saved.id = self.getRandomID()
-
-		# save the object's id in the entity set
-		conn.sadd(self.entity, self.saved.id)
-
-		# loop through persistable properties and save in applicable data structure
-		for p in self.properties:
-			v = getattr(self.saved, p)
-			if 'save' in dir(v):
-				v.save()
-				conn.hset(self.entity+":"+p, self.saved.id, v.id)
-			else:
-				method = 'execute'+type(v).__name__
-				try:
-					getattr(self, method)(conn, p, v)
-				except AttributeError:
-					print "Cannot save property "+str(p)+" of "+self.entity
-	
-	def executestr(self, conn, prop, val):
-		conn.hset(self.saved.id, prop, val)
-
-	def executeint(self, conn, prop, val):
-		conn.hset(self.saved.id, prop, val)
-	
-	def executelist(self, conn, prop, val):
-		for i, k in enumerate(val):
-			if 'save' in dir(k):
-				k.save()
-				conn.hset(self.entity+":"+prop, self.saved.id, k.id)
-			else:
-				conn.hset(self.saved.id+':list:'+prop, i, str(k))
-	
-	def executedict(self, conn, prop, val):
-		for i, k in val.iteritems():
-			conn.hset(self.saved.id+':dict:'+prop, i, str(k))
-	
-	@staticmethod
-	def getRandomID():
-		return hashlib.sha224(str(time.time())+":"+str(random.randint(0, 1000000))).hexdigest()
+def _savedict(saved, conn, prop, val):
+	for i, k in val.iteritems():
+		conn.hset(saved.id+':dict:'+prop, i, str(k))

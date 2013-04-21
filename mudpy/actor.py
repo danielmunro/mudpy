@@ -1,8 +1,7 @@
 from __future__ import division
-import debug, heartbeat
+import debug, heartbeat, persistence
 from observer import Observer
 from reporter import Reporter
-from persistence import Save
 from attributes import Attributes
 from item import Inventory, Corpse
 from room import Direction, Room
@@ -15,7 +14,7 @@ class Actor(Observer):
 
 	def __init__(self):
 		super(Actor, self).__init__()
-		self.id = Save.getRandomID()
+		self.id = persistence.getRandomID()
 		self.name = "an actor"
 		self.long = ""
 		self.description = ""

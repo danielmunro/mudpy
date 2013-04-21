@@ -1,8 +1,8 @@
-from persistence import *
+import persistence
 
 class Inventory:
 	def __init__(self):
-		self.id = Save.getRandomID()
+		self.id = persistence.getRandomID()
 		self.items = []
 		self.itemCount = {}
 	
@@ -32,14 +32,14 @@ class Inventory:
 		return sum(item.weight for item in self.items)
 	
 	def save(self):
-		Save(self, ['id', 'items']).execute()
+		persistence.save(self, ['id', 'items'])
 	
 	def load(self):
-		Load(self, ['id', 'items']).execute()
+		persistence.load(self, ['id', 'items'])
 
 class Item(object):
 	def __init__(self):
-		self.id = Save.getRandomID()
+		self.id = persistence.getRandomID()
 		self.name = "a generic item"
 		self.description = "a generic item is here"
 		self.value = 0
@@ -53,10 +53,10 @@ class Item(object):
 		return self.name
 	
 	def save(self):
-		Save(self, ['id', 'name', 'value', 'weight']).execute()
+		persistence.save(self, ['id', 'name', 'value', 'weight'])
 	
 	def load(self):
-		Load(self, ['id', 'name', 'value', 'weight']).execute()
+		persistence.load(self, ['id', 'name', 'value', 'weight'])
 
 class Door(Item):
 	def __init__(self):

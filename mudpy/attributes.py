@@ -1,11 +1,11 @@
-from persistence import *
+import persistence
 
 class Attributes(object):
 	stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
 	persistibleProperties = ['id', 'hp', 'mana', 'movement', 'saves', 'ac_bash', 'ac_pierce', 'ac_slash', 'ac_magic', 'hit', 'dam']
 
 	def __init__(self):
-		self.id = Save.getRandomID()
+		self.id = persistence.getRandomID()
 		self.hp = 0
 		self.mana = 0
 		self.movement = 0
@@ -28,7 +28,7 @@ class Attributes(object):
 		self.cha = 0
 	
 	def save(self):
-		Save(self, self.persistibleProperties).execute()
+		persistence.save(self, self.persistibleProperties)
 	
 	def load(self):
-		Load(self, self.persistibleProperties).execute()
+		persistence.load(self, self.persistibleProperties)
