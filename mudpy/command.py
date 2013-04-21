@@ -249,7 +249,6 @@ def affects(actor, args):
 class Command(object):
 
 	def __init__(self):
-		self.priority = 0
 		self.name = ""
 		self.requiresStandingDisposition = False
 

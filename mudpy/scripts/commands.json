@@ -121,44 +121,44 @@
 		},{
 			"Command":{
 				"properties":{
-					"name":"north",
-					"priority": 1
-				}
+					"name":"north"
+				},
+				"priority":1
 			}
 		},{
 			"Command":{
 				"properties":{
-					"name":"south",
-					"priority": 1
-				}
+					"name":"south"
+				},
+				"priority":1
 			}
 		},{
 			"Command":{
 				"properties":{
-					"name":"east",
-					"priority": 1
-				}
+					"name":"east"
+				},
+				"priority": 1
 			}
 		},{
 			"Command":{
 				"properties":{
-					"name":"west",
-					"priority": 1
-				}
+					"name":"west"
+				},
+				"priority": 1
 			}
 		},{
 			"Command":{
 				"properties":{
-					"name":"up",
-					"priority": 1
-				}
+					"name":"up"
+				},
+				"priority": 1
 			}
 		},{
 			"Command":{
 				"properties":{
-					"name":"down",
-					"priority": 1
-				}
+					"name":"down"
+				},
+				"priority": 1
 			}
 		}]
 	}

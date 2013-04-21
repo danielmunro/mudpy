@@ -39,11 +39,12 @@ def match(name, keys, scalar = True):
 			if wireframename.startswith(name):
 				match = {'key':key, 'wireframe':wireframename}
 				try:
-					match['priority'] = wireframe['priority']
+					match['priority'] = wireframe[key]['priority']
 				except KeyError:
 					match['priority'] = 0
 				matches.append(match)
 	matches = sorted(matches, key=operator.itemgetter('priority'))
+	matches.reverse()
 	try:
 		return matches[0] if scalar else matches
 	except IndexError:
