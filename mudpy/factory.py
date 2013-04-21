@@ -1,6 +1,8 @@
 import debug, heartbeat
 from room import Room, Randomhall, Grid, Area
 from item import Item, Drink
+#from actor import Mob, Ability
+import actor
 
 import os, json, operator
 
@@ -78,7 +80,7 @@ def parse(path):
 						direction = Room.rooms[r].area.name+":"+str(direction)
 					Room.rooms[r].directions[d] = Room.rooms[direction]
 				except KeyError:
-					print "Room id "+str(direction)+" is not defined, removing"
+					debug.log("Room id "+str(direction)+" is not defined, removing", "notice")
 					del Room.rooms[r].directions[d]
 	for room in randomHalls:
 		roomCount = room.buildDungeon()
@@ -146,11 +148,13 @@ class Parser:
 		for item in data:
 			for _class in item:
 				_class = str(_class)
-				try:
-					instance = globals()[_class]()
-				except KeyError:
-					instance = None
-				instances.append(self.buildFromDefinition(instance, item[_class], parent))
+				if _class == "Factory":
+					self.descriptorWireframes(None, item[_class]['wireframes'])
+				else:
+					try:
+						instances.append(self.buildFromDefinition(globals()[_class](), item[_class], parent))
+					except KeyError as e:
+						debug.log("Parser cannot instantiate: "+str(e), "notice")
 		return instances
 
 	def buildFromDefinition(self, instance, properties, parent = None):
@@ -161,11 +165,13 @@ class Parser:
 				value = str(value)
 			try:
 				getattr(self, fn)(instance, properties[descriptor])
-			except AttributeError: pass
+			except AttributeError as e:
+				debug.log(e, "notice")
 		fn = 'doneParse'+instance.__class__.__name__
 		try:
 			getattr(self, fn)(parent, instance)
-		except AttributeError: pass
+		except AttributeError as e:
+			debug.log(e, "notice")
 		return instance
 	
 	def descriptorWireframes(self, none, wireframes):
