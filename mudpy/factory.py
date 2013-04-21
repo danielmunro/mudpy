@@ -1,8 +1,8 @@
 import debug, heartbeat
 from room import Room, Randomhall, Grid, Area
 from item import Item, Drink
-#from actor import Mob, Ability
-import actor
+from actor import Mob, Ability
+#import actor
 
 import os, json, operator
 
@@ -103,7 +103,6 @@ class Parser:
 		self.loaded = []
 		self.deferred = []
 		self.depends = []
-		self.lastroom = None
 
 	def parse(self, path):
 		if os.path.isdir(path):
@@ -148,13 +147,11 @@ class Parser:
 		for item in data:
 			for _class in item:
 				_class = str(_class)
-				if _class == "Factory":
-					self.descriptorWireframes(None, item[_class]['wireframes'])
-				else:
-					try:
-						instances.append(self.buildFromDefinition(globals()[_class](), item[_class], parent))
-					except KeyError as e:
-						debug.log("Parser cannot instantiate: "+str(e), "notice")
+				try:
+					instance = globals()[_class]()
+				except KeyError as e:
+					instance = None
+				instances.append(self.buildFromDefinition(instance, item[_class], parent))
 		return instances
 
 	def buildFromDefinition(self, instance, properties, parent = None):
