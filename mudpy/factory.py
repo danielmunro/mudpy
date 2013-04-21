@@ -97,7 +97,6 @@ def parse(path):
 
 class Parser:
 	INITFILE = 'init.json'
-	_globals = []
 
 	def __init__(self):
 		self.loaded = []
