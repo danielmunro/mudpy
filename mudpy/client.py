@@ -74,7 +74,7 @@ class Login:
 		def race(data):
 			try:
 				self.newuser.race = factory.new(actor.Race(), data)
-			except FactoryException:
+			except factory.FactoryException:
 				raise LoginException("That is not a valid race. What is your race? ")
 			self.client.write("What alignment are you (good/neutral/evil)? ")
 		
