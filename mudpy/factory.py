@@ -14,6 +14,16 @@ lastarea = None
 INITFILE = 'init.json'
 
 def new(instance, name):
+	"""Takes the given instance and assigns values to it from the internal 
+	named lookup.
+
+	Eg:
+
+	ab = new(Ability(), "bash") # returns an Ability object with the assigned
+								# properties for bash
+	
+	"""
+
 	global wireframes
 
 	try:
@@ -23,6 +33,8 @@ def new(instance, name):
 	return buildFromDefinition(instance, found[instance.__class__.__name__])
 
 def add(newwireframes):
+	"""Adds a new wireframe definition for an instance type."""
+
 	global wireframes
 
 	for wireframe in newwireframes:
@@ -35,6 +47,7 @@ def add(newwireframes):
 				wireframes[key][name] = wireframe
 
 def match(name, keys, scalar = True):
+	"""Performs a fuzzy lookup for wireframes by name."""
 	global wireframes
 
 	matches = []
@@ -57,6 +70,12 @@ def match(name, keys, scalar = True):
 		return None
 
 def parse(path):
+	"""Parses a base scripts path in order to load the initial game objects
+	and wireframes, which will be used later by the factory to build game
+	objects.
+
+	"""
+
 	global deferred, loaded
 
 	_parse(path)
@@ -101,6 +120,11 @@ def parse(path):
 		room.buildDungeon(0, 0, grid)
 
 def _parse(path):
+	"""Called by parse(), recursively explores a directory tree and attempts
+	to load json data.
+
+	"""
+
 	global INITFILE
 
 	debug.log('recurse through path: '+path)
@@ -122,6 +146,8 @@ def _parse(path):
 			_parse(fullpath)
 
 def parseJson(scriptFile):
+	"""Parses a json data file and loads game objects and/or wireframes."""
+
 	global loaded, deferred
 
 	debug.log('parsing json file: '+scriptFile)
@@ -141,18 +167,27 @@ def parseJson(scriptFile):
 		return False
 
 def _parseJson(data, parent = None):
+	"""Called by parseJson(), loops through array of json data and builds a
+	list of game objects from the data.
+
+	"""
+
 	instances = []
 	for item in data:
 		for _class in item:
 			_class = str(_class)
 			try:
-				instance = globals()[_class]()
-			except KeyError as e:
-				instance = None
-			instances.append(buildFromDefinition(instance, item[_class], parent))
+				instances.append(buildFromDefinition(globals()[_class](), item[_class], parent))
+			except KeyError:
+				buildFromDefinition(None, item[_class], parent)
 	return instances
 
 def buildFromDefinition(instance, properties, parent = None):
+	"""Takes an instance of a game object and a list of properties and call
+	descriptor* methods to build the properties of the game object.
+
+	"""
+
 	for descriptor in properties:
 		fn = 'descriptor'+descriptor.title()
 		value = properties[descriptor]
@@ -168,32 +203,63 @@ def buildFromDefinition(instance, properties, parent = None):
 	return instance
 
 def descriptorWireframes(none, wireframes):
+	"""Wireframe descriptor method, for adding wireframe definitions to the
+	factory for later object initialization.
+
+	"""
+
 	add(wireframes)
 
 def descriptorAbilities(instance, abilities):
+	"""Abilities descriptor method, assigns abilities to a game object."""
+
 	for ability in abilities:
 		instance.abilities.append(new(Ability(), ability))
 
 def descriptorAffects(instance, affects):
+	"""Affects descriptor method, assigns affects to a game objects."""
+
 	import affect
 	for aff in affects:
 		instance.affects.append(new(affect.Affect(), aff))
 
 def descriptorProficiencies(actor, proficiencies):
+	"""Proficiencies descriptor method, assigns proficiencies to a game object."""
+
 	for proficiency in proficiencies:
 		actor.addProficiency(proficiency, proficiencies[proficiency])
 
 def descriptorInventory(instance, inventory):
+	"""Inventory descriptor method, calls _parseJson() to initialize the items
+	for the inventory.
+	
+	"""
+
 	_parseJson(inventory, instance)
 
 def descriptorMobs(instance, mobs):
+	"""Mob descriptor method, calls _parseJson() to initialize all of the
+	mob's properties.
+
+	"""
+
 	_parseJson(mobs, instance)
 
 def descriptorProperties(instance, properties):
+	"""Properties descriptor method, assigns class properties directly to the
+	game object instance.
+	
+	"""
+
 	for prop in properties:
 		setattr(instance, prop, properties[prop])
 
 def descriptorAttributes(instance, attributes):
+	"""Attributes descriptor method, sets properties for the game object
+	instance's attributes, such as hp, mana, movement, str, int, etc.
+
+	"""
+
 	for attribute in attributes:
 		setattr(instance.attributes, attribute, attributes[attribute])
 
