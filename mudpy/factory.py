@@ -1,9 +1,6 @@
-import debug, heartbeat
 from room import Room, Randomhall, Grid, Area
-from item import Item, Drink
-from actor import Mob, Ability
-#import actor
 
+import debug, heartbeat
 import os, json, operator
 
 wireframes = {}
@@ -48,6 +45,7 @@ def add(newwireframes):
 
 def match(name, keys, scalar = True):
 	"""Performs a fuzzy lookup for wireframes by name."""
+
 	global wireframes
 
 	matches = []
@@ -172,12 +170,17 @@ def _parseJson(data, parent = None):
 
 	"""
 
+	from room import Room, Randomhall, Grid, Area
+	from item import Item, Drink
+	from actor import Mob, Ability
+	from factory import Depends
+
 	instances = []
 	for item in data:
 		for _class in item:
 			_class = str(_class)
 			try:
-				instances.append(buildFromDefinition(globals()[_class](), item[_class], parent))
+				instances.append(buildFromDefinition(locals()[_class](), item[_class], parent))
 			except KeyError:
 				buildFromDefinition(None, item[_class], parent)
 	return instances
@@ -213,8 +216,10 @@ def descriptorWireframes(none, wireframes):
 def descriptorAbilities(instance, abilities):
 	"""Abilities descriptor method, assigns abilities to a game object."""
 
+	import actor
+
 	for ability in abilities:
-		instance.abilities.append(new(Ability(), ability))
+		instance.abilities.append(new(actor.Ability(), ability))
 
 def descriptorAffects(instance, affects):
 	"""Affects descriptor method, assigns affects to a game objects."""
@@ -264,6 +269,11 @@ def descriptorAttributes(instance, attributes):
 		setattr(instance.attributes, attribute, attributes[attribute])
 
 def doneParseDepends(parent, depends):
+	"""Raises a DependencyException when the parser begins to parse a script
+	whose dependencies have not yet been met.
+
+	"""
+
 	global loaded
 
 	deps = [dep for dep in depends.on if not dep in loaded]
@@ -271,11 +281,18 @@ def doneParseDepends(parent, depends):
 		raise DependencyException
 
 def doneParseArea(parent, area):
+	"""Sets the lastarea variable which is then used to set room.area for
+	each new room.
+
+	"""
+
 	global lastarea
 
 	lastarea = area
 
 def doneParseMob(parent, mob):
+	"""Finish initializing a mob."""
+
 	import actor
 	parent.actors.append(mob)
 	mob.room = parent
@@ -283,19 +300,27 @@ def doneParseMob(parent, mob):
 	heartbeat.instance.attach('tick', mob.tick)
 
 def doneParseRoom(parent, room):
+	"""Last steps to finalize parsing a room."""
+
 	global lastarea
 
 	room.area = lastarea
 	Room.rooms[room.area.name+":"+str(room.id)] = room
 
 def doneParseItem(parent, item):
+	"""Attach an item to the parent's inventory."""
+
 	parent.inventory.append(item)
 
 def doneParseDrink(parent, drink):
+	"""Attach the drink to the parent's inventory."""
+
 	parent.inventory.append(drink)
 	
 class Depends:
 	def __init__(self):
+		"""Creates a Depends object for tracking script dependencies."""
+
 		self.on = []
 
 class DependencyException(Exception): pass
