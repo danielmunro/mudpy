@@ -96,7 +96,7 @@ def save(saved, properties):
 			v.save()
 			conn.hset(entity+":"+p, saved.id, v.id)
 		else:
-			method = 'save'+type(v).__name__
+			method = '_save'+type(v).__name__
 			try:
 				globals()[method](saved, conn, p, v)
 			except AttributeError:
