@@ -1,14 +1,17 @@
-from room import Room, Randomhall, Grid, Area
+"""Parses data about game objects, loads wireframes, and creates objects
+based on wireframes.
 
-import debug, heartbeat
+"""
+
+from mudpy.room import Room
+from mudpy import debug, heartbeat
 import os, json, operator
 
-wireframes = {}
-depends = []
-loaded = []
-deferred = []
-lastarea = None
-INITFILE = 'init.json'
+__wireframes__ = {}
+__loaded__ = []
+__deferred__ = []
+__lastarea__ = None
+__INITFILE__ = 'init.json'
 
 def new(instance, name):
 	"""Takes the given instance and assigns values to it from the internal 
@@ -21,45 +24,40 @@ def new(instance, name):
 	
 	"""
 
-	global wireframes
-
 	try:
-		found = wireframes[instance.__class__.__name__][name]
+		found = __wireframes__[instance.__class__.__name__][name]
 	except KeyError:
 		raise FactoryException("Factory does not know how to create "+name)
-	return buildFromDefinition(instance, found[instance.__class__.__name__])
+	return build(instance, found[instance.__class__.__name__])
 
-def add(newwireframes):
+def add(wireframes):
 	"""Adds a new wireframe definition for an instance type."""
 
-	global wireframes
-
-	for wireframe in newwireframes:
+	for wireframe in wireframes:
 		for key, blob in wireframe.iteritems():
 			name = blob['properties']['name']
+			debug.log('adding wireframe for '+name)
 			try:
-				wireframes[key][name] = wireframe
+				__wireframes__[key][name] = wireframe
 			except KeyError:
-				wireframes[key] = {}
-				wireframes[key][name] = wireframe
+				__wireframes__[key] = {}
+				__wireframes__[key][name] = wireframe
 
 def match(name, keys, scalar = True):
 	"""Performs a fuzzy lookup for wireframes by name."""
-
-	global wireframes
 
 	matches = []
 	if not isinstance(keys, list):
 		keys = [keys]
 	for key in keys:
-		for wireframename, wireframe in wireframes[key].iteritems():
+		for wireframename, wireframe in __wireframes__[key].iteritems():
 			if wireframename.startswith(name):
-				match = {'key':key, 'wireframe':wireframename}
+				record = {'key':key, 'wireframe':wireframename}
 				try:
-					match['priority'] = wireframe[key]['priority']
+					record['priority'] = wireframe[key]['priority']
 				except KeyError:
-					match['priority'] = 0
-				matches.append(match)
+					record['priority'] = 0
+				matches.append(record)
 	matches = sorted(matches, key=operator.itemgetter('priority'))
 	matches.reverse()
 	try:
@@ -74,46 +72,47 @@ def parse(path):
 
 	"""
 
-	global deferred, loaded
+	global __deferred__
 
 	_parse(path)
-	while len(deferred):
-		startlen = len(loaded)
-		_deferred = deferred
-		deferred = []
-		for fullpath in _deferred:
+	while len(__deferred__):
+		startlen = len(__loaded__)
+		deferred = __deferred__
+		__deferred__ = []
+		for fullpath in deferred:
 			_parse(fullpath)
-		endlen = len(loaded)
+		endlen = len(__loaded__)
 		if startlen == endlen:
 			debug.log("dependencies cannot be met", "error")
 
 	#build out the room tree
-	randomHalls = []
+	random_halls = []
 	grids = []
-	for r, room in Room.rooms.iteritems():
+	from mudpy.room import Randomhall, Grid
+	for room_id, room in Room.rooms.iteritems():
 		if isinstance(room, Randomhall):
-			randomHalls.append(room)
+			random_halls.append(room)
 		if isinstance(room, Grid):
 			grids.append(room)
-		for d, direction in Room.rooms[r].directions.items():
+		for direction_id, direction in Room.rooms[room_id].directions.items():
 			if direction:
 				try:
 					if type(direction) is int:
-						direction = Room.rooms[r].area.name+":"+str(direction)
-					Room.rooms[r].directions[d] = Room.rooms[direction]
+						direction = Room.rooms[room_id].area.name+":"+str(direction)
+					Room.rooms[room_id].directions[direction_id] = Room.rooms[direction]
 				except KeyError:
 					debug.log("Room id "+str(direction)+" is not defined, removing", "notice")
-					del Room.rooms[r].directions[d]
-	for room in randomHalls:
-		roomCount = room.buildDungeon()
-		while roomCount < room.rooms:
-			roomCount = room.buildDungeon(roomCount)
+					del Room.rooms[room_id].directions[direction_id]
+	for room in random_halls:
+		room_count = room.buildDungeon()
+		while room_count < room.rooms:
+			room_count = room.buildDungeon(room_count)
 	for room in grids:
 		rows = room.counts['west'] + room.counts['east']
 		rows = rows if rows > 0 else 1
 		cols = room.counts['north'] + room.counts['south']
 		cols = cols if cols > 0 else 1
-		grid = [[0 for row in range(rows)] for col in range(cols)]
+		grid = [[row for row in range(rows)] for col in range(cols)]
 		grid[room.counts['north']-1][room.counts['west']-1] = room
 		room.buildDungeon(0, 0, grid)
 
@@ -123,16 +122,14 @@ def _parse(path):
 
 	"""
 
-	global INITFILE
-
 	debug.log('recurse through path: '+path)
 
 	if path.endswith('.json'):
-		return parseJson(path) # parse the json file
+		return parse_json(path) # parse the json file
 
 	# check that dependencies for the directory have been met
-	init = path+'/'+INITFILE
-	if os.path.isfile(init) and not parseJson(init):
+	init = path+'/'+__INITFILE__
+	if os.path.isfile(init) and not parse_json(init):
 		return
 
 	if os.path.isdir(path):
@@ -143,114 +140,116 @@ def _parse(path):
 				continue # skip the init file
 			_parse(fullpath)
 
-def parseJson(scriptFile):
+def parse_json(script):
 	"""Parses a json data file and loads game objects and/or wireframes."""
 
-	global loaded, deferred
-
-	debug.log('parsing json file: '+scriptFile)
-	fp = open(scriptFile)
+	debug.log('parsing json file: '+script)
+	fp = open(script)
 	try:
 		data = json.load(fp)
 	except ValueError:
-		debug.log("script file is not properly formatted: "+scriptFile, "error")
-	path, filename = os.path.split(scriptFile)
+		debug.log("script file is not properly formatted: "+script, "error")
+	path, filename = os.path.split(script)
 	try:
-		_parseJson(data)
-		loaded.append(filename)
+		_parse_json(data)
+		__loaded__.append(filename)
 		return True
 	except DependencyException:
-		debug.log(scriptFile+' deferred')
-		deferred.append(path if filename == INITFILE else scriptFile)
+		debug.log(script+' deferred')
+		__deferred__.append(path if filename == __INITFILE__ else script)
 		return False
 
-def _parseJson(data, parent = None):
-	"""Called by parseJson(), loops through array of json data and builds a
+def _parse_json(data, parent = None):
+	"""Called by parse_json(), loops through array of json data and builds a
 	list of game objects from the data.
 
 	"""
 
-	from room import Room, Randomhall, Grid, Area
-	from item import Item, Drink
-	from actor import Mob, Ability
-	from factory import Depends
+	from mudpy.room import Room, Randomhall, Grid, Area
+	from mudpy.item import Item, Drink
+	from mudpy.actor import Mob, Ability
+	from mudpy.factory import Depends
 
 	instances = []
 	for item in data:
 		for _class in item:
 			_class = str(_class)
 			try:
-				instances.append(buildFromDefinition(locals()[_class](), item[_class], parent))
+				instances.append(build(locals()[_class](),
+													item[_class],
+													parent))
 			except KeyError:
-				buildFromDefinition(None, item[_class], parent)
+				build(None, item[_class], parent)
 	return instances
 
-def buildFromDefinition(instance, properties, parent = None):
+def build(instance, properties, parent = None):
 	"""Takes an instance of a game object and a list of properties and call
-	descriptor* methods to build the properties of the game object.
+	desc_* methods to build the properties of the game object.
 
 	"""
 
 	for descriptor in properties:
-		fn = 'descriptor'+descriptor.title()
+		func = 'desc_'+descriptor
 		value = properties[descriptor]
 		if isinstance(value, unicode):
 			value = str(value)
 		try:
-			globals()[fn](instance, properties[descriptor])
-		except KeyError: pass
-	fn = 'doneParse'+instance.__class__.__name__
+			globals()[func](instance, properties[descriptor])
+		except KeyError:
+			pass
+	func = 'done_'+instance.__class__.__name__.lower()
 	try:
-		globals()[fn](parent, instance)
-	except KeyError: pass
+		globals()[func](parent, instance)
+	except KeyError:
+		pass
 	return instance
 
-def descriptorWireframes(none, wireframes):
+def desc_wireframes(none, wires):
 	"""Wireframe descriptor method, for adding wireframe definitions to the
 	factory for later object initialization.
 
 	"""
 
-	add(wireframes)
+	add(wires)
 
-def descriptorAbilities(instance, abilities):
+def desc_abilities(instance, abilities):
 	"""Abilities descriptor method, assigns abilities to a game object."""
 
-	import actor
+	from mudpy import actor
 
 	for ability in abilities:
 		instance.abilities.append(new(actor.Ability(), ability))
 
-def descriptorAffects(instance, affects):
+def desc_affects(instance, affects):
 	"""Affects descriptor method, assigns affects to a game objects."""
 
-	import affect
+	from mudpy import affect
 	for aff in affects:
 		instance.affects.append(new(affect.Affect(), aff))
 
-def descriptorProficiencies(actor, proficiencies):
+def desc_proficiencies(actor, proficiencies):
 	"""Proficiencies descriptor method, assigns proficiencies to a game object."""
 
 	for proficiency in proficiencies:
 		actor.addProficiency(proficiency, proficiencies[proficiency])
 
-def descriptorInventory(instance, inventory):
-	"""Inventory descriptor method, calls _parseJson() to initialize the items
+def desc_inventory(instance, inventory):
+	"""Inventory descriptor method, calls _parse_json() to initialize the items
 	for the inventory.
 	
 	"""
 
-	_parseJson(inventory, instance)
+	_parse_json(inventory, instance)
 
-def descriptorMobs(instance, mobs):
-	"""Mob descriptor method, calls _parseJson() to initialize all of the
+def desc_mobs(instance, mobs):
+	"""Mob descriptor method, calls _parse_json() to initialize all of the
 	mob's properties.
 
 	"""
 
-	_parseJson(mobs, instance)
+	_parse_json(mobs, instance)
 
-def descriptorProperties(instance, properties):
+def desc_properties(instance, properties):
 	"""Properties descriptor method, assigns class properties directly to the
 	game object instance.
 	
@@ -259,7 +258,7 @@ def descriptorProperties(instance, properties):
 	for prop in properties:
 		setattr(instance, prop, properties[prop])
 
-def descriptorAttributes(instance, attributes):
+def desc_attributes(instance, attributes):
 	"""Attributes descriptor method, sets properties for the game object
 	instance's attributes, such as hp, mana, movement, str, int, etc.
 
@@ -268,61 +267,69 @@ def descriptorAttributes(instance, attributes):
 	for attribute in attributes:
 		setattr(instance.attributes, attribute, attributes[attribute])
 
-def doneParseDepends(parent, depends):
+def done_depends(parent, depends):
 	"""Raises a DependencyException when the parser begins to parse a script
 	whose dependencies have not yet been met.
 
 	"""
 
-	global loaded
-
-	deps = [dep for dep in depends.on if not dep in loaded]
+	deps = [dep for dep in depends.on if not dep in __loaded__]
 	if len(deps):
 		raise DependencyException
 
-def doneParseArea(parent, area):
+def done_area(parent, area):
 	"""Sets the lastarea variable which is then used to set room.area for
 	each new room.
 
 	"""
 
-	global lastarea
+	global __lastarea__
 
-	lastarea = area
+	__lastarea__ = area
 
-def doneParseMob(parent, mob):
+def done_mob(parent, mob):
 	"""Finish initializing a mob."""
 
-	import actor
+	from mudpy import actor
 	parent.actors.append(mob)
 	mob.room = parent
 	mob.race = new(actor.Race(), mob.race)
 	heartbeat.instance.attach('tick', mob.tick)
 
-def doneParseRoom(parent, room):
+def done_room(parent, room):
 	"""Last steps to finalize parsing a room."""
 
-	global lastarea
-
-	room.area = lastarea
+	room.area = __lastarea__
 	Room.rooms[room.area.name+":"+str(room.id)] = room
 
-def doneParseItem(parent, item):
+def done_item(parent, item):
 	"""Attach an item to the parent's inventory."""
 
 	parent.inventory.append(item)
 
-def doneParseDrink(parent, drink):
+def done_drink(parent, drink):
 	"""Attach the drink to the parent's inventory."""
 
 	parent.inventory.append(drink)
 	
 class Depends:
-	def __init__(self):
-		"""Creates a Depends object for tracking script dependencies."""
+	"""Creates a Depends object for tracking script dependencies."""
 
+	def __init__(self):
 		self.on = []
 
-class DependencyException(Exception): pass
-class ParserException(Exception): pass
-class FactoryException(Exception): pass
+class DependencyException(Exception):
+	"""Thrown when a parser is attempting to read a script that has unmet
+	dependencies.
+
+	"""
+
+	pass
+
+class FactoryException(Exception):
+	"""Thrown when a factory does not know how to create the object that is
+	requested.
+
+	"""
+
+	pass
