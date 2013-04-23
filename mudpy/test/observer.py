@@ -15,12 +15,6 @@ class TestObserver(unittest.TestCase):
 		self.observer.detach('testevent', self.testAttach)
 		self.assertEquals(0, len(self.observer.observers['testevent']))
 	
-	def testDetachAll(self):
-		self.observer.attach('testevent', self.testAttach)
-		self.observer.attach('testevent', self.testDetach)
-		self.observer.detachAll()
-		self.assertEquals(0, len(self.observer.observers))
-	
 	def testDispatch(self):
 		def success(*args):
 			raise SuccessException

@@ -1,36 +1,52 @@
+"""Allows for a simple way to have objects update each other about certain
+events and states without forcing the objects to be tightly coupled.
+
+"""
+
 class Observer(object):
+	"""Any object that wants to notify other objects of state changes must
+	inherit from Observer.
+
+	"""
 
 	def __init__(self):
 		self.observers = {}
 
-	def attach(self, event, fn):
+	def attach(self, event, func):
+		"""Attach a new listener function to a named event."""
+
 		try:
-			self.observers[event].append(fn)
+			self.observers[event].append(func)
 		except KeyError:
-			self.observers[event] = [fn]
+			self.observers[event] = [func]
 	
-	def detach(self, event, fn):
+	def detach(self, event, func):
+		"""Remove a listener function from a named event."""
+
 		try:
-			self.observers[event].remove(fn)
-		except (ValueError, KeyError): pass
-	
-	def detachAll(self, *args):
-		self.observers.clear()
+			self.observers[event].remove(func)
+		except (ValueError, KeyError):
+			pass
 	
 	def dispatch(self, *eventlist, **events):
+		"""Fire off one or more events, calling any found listeners."""
+
 		for event in eventlist:
 			try:
-				for fn in self.observers[event]:
-					handled = fn()
+				for func in self.observers[event]:
+					handled = func()
 					if handled:
 						break
-			except KeyError: pass
+			except KeyError:
+				pass
 
 		for event, args in events.iteritems():
 			try:
-				for fn in self.observers[event]:
-					handled = fn(args)
+				for func in self.observers[event]:
+					handled = func(args)
 					if handled:
 						break
-			except KeyError: pass
+			except KeyError:
+				pass
+
 		return handled
