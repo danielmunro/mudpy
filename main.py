@@ -1,12 +1,12 @@
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
-import debug, heartbeat, client, factory
+from mudpy import debug, heartbeat, client, factory
 
 heartbeat.instance = heartbeat.Heartbeat(reactor)
 debug.log('heartbeat initialized')
 
-factory.parse('scripts')
+factory.parse('mudpy/scripts')
 debug.log('scripts initialized')
 
 endpoint = TCP4ServerEndpoint(reactor, 9000)
