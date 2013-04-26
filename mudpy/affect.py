@@ -6,7 +6,7 @@ to be used to apply attribute changes to an actor or item.
 from attributes import Attributes
 from observer import Observer
 from reporter import Reporter
-import debug, heartbeat
+from . import debug, heartbeat
 
 class Affect(Observer, Reporter):
 	"""Give an actor or item an affect."""

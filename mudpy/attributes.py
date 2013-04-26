@@ -1,6 +1,6 @@
 """Attributes for objects in the game."""
 
-import persistence
+from . import persistence
 
 class Attributes(object):
 	"""Attributes are either attributes for a game object or are modifiers on
