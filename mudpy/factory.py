@@ -14,328 +14,328 @@ __lastarea__ = None
 __INITFILE__ = 'init.json'
 
 def new(instance, name):
-	"""Takes the given instance and assigns values to it from the internal 
-	named lookup.
+    """Takes the given instance and assigns values to it from the internal 
+    named lookup.
 
-	Eg:
+    Eg:
 
-	ab = new(Ability(), "bash") # returns an Ability object with the assigned
-								# properties for bash
-	
-	"""
+    ab = new(Ability(), "bash") # returns an Ability object with the assigned
+                                # properties for bash
+    
+    """
 
-	try:
-		found = __wireframes__[instance.__class__.__name__][name]
-	except KeyError:
-		raise FactoryException("Factory does not know how to create "+name)
-	debug.log('factory creating new instance of '+instance.__class__.__name__)
-	return build(instance, found[instance.__class__.__name__])
+    try:
+        found = __wireframes__[instance.__class__.__name__][name]
+    except KeyError:
+        raise FactoryException("Factory does not know how to create "+name)
+    debug.log('factory creating new instance of '+instance.__class__.__name__)
+    return build(instance, found[instance.__class__.__name__])
 
 def add(wireframes):
-	"""Adds a new wireframe definition for an instance type."""
+    """Adds a new wireframe definition for an instance type."""
 
-	for wireframe in wireframes:
-		for key, blob in wireframe.iteritems():
-			name = blob['properties']['name']
-			debug.log('factory adding wireframe design for '+name)
-			try:
-				__wireframes__[key][name] = wireframe
-			except KeyError:
-				__wireframes__[key] = {}
-				__wireframes__[key][name] = wireframe
+    for wireframe in wireframes:
+        for key, blob in wireframe.iteritems():
+            name = blob['properties']['name']
+            debug.log('factory adding wireframe design for '+name)
+            try:
+                __wireframes__[key][name] = wireframe
+            except KeyError:
+                __wireframes__[key] = {}
+                __wireframes__[key][name] = wireframe
 
 def match(name, keys, scalar = True):
-	"""Performs a fuzzy lookup for wireframes by name."""
+    """Performs a fuzzy lookup for wireframes by name."""
 
-	matches = []
-	if not isinstance(keys, list):
-		keys = [keys]
-	for key in keys:
-		for wireframename, wireframe in __wireframes__[key].iteritems():
-			if wireframename.startswith(name):
-				record = {'key':key, 'wireframe':wireframename}
-				try:
-					record['priority'] = wireframe[key]['priority']
-				except KeyError:
-					record['priority'] = 0
-				matches.append(record)
-	matches = sorted(matches, key=operator.itemgetter('priority'))
-	matches.reverse()
-	try:
-		return matches[0] if scalar else matches
-	except IndexError:
-		return None
+    matches = []
+    if not isinstance(keys, list):
+        keys = [keys]
+    for key in keys:
+        for wireframename, wireframe in __wireframes__[key].iteritems():
+            if wireframename.startswith(name):
+                record = {'key':key, 'wireframe':wireframename}
+                try:
+                    record['priority'] = wireframe[key]['priority']
+                except KeyError:
+                    record['priority'] = 0
+                matches.append(record)
+    matches = sorted(matches, key=operator.itemgetter('priority'))
+    matches.reverse()
+    try:
+        return matches[0] if scalar else matches
+    except IndexError:
+        return None
 
 def parse(path):
-	"""Parses a base scripts path in order to load the initial game objects
-	and wireframes, which will be used later by the factory to build game
-	objects.
+    """Parses a base scripts path in order to load the initial game objects
+    and wireframes, which will be used later by the factory to build game
+    objects.
 
-	"""
+    """
 
-	global __deferred__
+    global __deferred__
 
-	if not os.path.isdir(path):
-		raise IOError(path+" not a valid scripts directory")
+    if not os.path.isdir(path):
+        raise IOError(path+" not a valid scripts directory")
 
-	_parse(path)
-	while len(__deferred__):
-		startlen = len(__loaded__)
-		deferred = __deferred__
-		__deferred__ = []
-		for fullpath in deferred:
-			_parse(fullpath)
-		endlen = len(__loaded__)
-		if startlen == endlen:
-			debug.log("dependencies cannot be met", "error")
+    _parse(path)
+    while len(__deferred__):
+        startlen = len(__loaded__)
+        deferred = __deferred__
+        __deferred__ = []
+        for fullpath in deferred:
+            _parse(fullpath)
+        endlen = len(__loaded__)
+        if startlen == endlen:
+            debug.log("dependencies cannot be met", "error")
 
-	#build out the room tree
-	random_halls = []
-	grids = []
-	from .room import Randomhall, Grid
-	for room_id, room in Room.rooms.iteritems():
-		if isinstance(room, Randomhall):
-			random_halls.append(room)
-		if isinstance(room, Grid):
-			grids.append(room)
-		for direction_id, direction in Room.rooms[room_id].directions.items():
-			if direction:
-				try:
-					if type(direction) is int:
-						direction = Room.rooms[room_id].area.name+":"+str(direction)
-					Room.rooms[room_id].directions[direction_id] = Room.rooms[direction]
-				except KeyError:
-					debug.log("Room id "+str(direction)+" is not defined, removing", "notice")
-					del Room.rooms[room_id].directions[direction_id]
-	for room in random_halls:
-		room_count = room.buildDungeon()
-		while room_count < room.rooms:
-			room_count = room.buildDungeon(room_count)
-	for room in grids:
-		rows = room.counts['west'] + room.counts['east']
-		rows = rows if rows > 0 else 1
-		cols = room.counts['north'] + room.counts['south']
-		cols = cols if cols > 0 else 1
-		grid = [[row for row in range(rows)] for col in range(cols)]
-		grid[room.counts['north']-1][room.counts['west']-1] = room
-		room.buildDungeon(0, 0, grid)
+    #build out the room tree
+    random_halls = []
+    grids = []
+    from .room import Randomhall, Grid
+    for room_id, room in Room.rooms.iteritems():
+        if isinstance(room, Randomhall):
+            random_halls.append(room)
+        if isinstance(room, Grid):
+            grids.append(room)
+        for direction_id, direction in Room.rooms[room_id].directions.items():
+            if direction:
+                try:
+                    if type(direction) is int:
+                        direction = Room.rooms[room_id].area.name+":"+str(direction)
+                    Room.rooms[room_id].directions[direction_id] = Room.rooms[direction]
+                except KeyError:
+                    debug.log("Room id "+str(direction)+" is not defined, removing", "notice")
+                    del Room.rooms[room_id].directions[direction_id]
+    for room in random_halls:
+        room_count = room.buildDungeon()
+        while room_count < room.rooms:
+            room_count = room.buildDungeon(room_count)
+    for room in grids:
+        rows = room.counts['west'] + room.counts['east']
+        rows = rows if rows > 0 else 1
+        cols = room.counts['north'] + room.counts['south']
+        cols = cols if cols > 0 else 1
+        grid = [[row for row in range(rows)] for col in range(cols)]
+        grid[room.counts['north']-1][room.counts['west']-1] = room
+        room.buildDungeon(0, 0, grid)
 
-	debug.log('scripts initialized')
+    debug.log('scripts initialized')
 
 def _parse(path):
-	"""Called by parse(), recursively explores a directory tree and attempts
-	to load json data.
+    """Called by parse(), recursively explores a directory tree and attempts
+    to load json data.
 
-	"""
+    """
 
-	debug.log('recurse through path: '+path)
+    debug.log('recurse through path: '+path)
 
-	if path.endswith('.json'):
-		return parse_json(path) # parse the json file
+    if path.endswith('.json'):
+        return parse_json(path) # parse the json file
 
-	# check that dependencies for the directory have been met
-	init = path+'/'+__INITFILE__
-	if os.path.isfile(init) and not parse_json(init):
-		return
+    # check that dependencies for the directory have been met
+    init = path+'/'+__INITFILE__
+    if os.path.isfile(init) and not parse_json(init):
+        return
 
-	if os.path.isdir(path):
-		# parse through this directory
-		for infile in os.listdir(path):
-			fullpath = path+'/'+infile
-			if fullpath == init:
-				continue # skip the init file
-			_parse(fullpath)
+    if os.path.isdir(path):
+        # parse through this directory
+        for infile in os.listdir(path):
+            fullpath = path+'/'+infile
+            if fullpath == init:
+                continue # skip the init file
+            _parse(fullpath)
 
 def parse_json(script):
-	"""Parses a json data file and loads game objects and/or wireframes."""
+    """Parses a json data file and loads game objects and/or wireframes."""
 
-	debug.log('parsing json file: '+script)
-	fp = open(script)
-	try:
-		data = json.load(fp)
-	except ValueError:
-		debug.log("script file is not properly formatted: "+script, "error")
-	path, filename = os.path.split(script)
-	try:
-		_parse_json(data)
-		__loaded__.append(filename)
-		return True
-	except DependencyException:
-		debug.log(script+' deferred')
-		__deferred__.append(path if filename == __INITFILE__ else script)
-		return False
+    debug.log('parsing json file: '+script)
+    fp = open(script)
+    try:
+        data = json.load(fp)
+    except ValueError:
+        debug.log("script file is not properly formatted: "+script, "error")
+    path, filename = os.path.split(script)
+    try:
+        _parse_json(data)
+        __loaded__.append(filename)
+        return True
+    except DependencyException:
+        debug.log(script+' deferred')
+        __deferred__.append(path if filename == __INITFILE__ else script)
+        return False
 
 def _parse_json(data, parent = None):
-	"""Called by parse_json(), loops through array of json data and builds a
-	list of game objects from the data.
+    """Called by parse_json(), loops through array of json data and builds a
+    list of game objects from the data.
 
-	"""
+    """
 
-	from .room import Room, Randomhall, Grid, Area
-	from .item import Item, Drink
-	from .actor import Mob, Ability
-	from .factory import Depends
+    from .room import Room, Randomhall, Grid, Area
+    from .item import Item, Drink
+    from .actor import Mob, Ability
+    from .factory import Depends
 
-	instances = []
-	for item in data:
-		for _class in item:
-			_class = str(_class)
-			try:
-				instances.append(build(locals()[_class](),
-													item[_class],
-													parent))
-			except KeyError:
-				build(None, item[_class], parent)
-	return instances
+    instances = []
+    for item in data:
+        for _class in item:
+            _class = str(_class)
+            try:
+                instances.append(build(locals()[_class](),
+                                                    item[_class],
+                                                    parent))
+            except KeyError:
+                build(None, item[_class], parent)
+    return instances
 
 def build(instance, properties, parent = None):
-	"""Takes an instance of a game object and a list of properties and call
-	desc_* methods to build the properties of the game object.
+    """Takes an instance of a game object and a list of properties and call
+    desc_* methods to build the properties of the game object.
 
-	"""
+    """
 
-	for descriptor in properties:
-		func = 'desc_'+descriptor
-		value = properties[descriptor]
-		if isinstance(value, unicode):
-			value = str(value)
-		try:
-			globals()[func](instance, properties[descriptor])
-		except KeyError:
-			pass
-	func = 'done_'+instance.__class__.__name__.lower()
-	try:
-		globals()[func](parent, instance)
-	except KeyError:
-		pass
-	return instance
+    for descriptor in properties:
+        func = 'desc_'+descriptor
+        value = properties[descriptor]
+        if isinstance(value, unicode):
+            value = str(value)
+        try:
+            globals()[func](instance, properties[descriptor])
+        except KeyError:
+            pass
+    func = 'done_'+instance.__class__.__name__.lower()
+    try:
+        globals()[func](parent, instance)
+    except KeyError:
+        pass
+    return instance
 
 def desc_wireframes(none, wires):
-	"""Wireframe descriptor method, for adding wireframe definitions to the
-	factory for later object initialization.
+    """Wireframe descriptor method, for adding wireframe definitions to the
+    factory for later object initialization.
 
-	"""
+    """
 
-	add(wires)
+    add(wires)
 
 def desc_abilities(instance, abilities):
-	"""Abilities descriptor method, assigns abilities to a game object."""
+    """Abilities descriptor method, assigns abilities to a game object."""
 
-	from . import actor
+    from . import actor
 
-	for ability in abilities:
-		instance.abilities.append(new(actor.Ability(), ability))
+    for ability in abilities:
+        instance.abilities.append(new(actor.Ability(), ability))
 
 def desc_affects(instance, affects):
-	"""Affects descriptor method, assigns affects to a game objects."""
+    """Affects descriptor method, assigns affects to a game objects."""
 
-	from . import affect
-	for aff in affects:
-		instance.affects.append(new(affect.Affect(), aff))
+    from . import affect
+    for aff in affects:
+        instance.affects.append(new(affect.Affect(), aff))
 
 def desc_proficiencies(actor, proficiencies):
-	"""Proficiencies descriptor method, assigns proficiencies to a game object."""
+    """Proficiencies descriptor method, assigns proficiencies to a game object."""
 
-	for proficiency in proficiencies:
-		actor.addProficiency(proficiency, proficiencies[proficiency])
+    for proficiency in proficiencies:
+        actor.addProficiency(proficiency, proficiencies[proficiency])
 
 def desc_inventory(instance, inventory):
-	"""Inventory descriptor method, calls _parse_json() to initialize the items
-	for the inventory.
-	
-	"""
+    """Inventory descriptor method, calls _parse_json() to initialize the items
+    for the inventory.
+    
+    """
 
-	_parse_json(inventory, instance)
+    _parse_json(inventory, instance)
 
 def desc_mobs(instance, mobs):
-	"""Mob descriptor method, calls _parse_json() to initialize all of the
-	mob's properties.
+    """Mob descriptor method, calls _parse_json() to initialize all of the
+    mob's properties.
 
-	"""
+    """
 
-	_parse_json(mobs, instance)
+    _parse_json(mobs, instance)
 
 def desc_properties(instance, properties):
-	"""Properties descriptor method, assigns class properties directly to the
-	game object instance.
-	
-	"""
+    """Properties descriptor method, assigns class properties directly to the
+    game object instance.
+    
+    """
 
-	for prop in properties:
-		setattr(instance, prop, properties[prop])
+    for prop in properties:
+        setattr(instance, prop, properties[prop])
 
 def desc_attributes(instance, attributes):
-	"""Attributes descriptor method, sets properties for the game object
-	instance's attributes, such as hp, mana, movement, str, int, etc.
+    """Attributes descriptor method, sets properties for the game object
+    instance's attributes, such as hp, mana, movement, str, int, etc.
 
-	"""
+    """
 
-	for attribute in attributes:
-		setattr(instance.attributes, attribute, attributes[attribute])
+    for attribute in attributes:
+        setattr(instance.attributes, attribute, attributes[attribute])
 
 def done_depends(parent, depends):
-	"""Raises a DependencyException when the parser begins to parse a script
-	whose dependencies have not yet been met.
+    """Raises a DependencyException when the parser begins to parse a script
+    whose dependencies have not yet been met.
 
-	"""
+    """
 
-	deps = [dep for dep in depends.on if not dep in __loaded__]
-	if len(deps):
-		raise DependencyException
+    deps = [dep for dep in depends.on if not dep in __loaded__]
+    if len(deps):
+        raise DependencyException
 
 def done_area(parent, area):
-	"""Sets the lastarea variable which is then used to set room.area for
-	each new room.
+    """Sets the lastarea variable which is then used to set room.area for
+    each new room.
 
-	"""
+    """
 
-	global __lastarea__
+    global __lastarea__
 
-	__lastarea__ = area
+    __lastarea__ = area
 
 def done_mob(parent, mob):
-	"""Finish initializing a mob."""
+    """Finish initializing a mob."""
 
-	from . import actor, server
-	parent.actors.append(mob)
-	mob.room = parent
-	mob.race = new(actor.Race(), mob.race)
-	server.__instance__.heartbeat.attach('tick', mob.tick)
+    from . import actor, server
+    parent.actors.append(mob)
+    mob.room = parent
+    mob.race = new(actor.Race(), mob.race)
+    server.__instance__.heartbeat.attach('tick', mob.tick)
 
 def done_room(parent, room):
-	"""Last steps to finalize parsing a room."""
+    """Last steps to finalize parsing a room."""
 
-	room.area = __lastarea__
-	Room.rooms[room.area.name+":"+str(room.id)] = room
+    room.area = __lastarea__
+    Room.rooms[room.area.name+":"+str(room.id)] = room
 
 def done_item(parent, item):
-	"""Attach an item to the parent's inventory."""
+    """Attach an item to the parent's inventory."""
 
-	parent.inventory.append(item)
+    parent.inventory.append(item)
 
 def done_drink(parent, drink):
-	"""Attach the drink to the parent's inventory."""
+    """Attach the drink to the parent's inventory."""
 
-	parent.inventory.append(drink)
-	
+    parent.inventory.append(drink)
+    
 class Depends:
-	"""Creates a Depends object for tracking script dependencies."""
+    """Creates a Depends object for tracking script dependencies."""
 
-	def __init__(self):
-		self.on = []
+    def __init__(self):
+        self.on = []
 
 class DependencyException(Exception):
-	"""Thrown when a parser is attempting to read a script that has unmet
-	dependencies.
+    """Thrown when a parser is attempting to read a script that has unmet
+    dependencies.
 
-	"""
+    """
 
-	pass
+    pass
 
 class FactoryException(Exception):
-	"""Thrown when a factory does not know how to create the object that is
-	requested.
+    """Thrown when a factory does not know how to create the object that is
+    requested.
 
-	"""
+    """
 
-	pass
+    pass

@@ -5,16 +5,16 @@ fp.write('\nnew log started\n')
 
 def log(message, status = "info"):
 
-	global fp
+    global fp
 
-	# write the debug.log file
-	fp.write('['+time.strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+str(message)+'\n')
-	fp.flush()
+    # write the debug.log file
+    fp.write('['+time.strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+str(message)+'\n')
+    fp.flush()
 
-	# better error visibility and testing
-	if status == 'error':
-		raise DebugException(message)
-	elif status == 'notice':
-		print message
+    # better error visibility and testing
+    if status == 'error':
+        raise DebugException(message)
+    elif status == 'notice':
+        print message
 
 class DebugException(Exception): pass
