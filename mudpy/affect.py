@@ -5,10 +5,9 @@ to be used to apply attribute changes to an actor or item.
 
 from attributes import Attributes
 from observer import Observer
-from reporter import Reporter
-from . import debug, server
+from . import debug, server, room
 
-class Affect(Observer, Reporter):
+class Affect(Observer, room.Reporter):
 	"""Give an actor or item an affect."""
 
 	def __init__(self):

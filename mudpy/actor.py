@@ -1,10 +1,8 @@
 from __future__ import division
-import debug, server, persistence
+from . import room, debug, server, persistence
 from observer import Observer
-from reporter import Reporter
 from attributes import Attributes
 from item import Inventory, Corpse
-from room import Direction, Room
 
 from random import choice, randint, uniform
 import time
@@ -173,7 +171,7 @@ class Actor(Observer):
 	
 	def move(self, validDirections = []):
 		import command, factory
-		factory.new(command.Command(), choice(validDirections) if validDirections else Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
+		factory.new(command.Command(), choice(validDirections) if validDirections else room.Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
 		if self.target:
@@ -349,7 +347,7 @@ class User(Actor):
 	def die(self):
 		super(User, self).die()
 		self.room.actors.remove(self)
-		self.room = Room.rooms[Room.REGENROOMID]
+		self.room = room.Room.rooms[room.Room.REGENROOMID]
 		self.room.actors.append(self)
 		self.room.announce({
 			self: "You feel a rejuvinating rush as you pass through this mortal plane.",
@@ -465,7 +463,7 @@ class Attack:
 	def getAttributeModifier(self, actor, attributeName):
 		return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4
 
-class Ability(Observer, Reporter):
+class Ability(Observer, room.Reporter):
 
 	def __init__(self):
 		self.name = "an ability"
