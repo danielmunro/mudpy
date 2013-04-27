@@ -8,8 +8,15 @@ from mudpy import factory, server, debug
 import sys
 
 # set some global variables from arguments passed to the script
-__scripts_directory__ = sys.argv[1]
-__mud__name__ = sys.argv[2]
+try:
+	__scripts_directory__ = sys.argv[1]
+	__mud__name__ = sys.argv[2]
+except IndexError:
+	debug.log("invalid set of arguments passed to mud.py. expecting two "+ \
+				"arguments: the location of the scripts directory and the "+ \
+				"name of the mud instance to initialize (from the scripts "+ \
+				"base init.json configuration, ie:\n\n python main.py "+ \
+				"mudpy/scripts mud\n", "error")
 
 # create a generic server instance, initializes a heartbeat
 __server_instance__ = server.Instance()

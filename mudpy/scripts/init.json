@@ -1,0 +1,13 @@
+[{
+	"Factory":{
+		"wireframes":[{
+			"Instance":{
+				"properties":{
+					"port":9000,
+					"name":"mud",
+					"display_name":"My Great Mud"
+				}
+			}
+		}]
+	}
+}]
