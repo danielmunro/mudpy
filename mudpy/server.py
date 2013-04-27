@@ -23,9 +23,10 @@ class Instance:
         # mud.py framework.
         self.display_name = ""
 
-        # initialize heartbeat, which records the time of initialization and keeps
-        # track of its own reference to the reactor. Heartbeat uses reactor to call
-        # functions in the game thread from the thread listening to the network
+        # initialize heartbeat, which records the time of initialization and
+        # keeps track of its own reference to the reactor. Heartbeat uses
+        # reactor to call functions in the game thread from the thread
+        # listening to the network
         self.heartbeat = Heartbeat()
 
     def start_listening(self):
@@ -73,20 +74,22 @@ class Heartbeat(observer.Observer):
 
         debug.log('heartbeat initialized')
         next_pulse = time.time()+Heartbeat.PULSE_SECONDS
-        next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, \
-                                                Heartbeat.TICK_HIGHBOUND_SECONDS)
+        next_tick = time.time()+random.randint(
+                                        Heartbeat.TICK_LOWBOUND_SECONDS, \
+                                        Heartbeat.TICK_HIGHBOUND_SECONDS)
         while(1):
             self.dispatch('cycle')
             if time.time() >= next_pulse:
                 next_pulse += Heartbeat.PULSE_SECONDS
                 self.dispatch('pulse', 'stat')
             if time.time() >= next_tick:
-                next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, \
-                                                        Heartbeat.TICK_HIGHBOUND_SECONDS)
+                next_tick = time.time()+random.randint(
+                                        Heartbeat.TICK_LOWBOUND_SECONDS, \
+                                        Heartbeat.TICK_HIGHBOUND_SECONDS)
                 _stop = Stopwatch()
                 self.dispatch('tick')
-                debug.log('dispatched tick ['+str(_stop)+'s elapsed in tick] ['+ \
-                                    str(self.stopwatch)+'s elapsed since start]')
+                debug.log('dispatched tick ['+str(_stop)+'s elapsed in tick]'+ \
+                            ' ['+str(self.stopwatch)+'s elapsed since start]')
 
     def dispatch(self, *eventlist, **events):
         """Custom dispatch method for the heartbeat. Instead of calling the
@@ -103,11 +106,14 @@ class Heartbeat(observer.Observer):
 
         for event, args in events.iteritems():
             try:
-                [reactor.callFromThread(func, args) for func in self.observers[event]]
+                [reactor.callFromThread(func, args) for func in \
+                                            self.observers[event]]
             except KeyError:
                 pass
 
 class Stopwatch:
+    """Timekeeper, used for debugging mostly."""
+
     def __init__(self):
         self.starttime = time.time()
     
