@@ -5,7 +5,7 @@ user defined scripts.
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time
-from . import client, debug, observer, stopwatch
+from . import client, debug, observer
 
 class Instance:
     """Information about the implementation of this mud.py server."""
@@ -61,7 +61,7 @@ class Heartbeat(observer.Observer):
     PULSE_SECONDS = 1
 
     def __init__(self):
-        self.stopwatch = stopwatch.Stopwatch()
+        self.stopwatch = Stopwatch()
         super(Heartbeat, self).__init__()
         debug.log('heartbeat created')
     
@@ -83,7 +83,7 @@ class Heartbeat(observer.Observer):
             if time.time() >= next_tick:
                 next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, \
                                                         Heartbeat.TICK_HIGHBOUND_SECONDS)
-                _stop = stopwatch.Stopwatch()
+                _stop = Stopwatch()
                 self.dispatch('tick')
                 debug.log('dispatched tick ['+str(_stop)+'s elapsed in tick] ['+ \
                                     str(self.stopwatch)+'s elapsed since start]')
@@ -106,5 +106,12 @@ class Heartbeat(observer.Observer):
                 [reactor.callFromThread(func, args) for func in self.observers[event]]
             except KeyError:
                 pass
+
+class Stopwatch:
+    def __init__(self):
+        self.starttime = time.time()
+    
+    def __str__(self):
+        return str(time.time()-self.starttime)
 
 __instance__ = Instance()
