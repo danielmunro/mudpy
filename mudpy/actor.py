@@ -1,5 +1,5 @@
 from __future__ import division
-from . import room, debug, server, persistence
+from . import debug, persistence, room
 from observer import Observer
 from attributes import Attributes
 from item import Inventory, Corpse
@@ -136,6 +136,7 @@ class Actor(Observer):
 		return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
 	
 	def doRegularAttacks(self, recursedAttackIndex = 0):
+		from . import server
 		if self.target:
 			if not self.target.target:
 				self.target.target = self
@@ -170,7 +171,7 @@ class Actor(Observer):
 		return str(self).title()+' '+description+'.'
 	
 	def move(self, validDirections = []):
-		import command, factory
+		from . import command, factory, room
 		factory.new(command.Command(), choice(validDirections) if validDirections else room.Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
 	
 	def die(self):
@@ -309,6 +310,7 @@ class User(Actor):
 	persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'trains', 'practices', 'disposition', 'proficiencies']
 
 	def __init__(self):
+		from . import server
 		super(User, self).__init__()
 		self.delay_counter = 0
 		self.last_delay = 0
@@ -356,6 +358,7 @@ class User(Actor):
 		self.notify("\n"+self.prompt())
 	
 	def updateDelay(self):
+		from . import server
 		if self.delay_counter > 0:
 			if not self.last_delay:
 				server.__instance__.heartbeat.detach('cycle', self.client.poll)
@@ -376,7 +379,7 @@ class User(Actor):
 		def performAbility(ability):
 			self.delay_counter += ability.delay+1
 
-		import factory
+		from . import factory, server
 		from command import Command
 		server.__instance__.heartbeat.attach('tick', self.tick)
 		factory.new(Command(), "look").tryPerform(self)
