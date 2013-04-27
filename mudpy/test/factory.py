@@ -1,6 +1,5 @@
-import unittest
-import json
-from mudpy.mudpy.factory import Factory, FactoryException
+import unittest, json
+from mudpy.mudpy import factory
 
 class FooMock:
 	def __init__(self):
@@ -42,14 +41,14 @@ class TestFactory(unittest.TestCase):
 			}
 		}]"""
 
-		Factory.addWireframes(json.loads(getJsonStringWireframes()))
+		factory.add(json.loads(getJsonStringWireframes()))
 
 	def testAddWireframes(self):
-		self.assertEquals(1, len(Factory.wireframes))
-		self.assertIn("FooMock", Factory.wireframes.keys())
+		self.assertEquals(1, len(factory.__wireframes__))
+		self.assertIn("FooMock", factory.__wireframes__.keys())
 
 	def testNewWireframe(self):
-		foo = Factory.newFromWireframe(FooMock(), "bar")
+		foo = factory.new(FooMock(), "bar")
 		self.assertIsInstance(foo, FooMock)
 		self.assertEquals("bar", foo.name)
 		self.assertEquals(1, foo.level)
@@ -62,5 +61,5 @@ class TestFactory(unittest.TestCase):
 	
 	def testWireframeDoesNotExist(self):
 		def newClassDoesNotExist():
-			return Factory.newFromWireframe(FooMock(), 'classdoesnotexist')
-		self.assertRaises(FactoryException, newClassDoesNotExist)
+			return factory.new(FooMock(), 'classdoesnotexist')
+		self.assertRaises(factory.FactoryException, newClassDoesNotExist)
