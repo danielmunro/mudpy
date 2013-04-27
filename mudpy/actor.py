@@ -1,5 +1,5 @@
 from __future__ import division
-import debug, heartbeat, persistence
+import debug, server, persistence
 from observer import Observer
 from reporter import Reporter
 from attributes import Attributes
@@ -141,7 +141,7 @@ class Actor(Observer):
 		if self.target:
 			if not self.target.target:
 				self.target.target = self
-				heartbeat.instance.attach('pulse', self.target.pulse)
+				server.__instance__.heartbeat.attach('pulse', self.target.pulse)
 
 			if self.disposition != Disposition.INCAPACITATED:
 				try:
@@ -149,7 +149,7 @@ class Actor(Observer):
 					self.doRegularAttacks(recursedAttackIndex + 1)
 				except IndexError: pass
 		else:
-			heartbeat.instance.detach('pulse', self)
+			server.__instance__.heartbeat.detach('pulse', self)
 	
 	def status(self):
 		hppercent = self.curhp / self.getAttribute('hp')
@@ -312,13 +312,13 @@ class User(Actor):
 
 	def __init__(self):
 		super(User, self).__init__()
-		heartbeat.instance.attach('stat', self.stat)
 		self.delay_counter = 0
 		self.last_delay = 0
 		self.trains = 5
 		self.practices = 5
 		self.client = None
-		heartbeat.instance.attach('cycle', self.updateDelay)
+		server.__instance__.heartbeat.attach('stat', self.stat)
+		server.__instance__.heartbeat.attach('cycle', self.updateDelay)
 	
 	def prompt(self):
 		return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
@@ -360,13 +360,13 @@ class User(Actor):
 	def updateDelay(self):
 		if self.delay_counter > 0:
 			if not self.last_delay:
-				heartbeat.instance.detach('cycle', self.client.poll)
+				server.__instance__.heartbeat.detach('cycle', self.client.poll)
 			currenttime = int(time.time())
 			if currenttime > self.last_delay:
 				self.delay_counter -= 1
 				self.last_delay = currenttime
 		elif self.last_delay:
-			heartbeat.instance.attach('cycle', self.client.poll)
+			server.__instance__.heartbeat.attach('cycle', self.client.poll)
 			self.last_delay = 0
 	
 	def levelUp(self):
@@ -380,7 +380,7 @@ class User(Actor):
 
 		import factory
 		from command import Command
-		heartbeat.instance.attach('tick', self.tick)
+		server.__instance__.heartbeat.attach('tick', self.tick)
 		factory.new(Command(), "look").tryPerform(self)
 		self.notify("\n"+self.prompt())
 		debug.log('client logged in as '+str(self))

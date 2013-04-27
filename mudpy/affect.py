@@ -6,7 +6,7 @@ to be used to apply attribute changes to an actor or item.
 from attributes import Attributes
 from observer import Observer
 from reporter import Reporter
-from . import debug, heartbeat
+from . import debug, server
 
 class Affect(Observer, Reporter):
 	"""Give an actor or item an affect."""
@@ -28,7 +28,7 @@ class Affect(Observer, Reporter):
 			debug.log(str(receiver)+
 				" does not have startAffect() and/or endAffect() defined",
 				"error")
-		heartbeat.instance.attach('tick', self.tick)
+		server.__instance__.heartbeat.attach('tick', self.tick)
 		self.set_attributes_from_receiver(receiver)
 		self.dispatch(start = self)
 	
@@ -51,7 +51,7 @@ class Affect(Observer, Reporter):
 
 		self.timeout -= 1
 		if self.timeout < 0:
-			heartbeat.instance.detach('tick', self.tick)
+			server.__instance__.heartbeat.detach('tick', self.tick)
 			self.dispatch(end = self)
 
 	def __str__(self):

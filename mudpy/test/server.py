@@ -1,5 +1,5 @@
 import unittest, json
-from mudpy.mudpy import server, heartbeat, factory
+from mudpy.mudpy import server, factory
 
 class TestServer(unittest.TestCase):
 
@@ -15,7 +15,7 @@ class TestServer(unittest.TestCase):
 			}]"""))
 
 	def testImportInitializesHeartbeat(self):
-		self.assertIsInstance(heartbeat.instance, heartbeat.Heartbeat)
+		self.assertIsInstance(server.__instance__.heartbeat, server.Heartbeat)
 	
 	def testCreateMudInstance(self):
 		instance = factory.new(server.Instance(), "mud")

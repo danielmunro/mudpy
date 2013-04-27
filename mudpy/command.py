@@ -163,8 +163,8 @@ def kill(actor, args):
 	target = matchPartial(args[0], actor.room.actors)
 	if target:
 		actor.target = target
-		import heartbeat
-		heartbeat.instance.attach('pulse', actor.pulse)
+		import server
+		server.__instance__.heartbeat.attach('pulse', actor.pulse)
 		actor.room.announce({
 			actor: 'You scream and attack!',
 			'*': str(actor)+' screams and attacks '+str(target)+'!'

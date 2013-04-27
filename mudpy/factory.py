@@ -4,7 +4,7 @@ based on wireframes.
 """
 
 from .room import Room
-from . import debug, heartbeat
+from . import debug
 import os, json, operator
 
 __wireframes__ = {}
@@ -296,11 +296,11 @@ def done_area(parent, area):
 def done_mob(parent, mob):
 	"""Finish initializing a mob."""
 
-	from . import actor
+	from . import actor, server
 	parent.actors.append(mob)
 	mob.room = parent
 	mob.race = new(actor.Race(), mob.race)
-	heartbeat.instance.attach('tick', mob.tick)
+	server.__instance__.heartbeat.attach('tick', mob.tick)
 
 def done_room(parent, room):
 	"""Last steps to finalize parsing a room."""

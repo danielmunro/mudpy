@@ -4,12 +4,8 @@ user defined scripts.
 """
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
-from . import heartbeat, client, debug
-
-# initialize heartbeat, which records when the instance was started and keeps
-# track of its own reference to the reactor. Heartbeat uses reactor to call
-# functions in the game thread from the thread listening to the network
-heartbeat.instance = heartbeat.Heartbeat(reactor)
+import random, time
+from . import heartbeat, client, debug, observer, stopwatch
 
 class Instance:
 	"""Information about the implementation of this mud.py server."""
@@ -27,6 +23,11 @@ class Instance:
 		# mud.py framework.
 		self.display_name = ""
 
+		# initialize heartbeat, which records the time of initialization and keeps
+		# track of its own reference to the reactor. Heartbeat uses reactor to call
+		# functions in the game thread from the thread listening to the network
+		self.heartbeat = Heartbeat()
+
 	def start_listening(self):
 		"""Create a server end point with a twisted reactor and a port, then
 		tell it to use mud.py's client.ClientFactory to create clients on
@@ -38,10 +39,48 @@ class Instance:
 		debug.log(str(self)+" ready to accept clients on port "+str(self.port))
 
 		# start running the game thread
-		reactor.callInThread(heartbeat.instance.start)
+		reactor.callInThread(self.heartbeat.start)
 
 		# start the twisted client listener thread
 		reactor.run()
 	
 	def __str__(self):
 		return self.name
+
+class Heartbeat(observer.Observer):
+	TICK_LOWBOUND_SECONDS = 10
+	TICK_HIGHBOUND_SECONDS = 15
+
+	PULSE_SECONDS = 1
+
+	def __init__(self):
+		self.stopwatch = stopwatch.Stopwatch()
+		super(Heartbeat, self).__init__()
+		debug.log('heartbeat created')
+	
+	def start(self):
+		debug.log('heartbeat initialized')
+		next_pulse = time.time()+Heartbeat.PULSE_SECONDS
+		next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
+		while(1):
+			self.dispatch('cycle')
+			if time.time() >= next_pulse:
+				next_pulse += Heartbeat.PULSE_SECONDS
+				self.dispatch('pulse', 'stat')
+			if time.time() >= next_tick:
+				next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
+				sw = stopwatch.Stopwatch()
+				self.dispatch('tick')
+				debug.log('dispatched tick ['+str(sw)+'s elapsed in tick] ['+str(self.stopwatch)+'s elapsed since start]')
+
+	def dispatch(self, *eventlist, **events):
+		for event in eventlist:
+			try:
+				map(reactor.callFromThread, list(fn for fn in self.observers[event]))
+			except KeyError: pass
+
+		for event, args in events.iteritems():
+			for fn in self.observers[event]:
+				reactor.callFromThread(fn, args)
+
+__instance__ = Instance()

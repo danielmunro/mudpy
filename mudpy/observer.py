@@ -31,6 +31,8 @@ class Observer(object):
 	def dispatch(self, *eventlist, **events):
 		"""Fire off one or more events, calling any found listeners."""
 
+		handled = None
+
 		for event in eventlist:
 			try:
 				for func in self.observers[event]:

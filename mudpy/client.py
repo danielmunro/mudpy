@@ -1,6 +1,6 @@
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
-import command, debug, persistence, heartbeat, actor, factory
+import command, debug, persistence, server, actor, factory
 from room import Room
 from observer import Observer
 
@@ -11,7 +11,7 @@ class Client(Observer, Protocol):
 		self.commandbuffer = []
 		self.user = None
 		self.login = Login(self)
-		heartbeat.instance.attach('cycle', self.poll)
+		server.__instance__.heartbeat.attach('cycle', self.poll)
 		super(Client, self).__init__()
 
 	def connectionMade(self):
@@ -23,7 +23,7 @@ class Client(Observer, Protocol):
 		debug.log('client disconnected')
 	
 	def disconnect(self):
-		heartbeat.instance.detach('tick', self.user)
+		server.__instance__.heartbeat.detach('tick', self.user)
 		self.user.room.actors.remove(self.user)
 		self.transport.loseConnection()
 	

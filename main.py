@@ -18,9 +18,6 @@ except IndexError:
 				"base init.json configuration, ie:\n\n python main.py "+ \
 				"mudpy/scripts mud\n", "error")
 
-# create a generic server instance, initializes a heartbeat
-__server_instance__ = server.Instance()
-
 # parse the scripts directory, sets up all of the initial state for the game,
 # as well as wireframes for building more game objects during the run
 try:
@@ -33,7 +30,7 @@ except IOError:
 # assign a configuration to the server instance, parsed from the
 # __scripts_directory__, and start running it.
 try:
-	factory.new(__server_instance__, __mud__name__).start_listening()
+	factory.new(server.__instance__, __mud__name__).start_listening()
 except factory.FactoryException:
 	debug.log("invalid mud name passed as second argument. This needs to be"+ \
 				"the Instance name defined in your scripts/init.json", "error")
