@@ -3,8 +3,8 @@ based on wireframes.
 
 """
 
-from mudpy.room import Room
-from mudpy import debug, heartbeat
+from .room import Room
+from . import debug, heartbeat
 import os, json, operator
 
 __wireframes__ = {}
@@ -74,6 +74,9 @@ def parse(path):
 
 	global __deferred__
 
+	if not os.path.isdir(path):
+		raise IOError(path+" not a valid scripts directory")
+
 	_parse(path)
 	while len(__deferred__):
 		startlen = len(__loaded__)
@@ -88,7 +91,7 @@ def parse(path):
 	#build out the room tree
 	random_halls = []
 	grids = []
-	from mudpy.room import Randomhall, Grid
+	from .room import Randomhall, Grid
 	for room_id, room in Room.rooms.iteritems():
 		if isinstance(room, Randomhall):
 			random_halls.append(room)
@@ -115,6 +118,8 @@ def parse(path):
 		grid = [[row for row in range(rows)] for col in range(cols)]
 		grid[room.counts['north']-1][room.counts['west']-1] = room
 		room.buildDungeon(0, 0, grid)
+
+	debug.log('scripts initialized')
 
 def _parse(path):
 	"""Called by parse(), recursively explores a directory tree and attempts
@@ -165,10 +170,10 @@ def _parse_json(data, parent = None):
 
 	"""
 
-	from mudpy.room import Room, Randomhall, Grid, Area
-	from mudpy.item import Item, Drink
-	from mudpy.actor import Mob, Ability
-	from mudpy.factory import Depends
+	from .room import Room, Randomhall, Grid, Area
+	from .item import Item, Drink
+	from .actor import Mob, Ability
+	from .factory import Depends
 
 	instances = []
 	for item in data:
@@ -215,7 +220,7 @@ def desc_wireframes(none, wires):
 def desc_abilities(instance, abilities):
 	"""Abilities descriptor method, assigns abilities to a game object."""
 
-	from mudpy import actor
+	from . import actor
 
 	for ability in abilities:
 		instance.abilities.append(new(actor.Ability(), ability))
@@ -223,7 +228,7 @@ def desc_abilities(instance, abilities):
 def desc_affects(instance, affects):
 	"""Affects descriptor method, assigns affects to a game objects."""
 
-	from mudpy import affect
+	from . import affect
 	for aff in affects:
 		instance.affects.append(new(affect.Affect(), aff))
 
@@ -290,7 +295,7 @@ def done_area(parent, area):
 def done_mob(parent, mob):
 	"""Finish initializing a mob."""
 
-	from mudpy import actor
+	from . import actor
 	parent.actors.append(mob)
 	mob.room = parent
 	mob.race = new(actor.Race(), mob.race)
