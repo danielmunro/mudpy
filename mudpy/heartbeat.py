@@ -19,6 +19,7 @@ class Heartbeat(Observer):
 		debug.log('heartbeat created')
 	
 	def start(self):
+		debug.log('heartbeat initialized')
 		next_pulse = time.time()+Heartbeat.PULSE_SECONDS
 		next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
 		while(1):

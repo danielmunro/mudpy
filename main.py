@@ -1,42 +1,32 @@
-"""Entry point for mud.py. Does a few setup tasks.
-
-1. Starts the heartbeat, which times events like game cycles, pulses (battle
-rounds), and ticks.
-
-2. Parses initialization scripts (.json files found in scripts/), which define
-everything about this particular game instance, including attributes,
-abilities, proficiencies, races, and the world.
-
-3. Starts up the server, which currently has a hardwired configuration to
-listen on port 9000.
+"""Entry point for mud.py. Creates a server instance, parses config based on
+arguments from the cli, assigns a configuration to the server and starts
+listening on the configured port.
 
 """
 
-from twisted.internet.endpoints import TCP4ServerEndpoint
-from twisted.internet import reactor
+from mudpy import factory, server, debug
+import sys
 
-from mudpy import debug, heartbeat, client, factory
+# set some global variables from arguments passed to the script
+__scripts_directory__ = sys.argv[1]
+__mud__name__ = sys.argv[2]
 
-# initialize heartbeat, which records when the instance was started and keeps
-# track of its own reference to the reactor. Heartbeat uses reactor to call
-# functions in the game thread from the thread listening to the network
-heartbeat.instance = heartbeat.Heartbeat(reactor)
-debug.log('heartbeat initialized')
+# create a generic server instance, initializes a heartbeat
+__server_instance__ = server.Instance()
 
-# sets up all of the initial state for the game, as well as wireframes for
-# building more game objects during the run
-factory.parse('mudpy/scripts')
-debug.log('scripts initialized')
+# parse the scripts directory, sets up all of the initial state for the game,
+# as well as wireframes for building more game objects during the run
+try:
+	factory.parse(__scripts_directory__)
+except IOError:
+	debug.log("invalid scripts directory passed in as first argument. This "+ \
+				"is the location of the scripts that define game objects for"+ \
+				"mud.py", "error")
 
-# start listening for clients
-TCP4ServerEndpoint(reactor, 9000).listen(client.ClientFactory())
-debug.log('mud ready to accept clients')
-
-# start running the game thread
-reactor.callInThread(heartbeat.instance.start)
-
-# start the twisted client listener thread
-reactor.run()
-
-# game is designed to be long running -- this shouldn't really be hit
-debug.log('mud execution halted')
+# assign a configuration to the server instance, parsed from the
+# __scripts_directory__, and start running it.
+try:
+	factory.new(__server_instance__, __mud__name__).start_listening()
+except factory.FactoryException:
+	debug.log("invalid mud name passed as second argument. This needs to be"+ \
+				"the Instance name defined in your scripts/init.json", "error")
