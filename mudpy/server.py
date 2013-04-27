@@ -5,7 +5,7 @@ user defined scripts.
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time
-from . import heartbeat, client, debug, observer, stopwatch
+from . import client, debug, observer, stopwatch
 
 class Instance:
 	"""Information about the implementation of this mud.py server."""
@@ -48,6 +48,13 @@ class Instance:
 		return self.name
 
 class Heartbeat(observer.Observer):
+	"""The timekeeper for mud.py. Fires off game cycles for each loop within
+	the main game loop, as well as pulses every second, and ticks in random
+	higher intervals. Each of these events are used by different objects in
+	the game to keep internal time for various tasks.
+
+	"""
+
 	TICK_LOWBOUND_SECONDS = 10
 	TICK_HIGHBOUND_SECONDS = 15
 
@@ -59,28 +66,45 @@ class Heartbeat(observer.Observer):
 		debug.log('heartbeat created')
 	
 	def start(self):
+		"""Start the server heartbeat, which will consume this thread with the
+		main game loop.
+
+		"""
+
 		debug.log('heartbeat initialized')
 		next_pulse = time.time()+Heartbeat.PULSE_SECONDS
-		next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
+		next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, \
+												Heartbeat.TICK_HIGHBOUND_SECONDS)
 		while(1):
 			self.dispatch('cycle')
 			if time.time() >= next_pulse:
 				next_pulse += Heartbeat.PULSE_SECONDS
 				self.dispatch('pulse', 'stat')
 			if time.time() >= next_tick:
-				next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, Heartbeat.TICK_HIGHBOUND_SECONDS)
-				sw = stopwatch.Stopwatch()
+				next_tick = time.time()+random.randint(Heartbeat.TICK_LOWBOUND_SECONDS, \
+														Heartbeat.TICK_HIGHBOUND_SECONDS)
+				_stop = stopwatch.Stopwatch()
 				self.dispatch('tick')
-				debug.log('dispatched tick ['+str(sw)+'s elapsed in tick] ['+str(self.stopwatch)+'s elapsed since start]')
+				debug.log('dispatched tick ['+str(_stop)+'s elapsed in tick] ['+ \
+									str(self.stopwatch)+'s elapsed since start]')
 
 	def dispatch(self, *eventlist, **events):
+		"""Custom dispatch method for the heartbeat. Instead of calling the
+		functions directly, we need to tell the twisted reactor to call them
+		in the main thread.
+
+		"""
+
 		for event in eventlist:
 			try:
-				map(reactor.callFromThread, list(fn for fn in self.observers[event]))
-			except KeyError: pass
+				[reactor.callFromThread(func) for func in self.observers[event]]
+			except KeyError:
+				pass
 
 		for event, args in events.iteritems():
-			for fn in self.observers[event]:
-				reactor.callFromThread(fn, args)
+			try:
+				[reactor.callFromThread(func, args) for func in self.observers[event]]
+			except KeyError:
+				pass
 
 __instance__ = Instance()
