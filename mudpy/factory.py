@@ -28,6 +28,7 @@ def new(instance, name):
 		found = __wireframes__[instance.__class__.__name__][name]
 	except KeyError:
 		raise FactoryException("Factory does not know how to create "+name)
+	debug.log('factory creating new instance of '+instance.__class__.__name__)
 	return build(instance, found[instance.__class__.__name__])
 
 def add(wireframes):
@@ -36,7 +37,7 @@ def add(wireframes):
 	for wireframe in wireframes:
 		for key, blob in wireframe.iteritems():
 			name = blob['properties']['name']
-			debug.log('adding wireframe for '+name)
+			debug.log('factory adding wireframe design for '+name)
 			try:
 				__wireframes__[key][name] = wireframe
 			except KeyError:
