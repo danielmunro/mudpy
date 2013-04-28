@@ -11,7 +11,7 @@ def match_partial(needle, *haystack):
 
     """
 
-    return checkMatch(needle, 'find', haystack)
+    return check_match(needle, 'find', haystack)
 
 def check_match(needle, function, haystack):
     """checkMatch maps a string function to the name properties of a collection
