@@ -4,18 +4,16 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-
-from . import command, debug, persistence, server, actor, factory, observer, \
-              room
+from . import command, debug, persistence, actor, factory, observer, room
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
 
     def __init__(self):
         self.commandbuffer = []
+        self.client_factory = None
         self.user = None
         self.login = Login(self)
-        server.__instance__.heartbeat.attach('cycle', self.poll)
         super(Client, self).__init__()
 
     def connectionMade(self):
@@ -29,7 +27,7 @@ class Client(observer.Observer, Protocol):
     def disconnect(self):
         """Called when a client loses their connection."""
 
-        server.__instance__.heartbeat.detach('tick', self.user)
+        self.client_factory.dispatch(destroyed=self.poll)
         self.user.room.actors.remove(self.user)
         self.transport.loseConnection()
     
@@ -135,7 +133,7 @@ class Login:
             self.client.write(error)
             self.todo.insert(0, step)
 
-class ClientFactory(tFactory):
+class ClientFactory(tFactory, observer.Observer):
     """twisted factory implementation, used by twisted's reactor to create
     mud.py clients.
 
@@ -144,7 +142,7 @@ class ClientFactory(tFactory):
     protocol = Client
 
     def __init__(self):
-        pass
+        super(ClientFactory, self).__init__()
 
     def buildProtocol(self, addr):
         """Called when a new connection is established. Setup method for the
@@ -153,7 +151,9 @@ class ClientFactory(tFactory):
         """
 
         client = Client()
+        client.client_factory = self
         client.attach('input', command.checkInput)
+        self.dispatch(created=client.poll)
         return client
 
 class LoginException(Exception):

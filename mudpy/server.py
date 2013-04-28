@@ -2,6 +2,7 @@
 user defined scripts.
 
 """
+
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time
@@ -29,19 +30,43 @@ class Instance:
         # listening to the network
         self.heartbeat = Heartbeat()
 
-    def start_listening(self):
-        """Create a server end point with a twisted reactor and a port, then
-        tell it to use mud.py's client.ClientFactory to create clients on
-        connection.
+    def start_listening(self, client_factory):
+        """Takes a client_factory (twisted Factory implementation), and set it
+        for a tcp endpoint for the twisted reactor. Set the method for reactor
+        to call in a new thread when it starts listening for clients. This 
+        method will start the main game loop.
 
         """
+        def set_client_poll(client_poll):
+            """Called when the client_factory reports that a client is
+            created.
 
-        from . import client
-        TCP4ServerEndpoint(reactor, self.port).listen(client.ClientFactory())
-        debug.log(str(self)+" ready to accept clients on port "+str(self.port))
+            """
+
+            __instance__.heartbeat.attach("cycle", client_poll)
+
+        def unset_client_poll(client_poll):
+            """Called when the client_factory reports that a client has been
+            destroyed.
+
+            """
+
+            __instance__.heartbeat.detach("cycle", client_poll)
+
+
+        # call set_client_poll whenever client_factory creates a new client,
+        # and call unset_client_poll when clients are destroyed
+        client_factory.attach("created", set_client_poll)
+        client_factory.attach("destroyed", unset_client_poll) 
+
+        # define an endpoint for the reactor in mud.py's ClientFactory, an
+        # implementation of twisted's Factory
+        TCP4ServerEndpoint(reactor, self.port).listen(client_factory)
 
         # start running the game thread
         reactor.callInThread(self.heartbeat.start)
+
+        debug.log(str(self)+" ready to accept clients on port "+str(self.port))
 
         # start the twisted client listener thread
         reactor.run()
