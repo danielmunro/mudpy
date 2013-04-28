@@ -1,4 +1,4 @@
-from utility import matchPartial, startsWith
+from utility import matchPartial
 from actor import Disposition
 import debug
 

@@ -1,8 +1,5 @@
 import inspect
 
-def startsWith(needle, *haystack):
-    return checkMatch(needle, 'startswith', haystack)
-
 def matchPartial(needle, *haystack):
     return checkMatch(needle, 'find', haystack)
 
