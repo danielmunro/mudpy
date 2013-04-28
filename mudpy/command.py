@@ -1,6 +1,5 @@
-from utility import matchPartial
 from actor import Disposition
-import debug
+from . import debug, utility
 
 def checkInput(args):
     import factory
@@ -109,7 +108,7 @@ def train(actor, args):
         actor.notify("You cannot train that.")
 
 def wear(actor, args):
-    equipment = matchPartial(args[0], actor.inventory.items)
+    equipment = utility.match_partial(args[0], actor.inventory.items)
     if equipment:
         currentEq = actor.getEquipmentByPosition(equipment.position)
         if currentEq:
@@ -123,7 +122,7 @@ def wear(actor, args):
         actor.notify("You have nothing like that.")
 
 def remove(actor, args):
-    equipment = matchPartial(args[0], list(equipment for equipment in actor.equipped.values() if equipment))
+    equipment = utility.match_partial(args[0], list(equipment for equipment in actor.equipped.values() if equipment))
     if equipment:
         actor.setEquipmentByPosition(equipment.position, None)
         actor.notify("You remove "+str(equipment)+" and place it in your inventory.")
@@ -160,7 +159,7 @@ def wake(actor, args):
     })
 
 def kill(actor, args):
-    target = matchPartial(args[0], actor.room.actors)
+    target = utility.match_partial(args[0], actor.room.actors)
     if target:
         actor.target = target
         import server
@@ -184,7 +183,7 @@ def flee(actor, args):
         actor.notify("You're not fighting anyone!")
 
 def get(actor, args):
-    item = matchPartial(args[0], actor.room.inventory.items)
+    item = utility.match_partial(args[0], actor.room.inventory.items)
     if item and item.canOwn:
         actor.room.inventory.remove(item)
         actor.inventory.append(item)
@@ -193,7 +192,7 @@ def get(actor, args):
         actor.notify("Nothing is there." if not item else "You cannot pick up "+str(item)+".")
 
 def drop(actor, args):
-    item = matchPartial(args[0], actor.inventory.items)
+    item = utility.match_partial(args[0], actor.inventory.items)
     if item:
         actor.inventory.remove(item)
         actor.room.inventory.append(item)
@@ -228,7 +227,7 @@ def look(actor, args):
         # actors
         msg += "\n".join(_actor.lookedAt().capitalize() for _actor in actor.room.actors if _actor is not actor)+"\n"
     else:
-        lookingAt = matchPartial(args[0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
+        lookingAt = utility.match_partial(args[0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
         msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
     actor.notify(msg)
 

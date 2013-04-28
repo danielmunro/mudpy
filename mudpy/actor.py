@@ -1,5 +1,5 @@
 from __future__ import division
-from . import debug, persistence, room
+from . import debug, persistence, room, utility
 from observer import Observer
 from attributes import Attributes
 from item import Inventory, Corpse
@@ -483,9 +483,8 @@ class Ability(Observer, room.Reporter):
         super(Ability, self).__init__()
     
     def tryPerform(self, invoker, args):
-        from utility import matchPartial
         try:
-            receiver = matchPartial(args[-1], invoker.room.actors)
+            receiver = utility.match_partial(args[-1], invoker.room.actors)
         except IndexError:
             receiver = invoker
         if self.applyCost(invoker):
