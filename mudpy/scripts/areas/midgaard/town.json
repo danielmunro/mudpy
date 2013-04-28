@@ -1,147 +1,147 @@
 [{
-	"Area":{
-		"properties":{
-			"name":"midgaard",
-			"terrain":"city",
-			"location":"outside"
-		}
-	}
-},{
-	"Room":{
-		"properties":{
-			"id":1,
-			"name":"Temple of Midgaard",
-			"description":"A large temple surrounds you, with sculptures of gods adorning the walls.",
-			"directions":{
-				"south":2,
-				"north":82
-			}
-		},
-		"mobs":[{
-			"Mob":{
-				"properties":{
-					"name":"Hassan",
-					"long":"Hassan stands here, waiting to dispense some justice",
-					"description":"Standing at over 12 feet tall, with an earth-like consistency, Hassan has an intimidating appearance even for a giant.",
-					"race":"giant",
-					"level":41
-				},
-				"attributes":{
-					"hp":10000,
-					"mana":500,
-					"movement":500,
-					"hit":4,
-					"dam":20,
-					"saves":-10
-				},
-				"abilities":["berserk","bash","kick","dirt kick","heal"]
-			}
-		}]
-	}
-},{
-	"Room":{
-		"properties":{
-			"id":82,
-			"name":"The temple altar",
-			"description":"A sacrificial pit sits in the middle of a large altar room, with acolytes of the temple performing ceremonial duties.",
-			"directions":{
-				"south":1
-			}
-		},
-		"inventory":[{
-			"Item":{
-				"properties":{
-					"name":"a sacrificial pit",
-					"description":"A pit is here, containing treasures donated from other adventurers.",
-					"material":"stone",
-					"can_own":false
-				}
-			}
-		}],
-		"mobs":[{
-			"Mob":{
-				"properties":{
-					"name":"an acolyte of the temple",
-					"long":"an acolyte of the temple stands before you, ready to help you practice",
-					"description":"Something about an acolyte.",
-					"role":"acolyte",
-					"level":10,
-					"race":"human"
-				}
-			}
-		}]
-	}
-},{
-	"Room":{
-		"properties":{
-			"id":2,
-			"name":"Temple Garden",
-			"description":"A small fountain lies to the side of the cobblestone path, which dissects an impressive garden. The temple of Midgaard is to the north, with the market square to the south.",
-			"directions":{
-				"north":1,
-				"south":3,
-				"east":80,
-				"west":"The Temple Arena:1"
-			}
-		},
-		"inventory":[{
-			"Drink":{
-				"properties":{
-					"name":"an ornate fountain",
-					"description":"An ornately carved fountain is the centerpiece to the temple garden.",
-					"contents":"water",
-					"uses":-1,
-					"can_own":false
-				}
-			}
-		},{
-			"Item":{
-				"properties":{
-					"name":"a small plaque",
-					"description":"A small brass plaque is here, affixed to the temple wall, it reads:\nWelcome to Midgaard.",
-					"can_own":false
-				}
-			}
-		}],
-		"mobs":[{
-			"Mob":{
-				"properties":{
-					"id":1,
-					"name":"an adept of Mojo",
-					"long":"an adept of Mojo walks the garden",
-					"description":"An adept of Mojo is here, wearing a white linen robe and tending to the temple.",
-					"race":"volare",
-					"role":"trainer",
-					"movement":1
-				}
-			}
-		}]
-	}
-},{
-	"Room":{
-		"properties":{
-			"id":80,
-			"name":"Entrance to the Cleric's Guild",
-			"description":"The foyer to the cleric's guild is a large room built out of heavy stone bricks. A bronze plaque hangs on the farthest wall, next to the door leading deeper further into the guild.",
-			"directions":{
-				"west":2
-			}
-		}
+    "Area":{
+        "properties":{
+            "name":"midgaard",
+            "terrain":"city",
+            "location":"outside"
+        }
     }
 },{
-	"Room":{
-		"properties":{
-			"id":3,
-			"name":"Midgaard Market Square",
-			"description":"Cobblestone paths from all directions converge here, with shops lining a massive square.",
-			"directions":{
+    "Room":{
+        "properties":{
+            "id":1,
+            "name":"Temple of Midgaard",
+            "description":"A large temple surrounds you, with sculptures of gods adorning the walls.",
+            "directions":{
+                "south":2,
+                "north":82
+            }
+        },
+        "mobs":[{
+            "Mob":{
+                "properties":{
+                    "name":"Hassan",
+                    "long":"Hassan stands here, waiting to dispense some justice",
+                    "description":"Standing at over 12 feet tall, with an earth-like consistency, Hassan has an intimidating appearance even for a giant.",
+                    "race":"giant",
+                    "level":41
+                },
+                "attributes":{
+                    "hp":10000,
+                    "mana":500,
+                    "movement":500,
+                    "hit":4,
+                    "dam":20,
+                    "saves":-10
+                },
+                "abilities":["berserk","bash","kick","dirt kick","heal"]
+            }
+        }]
+    }
+},{
+    "Room":{
+        "properties":{
+            "id":82,
+            "name":"The temple altar",
+            "description":"A sacrificial pit sits in the middle of a large altar room, with acolytes of the temple performing ceremonial duties.",
+            "directions":{
+                "south":1
+            }
+        },
+        "inventory":[{
+            "Item":{
+                "properties":{
+                    "name":"a sacrificial pit",
+                    "description":"A pit is here, containing treasures donated from other adventurers.",
+                    "material":"stone",
+                    "can_own":false
+                }
+            }
+        }],
+        "mobs":[{
+            "Mob":{
+                "properties":{
+                    "name":"an acolyte of the temple",
+                    "long":"an acolyte of the temple stands before you, ready to help you practice",
+                    "description":"Something about an acolyte.",
+                    "role":"acolyte",
+                    "level":10,
+                    "race":"human"
+                }
+            }
+        }]
+    }
+},{
+    "Room":{
+        "properties":{
+            "id":2,
+            "name":"Temple Garden",
+            "description":"A small fountain lies to the side of the cobblestone path, which dissects an impressive garden. The temple of Midgaard is to the north, with the market square to the south.",
+            "directions":{
+                "north":1,
+                "south":3,
+                "east":80,
+                "west":"The Temple Arena:1"
+            }
+        },
+        "inventory":[{
+            "Drink":{
+                "properties":{
+                    "name":"an ornate fountain",
+                    "description":"An ornately carved fountain is the centerpiece to the temple garden.",
+                    "contents":"water",
+                    "uses":-1,
+                    "can_own":false
+                }
+            }
+        },{
+            "Item":{
+                "properties":{
+                    "name":"a small plaque",
+                    "description":"A small brass plaque is here, affixed to the temple wall, it reads:\nWelcome to Midgaard.",
+                    "can_own":false
+                }
+            }
+        }],
+        "mobs":[{
+            "Mob":{
+                "properties":{
+                    "id":1,
+                    "name":"an adept of Mojo",
+                    "long":"an adept of Mojo walks the garden",
+                    "description":"An adept of Mojo is here, wearing a white linen robe and tending to the temple.",
+                    "race":"volare",
+                    "role":"trainer",
+                    "movement":1
+                }
+            }
+        }]
+    }
+},{
+    "Room":{
+        "properties":{
+            "id":80,
+            "name":"Entrance to the Cleric's Guild",
+            "description":"The foyer to the cleric's guild is a large room built out of heavy stone bricks. A bronze plaque hangs on the farthest wall, next to the door leading deeper further into the guild.",
+            "directions":{
+                "west":2
+            }
+        }
+    }
+},{
+    "Room":{
+        "properties":{
+            "id":3,
+            "name":"Midgaard Market Square",
+            "description":"Cobblestone paths from all directions converge here, with shops lining a massive square.",
+            "directions":{
                 "north":2,
                 "south":18,
                 "east":7,
-				"west":2,
+                "west":2,
                 "down":75
-			}
-		},
+            }
+        },
         "items":[{
             "Door":{
                 "properties":{
@@ -171,32 +171,32 @@
     }
 },{
     "Room":{
-		"properties":{
-			"id":75,
-			"name":"Midgaard sewer system",
-			"description":"Chipped rock walls offer no light or comfort in this barren, dirty tunnel.",
-			"directions":{
+        "properties":{
+            "id":75,
+            "name":"Midgaard sewer system",
+            "description":"Chipped rock walls offer no light or comfort in this barren, dirty tunnel.",
+            "directions":{
                 "up":3,
-				"down":100
-			}
-		}
+                "down":100
+            }
+        }
     }
 },{
     "Grid":{
-		"properties":{
-			"id":100,
-			"name":"Midgaard sewers",
-			"description":"Chipped, concrete walls span into the darkness.",
+        "properties":{
+            "id":100,
+            "name":"Midgaard sewers",
+            "description":"Chipped, concrete walls span into the darkness.",
             "exit": 75,
             "directions":{
                 "up":75
             },
             "counts":{
-				"south":3,
+                "south":3,
                 "north":3,
                 "east":3,
                 "west":3
             }
-		}
+        }
     }
 }]
