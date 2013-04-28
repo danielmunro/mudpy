@@ -184,7 +184,7 @@ def flee(actor, args):
 
 def get(actor, args):
     item = utility.match_partial(args[0], actor.room.inventory.items)
-    if item and item.canOwn:
+    if item and item.can_own:
         actor.room.inventory.remove(item)
         actor.inventory.append(item)
         actor.notify("You pick up "+str(item)+" off the floor.")
@@ -201,7 +201,7 @@ def drop(actor, args):
         actor.notify("Nothing is there.")
 
 def inventory(actor, args):
-    actor.notify("Your inventory:\n"+actor.inventory.inspection())
+    actor.notify("Your inventory:\n"+str(actor.inventory))
 
 def score(actor, args):
     msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs\nYou have %i trains, %i practices\nYou are level %i with %i experience, %i to next level\nYour alignment is: %s" % ( \
@@ -213,7 +213,7 @@ def score(actor, args):
         actor.getAttribute('dex'), actor.getUnmodifiedAttribute('dex'), \
         actor.getAttribute('con'), actor.getUnmodifiedAttribute('con'), \
         actor.getAttribute('cha'), actor.getUnmodifiedAttribute('cha'), \
-        actor.inventory.getWeight(), actor.getMaxWeight(), \
+        actor.inventory.get_weight(), actor.getMaxWeight(), \
         actor.trains, actor.practices, actor.level, actor.experience, actor.experience % actor.getExperiencePerLevel(), \
         actor.getAlignment())
     actor.notify(msg);

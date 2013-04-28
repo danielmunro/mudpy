@@ -80,7 +80,7 @@ class Actor(Observer):
         return 100+(self.level*100)
     
     def isEncumbered(self):
-        return self.inventory.getWeight() > self.getMaxWeight() * 0.95
+        return self.inventory.get_weight() > self.getMaxWeight() * 0.95
     
     def notify(self, message):
         pass

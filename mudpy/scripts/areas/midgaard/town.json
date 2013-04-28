@@ -54,7 +54,7 @@
 					"name":"a sacrificial pit",
 					"description":"A pit is here, containing treasures donated from other adventurers.",
 					"material":"stone",
-					"canOwn":"False"
+					"can_own":false
 				}
 			}
 		}],
@@ -91,7 +91,7 @@
 					"description":"An ornately carved fountain is the centerpiece to the temple garden.",
 					"contents":"water",
 					"uses":-1,
-					"canOwn":"False"
+					"can_own":false
 				}
 			}
 		},{
@@ -99,7 +99,7 @@
 				"properties":{
 					"name":"a small plaque",
 					"description":"A small brass plaque is here, affixed to the temple wall, it reads:\nWelcome to Midgaard.",
-					"canOwn":"False"
+					"can_own":false
 				}
 			}
 		}],

@@ -1,43 +1,77 @@
-import persistence
+"""All physical objects in the game besides actors are represented by the
+classes in this module, and are generally things that actors can manipulate in
+different ways.
+
+"""
+
+from . import persistence, attributes
 
 class Inventory:
+    """A bucket of items."""
+
     def __init__(self):
         self.id = persistence.getRandomID()
         self.items = []
-        self.itemCount = {}
+        self.item_count = {}
     
     def append(self, item):
+        """Add a new item to the bucket and keep track of how many items the
+        inventory has by that name.
+
+        """
+
         self.items.append(item)
         k = str(item)
-        if k in self.itemCount:
-            self.itemCount[k] += 1
+        if k in self.item_count:
+            self.item_count[k] += 1
         else:
-            self.itemCount[k] = 1
+            self.item_count[k] = 1
     
     def remove(self, item):
+        """Remove an item from the bucket."""
+
         try:
             self.items.remove(item)
-            self.itemCount[str(item)] -= 1
+            self.item_count[str(item)] -= 1
         except ValueError:
             pass
     
-    def inspection(self, appendToItemDisplayName = ""):
+    def inspection(self, append_to_name = ""):
+        """Slightly modified __str__ -type method, with the ability to append a
+        string to each item.
+
+        """
+
         msg = ""
         for i in iter(self.items):
-            itemDisplayName = str(i)
-            msg += ("("+str(self.itemCount[itemDisplayName])+") " if self.itemCount[itemDisplayName] > 1 else "")+itemDisplayName[0].upper()+itemDisplayName[1:]+appendToItemDisplayName+"\n"
+            item_name = str(i)
+            msg += ("("+str(self.item_count[item_name])+") " if \
+                    self.item_count[item_name] > 1 else "")+ \
+                    item_name[0].upper()+item_name[1:]+ \
+                    append_to_name+"\n"
         return msg
     
-    def getWeight(self):
+    def get_weight(self):
+        """Return the sum total weight of the items in the inventory."""
+
         return sum(item.weight for item in self.items)
     
     def save(self):
+        """Save the items in this inventory."""
+
         persistence.save(self, ['id', 'items'])
     
     def load(self):
+        """Load this inventory."""
+
         persistence.load(self, ['id', 'items'])
+    
+    def __str__(self):
+        return self.inspection()
 
 class Item(object):
+    """Generic item class for properties shared across all item types."""
+
     def __init__(self):
         self.id = persistence.getRandomID()
         self.name = "a generic item"
@@ -45,54 +79,70 @@ class Item(object):
         self.value = 0
         self.weight = 0
         self.material = ""
-        self.canOwn = True
+        self.can_own = True
         self.level = 1
         self.repop = 1
-
-    def __str__(self):
-        return self.name
     
     def save(self):
+        """Save the item."""
         persistence.save(self, ['id', 'name', 'value', 'weight'])
     
     def load(self):
+        """Load the item."""
         persistence.load(self, ['id', 'name', 'value', 'weight'])
 
+    def __str__(self):
+        return self.name
+
 class Door(Item):
+    """Doors go in between rooms, and can be open, closed, or locked."""
+
     def __init__(self):
         self.disposition = ""
         self.directions = {}
         super(Door, self).__init__()
-        self.canOwn = False
+        self.can_own = False
 
 class Key(Item):
+    """Keys can unlock or lock matching doors."""
+
     def __init__(self):
         self.door_id = 0
         super(Key, self).__init__()
 
 class Furniture(Item):
+    """Alters regen for actors that rest on this item."""
+
     def __init__(self):
         self.material = "generic"
         self.regen = 0
         super(Furniture, self).__init__()
-        self.canOwn = False
+        self.can_own = False
 
 class Container(Item):
+    """An item that has an inventory."""
+
     def __init__(self):
         self.inventory = Inventory()
         super(Container, self).__init__()
 
 class Consumable(Item):
+    """An item that can be eaten or drank by an actor."""
+
     def __init__(self):
         self.nourishment = 0
         super(Consumable, self).__init__()
 
 class Food(Consumable):
+    """Edible items."""
+
     def __init__(self):
         self.nourishment = 0
         super(Food, self).__init__()
 
 class Drink(Consumable):
+    """Drinkable items."""
+
     def __init__(self):
         self.refillable = True
         self.contents = ''
@@ -100,13 +150,17 @@ class Drink(Consumable):
         super(Drink, self).__init__()
 
 class Equipment(Item):
+    """Items that can be worn as weapons or armor."""
+
     def __init__(self):
         self.position = ''
         self.condition = 1
-        self.attributes = Attributes()
+        self.attributes = attributes.Attributes()
         super(Equipment, self).__init__()
 
 class Armor(Equipment):
+    """Items that can be equipped as armor."""
+
     def __init__(self):
         self.ac_slash = 0
         self.ac_bash = 0
@@ -115,13 +169,18 @@ class Armor(Equipment):
         super(Armor, self).__init__()
 
 class Weapon(Equipment):
+    """Items that can be equipped as weapons."""
+
     def __init__(self):
         self.hit = 0
         self.dam = 0
         self.position = "held"
         self.verb = ""
-        self.weaponType = ""
-        self.damageType = ""
+        self.weapon_type = ""
+        self.damage_type = ""
         super(Weapon, self).__init__()
 
-class Corpse(Container): pass
+class Corpse(Container):
+    """Item that generates when an actor dies."""
+
+    pass
