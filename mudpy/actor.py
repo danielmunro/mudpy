@@ -383,6 +383,8 @@ class User(Actor):
         from command import Command
         server.__instance__.heartbeat.attach('tick', self.tick)
         factory.new(Command(), "look").tryPerform(self)
+        self.room = room.Room.rooms[room.Room.DEFAULTROOMID]
+        self.room.actors.append(self)
         self.notify("\n"+self.prompt())
         debug.log('client logged in as '+str(self))
         for ability in self.getAbilities():

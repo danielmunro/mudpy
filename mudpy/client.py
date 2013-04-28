@@ -4,7 +4,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import command, debug, persistence, actor, factory, observer, room
+from . import command, debug, persistence, actor, factory, observer
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
@@ -117,8 +117,6 @@ class Login:
             else:
                 raise LoginException("That is not a valid alignment. What "+ \
                                      "is your alignment? ")
-            self.newuser.room = room.Room.rooms[room.Room.DEFAULTROOMID]
-            self.newuser.room.actors.append(self.newuser)
             persistence.saveUser(self.newuser)
             self.client.user = self.newuser
             debug.log('client created new user as '+str(self.newuser))
