@@ -1,12 +1,16 @@
+"""mud.py client classes, hooks in with twisted via the twisted's reactor and
+mud.py's ClientFactory. Handles connection, and i/o with the client.
+
+"""
+
 from twisted.internet.protocol import Factory as tFactory, Protocol
 
-import command, debug, persistence, server, actor, factory
-from room import Room
-from observer import Observer
+from . import command, debug, persistence, server, actor, factory, observer, \
+              room
 
-from collections import deque
+class Client(observer.Observer, Protocol):
+    """twisted client protocol, defines behavior for clients."""
 
-class Client(Observer, Protocol):
     def __init__(self):
         self.commandbuffer = []
         self.user = None
@@ -15,7 +19,7 @@ class Client(Observer, Protocol):
         super(Client, self).__init__()
 
     def connectionMade(self):
-        self.write("By what name do you wish to be known? ");
+        self.write("By what name do you wish to be known? ")
         debug.log('new client connected')
     
     def connectionLost(self, reason):
@@ -23,6 +27,8 @@ class Client(Observer, Protocol):
         debug.log('client disconnected')
     
     def disconnect(self):
+        """Called when a client loses their connection."""
+
         server.__instance__.heartbeat.detach('tick', self.user)
         self.user.room.actors.remove(self.user)
         self.transport.loseConnection()
@@ -31,6 +37,13 @@ class Client(Observer, Protocol):
         self.commandbuffer.append(data.strip())
     
     def poll(self):
+        """Listener for game cycle, checks the command buffer for new input.
+        If a user is logged in dispatch an input event, which will notify
+        command, ability, and other listeners. Otherwise, attempt to continue
+        the login process.
+
+        """
+
         try:
             data = self.commandbuffer.pop(0)
         except IndexError:
@@ -48,9 +61,12 @@ class Client(Observer, Protocol):
         self.write("\n"+self.user.prompt())
     
     def write(self, message):
-        self.transport.write(str(message));
+        """Send a message from the game to the client."""
+
+        self.transport.write(str(message))
     
 class Login:
+    """Login class, encapsulates relatively procedural login steps."""
 
     def __init__(self, client):
         self.todo = ['login', 'race', 'alignment']
@@ -59,7 +75,17 @@ class Login:
         self.newuser = None
     
     def step(self, data):
+        """Called for each successive step of the login/alt creation
+        process.
+
+        """
+
         def login(data):
+            """First step of login process. Check if requested alt exists or
+            is a new alt.
+
+            """
+
             user = persistence.loadUser(data)
             if user:
                 user.client = self.client
@@ -72,13 +98,18 @@ class Login:
             self.client.write("What is your race? ")
         
         def race(data):
+            """If a new alt, have them select a race."""
+
             try:
                 self.newuser.race = factory.new(actor.Race(), data)
             except factory.FactoryException:
-                raise LoginException("That is not a valid race. What is your race? ")
+                raise LoginException("That is not a valid race. What is "+ \
+                                     "your race? ")
             self.client.write("What alignment are you (good/neutral/evil)? ")
         
         def alignment(data):
+            """New alts need an alignment."""
+
             if "good".find(data) == 0:
                 self.newuser.alignment = 1000
             elif "neutral".find(data) == 0:
@@ -86,8 +117,9 @@ class Login:
             elif "evil".find(data) == 0:
                 self.newuser.alignment = -1000
             else:
-                raise LoginException("That is not a valid alignment. What is your alignment? ")
-            self.newuser.room = Room.rooms[Room.DEFAULTROOMID]
+                raise LoginException("That is not a valid alignment. What "+ \
+                                     "is your alignment? ")
+            self.newuser.room = room.Room.rooms[room.Room.DEFAULTROOMID]
             self.newuser.room.actors.append(self.newuser)
             persistence.saveUser(self.newuser)
             self.client.user = self.newuser
@@ -99,16 +131,32 @@ class Login:
         try:
             locals()[step](data)
             self.done.append(step)
-        except LoginException as e:
-            self.client.write(e)
+        except LoginException as error:
+            self.client.write(error)
             self.todo.insert(0, step)
 
 class ClientFactory(tFactory):
+    """twisted factory implementation, used by twisted's reactor to create
+    mud.py clients.
+
+    """
+
     protocol = Client
 
+    def __init__(self):
+        pass
+
     def buildProtocol(self, addr):
+        """Called when a new connection is established. Setup method for the
+        client object.
+
+        """
+
         client = Client()
         client.attach('input', command.checkInput)
         return client
 
-class LoginException(Exception): pass
+class LoginException(Exception):
+    """Raised when unexpected input in received during the login process."""
+
+    pass

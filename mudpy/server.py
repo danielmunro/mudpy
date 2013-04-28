@@ -5,7 +5,7 @@ user defined scripts.
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time
-from . import client, debug, observer
+from . import debug, observer
 
 class Instance:
     """Information about the implementation of this mud.py server."""
@@ -36,6 +36,7 @@ class Instance:
 
         """
 
+        from . import client
         TCP4ServerEndpoint(reactor, self.port).listen(client.ClientFactory())
         debug.log(str(self)+" ready to accept clients on port "+str(self.port))
 
