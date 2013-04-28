@@ -1,38 +1,3 @@
-area
-name midgaard, terrain city, location outside
-
-room
-Entrance to the Cleric's Guild
-The foyer to the cleric's guild is a large room built out of heavy stone bricks. A bronze plaque hangs on the farthest wall, next to the door leading deeper further into the guild.~
-id 80, w 2
-
-door
-a dust covered wooden trap door
-Concealed just underneath a layer of dirt is a mysterious looking trap door.~
-id 2, disposition closed
-
-room
-Midgaard Market Square
-Cobblestone paths from all directions converge here, with shops lining a massive square.~
-id 3, n 2, w 4, e 7, s 18, d 75, door d 2
-
-mob
-a Midgaard city guard is here, patrolling the streets
-A tall guard stands here, patrolling the streets of Midgaard.~
-race human, name Midgaard city guard, level 15, movement 3
-hp 100
-bash, kick
-
-room
-Midgaard sewer system
-Chipped rock walls offer no light or comfort in this barren, dirty tunnel.~
-id 75, u 3, door u 2, d 100
-
-grid
-Midgaard Sewers
-Chipped, concrete walls span into the darkness.~
-id 100, u 75, sCount 3, nCount 3
-
 room
 Market Street
 A cobblestone path travels in a east-west direction with shops lining both sides.~

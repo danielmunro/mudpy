@@ -12,7 +12,7 @@ class Room(object):
         self.description = ''
         self.actors = []
         self.inventory = Inventory()
-        self.directions = dict((getattr(direction, 'name'), None) for direction in Direction.__subclasses__())
+        self.directions = {}
         self.area = None
     
     def notify(self, notifier, message):
@@ -41,10 +41,18 @@ class Room(object):
         newRoom.name = self.name
         newRoom.description = self.description
         newRoom.area = self.area
+        newRoom.initialize_directions()
         return newRoom
 
     def getFullID(self):
         return self.area.name+":"+str(self.id)
+    
+    def initialize_directions(self):
+        for direction in Direction.__subclasses__():
+            try:
+                self.directions[direction.name]
+            except KeyError:
+                self.directions[direction.name] = None
     
     def __str__(self):
         return self.name
@@ -83,7 +91,7 @@ class Randomhall(Room):
 class Grid(Room):
     def __init__(self):
         super(Grid, self).__init__()
-        self.counts = dict((direction, 0) for direction in self.directions)
+        self.counts = {}
         self.exit = 0
     
     def buildDungeon(self, x = 0, y = 0, grid = []):
@@ -91,7 +99,7 @@ class Grid(Room):
         xlen = len(grid[0])
         for y in range(ylen):
             for x in range(xlen):
-                if not grid[y][x]:
+                if not isinstance(grid[y][x], Grid):
                     grid[y][x] = self.copy()
                 if x > 0:
                     grid[y][x-1].setIfEmpty('east', grid[y][x])
@@ -99,7 +107,7 @@ class Grid(Room):
                     grid[y-1][x].setIfEmpty('south', grid[y][x])
     
     def setIfEmpty(self, direction, roomToSet):
-        rdir = globals()[direction].reverse
+        rdir = globals()[direction.title()].reverse
         if self.directions[direction] is None:
             self.directions[direction] = roomToSet
             if roomToSet.directions[rdir] is None:

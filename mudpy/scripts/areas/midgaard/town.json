@@ -117,4 +117,86 @@
 			}
 		}]
 	}
+},{
+	"Room":{
+		"properties":{
+			"id":80,
+			"name":"Entrance to the Cleric's Guild",
+			"description":"The foyer to the cleric's guild is a large room built out of heavy stone bricks. A bronze plaque hangs on the farthest wall, next to the door leading deeper further into the guild.",
+			"directions":{
+				"west":2
+			}
+		}
+    }
+},{
+	"Room":{
+		"properties":{
+			"id":3,
+			"name":"Midgaard Market Square",
+			"description":"Cobblestone paths from all directions converge here, with shops lining a massive square.",
+			"directions":{
+                "north":2,
+                "south":18,
+                "east":7,
+				"west":2,
+                "down":75
+			}
+		},
+        "items":[{
+            "Door":{
+                "properties":{
+                    "id":2,
+                    "name":"a dust-covered wooden trap door",
+                    "description":"Concealed just underneath a layer of dirt is a mysterious looking trap door.",
+                    "disposition":"closed",
+                    "directions":{
+                        "down":75
+                    }
+                }
+            }
+        }],
+        "mobs":[{
+            "Mob":{
+                "properties":{
+                    "name": "Midgaard city guard",
+                    "long":"a Midgaard city guard is here, patrolling the streets",
+                    "description":"A tall guard stands here, patrolling the streets of Midgaard.",
+                    "race":"human",
+                    "level":15,
+                    "movement":3
+                },
+                "abilities": ["bash", "kick"]
+            }
+        }]
+    }
+},{
+    "Room":{
+		"properties":{
+			"id":75,
+			"name":"Midgaard sewer system",
+			"description":"Chipped rock walls offer no light or comfort in this barren, dirty tunnel.",
+			"directions":{
+                "up":3,
+				"down":100
+			}
+		}
+    }
+},{
+    "Grid":{
+		"properties":{
+			"id":100,
+			"name":"Midgaard sewers",
+			"description":"Chipped, concrete walls span into the darkness.",
+            "exit": 75,
+            "directions":{
+                "up":75
+            },
+            "counts":{
+				"south":3,
+                "north":3,
+                "east":3,
+                "west":3
+            }
+		}
+    }
 }]

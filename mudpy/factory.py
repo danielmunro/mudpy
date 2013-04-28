@@ -93,6 +93,7 @@ def parse(path):
     grids = []
     from .room import Randomhall, Grid
     for room_id, room in Room.rooms.iteritems():
+        room.initialize_directions()
         if isinstance(room, Randomhall):
             random_halls.append(room)
         if isinstance(room, Grid):
@@ -306,6 +307,12 @@ def done_room(parent, room):
 
     room.area = __lastarea__
     Room.rooms[room.area.name+":"+str(room.id)] = room
+
+def done_grid(parent, room):
+    done_room(parent, room)
+
+def done_randomhall(parent, room):
+    done_room(parent_room)
 
 def done_item(parent, item):
     """Attach an item to the parent's inventory."""
