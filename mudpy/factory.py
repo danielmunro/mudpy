@@ -28,7 +28,6 @@ def new(instance, name):
         found = __wireframes__[instance.__class__.__name__][name]
     except KeyError:
         raise FactoryException("Factory does not know how to create "+name)
-    debug.log('factory creating new instance of '+instance.__class__.__name__)
     return build(instance, found[instance.__class__.__name__])
 
 def add(wireframes):
