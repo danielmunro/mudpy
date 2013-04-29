@@ -105,6 +105,16 @@ class Grid(Room):
                     grid[y][x-1].setIfEmpty('east', grid[y][x])
                 if y > 0:
                     grid[y-1][x].setIfEmpty('south', grid[y][x])
+        exit = self.exit
+        while exit:
+            rand_x = int(round(random()*xlen))
+            rand_y = int(round(random()*ylen))
+            direction = Direction.getRandom()
+            if not grid[rand_y][rand_x].directions[direction]:
+                room_key = self.area.name+":"+str(exit)
+                grid[rand_y][rand_x].directions[direction] = Room.rooms[room_key]
+                Room.rooms[room_key].directions[globals()[direction.title()].reverse] = grid[rand_y][rand_x]
+                exit = None
     
     def setIfEmpty(self, direction, roomToSet):
         rdir = globals()[direction.title()].reverse

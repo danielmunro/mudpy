@@ -187,7 +187,7 @@
             "id":100,
             "name":"Midgaard sewers",
             "description":"Chipped, concrete walls span into the darkness.",
-            "exit": 75,
+            "exit": 101,
             "directions":{
                 "up":75
             },
@@ -197,6 +197,14 @@
                 "east":3,
                 "west":3
             }
+        }
+    }
+},{
+    "Room":{
+        "properties":{
+            "id":101,
+            "name":"Thieves' hideout in the Midgaard sewers",
+            "description":"A simple lean-to furnishes this little room in the sewers."
         }
     }
 }]
