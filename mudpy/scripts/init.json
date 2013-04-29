@@ -10,4 +10,10 @@
 			}
 		}]
 	}
+},{
+    "Room":{
+        "properties":{
+            "__START_ROOM__":"midgaard:82"
+        }
+    }
 }]

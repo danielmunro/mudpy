@@ -1,10 +1,10 @@
 from item import Inventory
 from random import random, choice
 
+__START_ROOM__ = None
+__ROOMS__ = {}
+
 class Room(object):
-    rooms = {}
-    DEFAULTROOMID = "midgaard:1"
-    REGENROOMID = "midgaard:82"
 
     def __init__(self):
         self.id = 0
@@ -44,7 +44,7 @@ class Room(object):
         newRoom.initialize_directions()
         return newRoom
 
-    def getFullID(self):
+    def get_full_id(self):
         return self.area.name+":"+str(self.id)
     
     def initialize_directions(self):
@@ -68,7 +68,7 @@ class Randomhall(Room):
         direction = Direction.get_random(list(direction for direction, room in self.directions.iteritems() if not room))
         if self.probabilities[direction] > random():
             if self.rooms < roomCount:
-                exit = Room.rooms[self.area.name+":"+str(self.exit)]
+                exit = __ROOMS__[self.area.name+":"+str(self.exit)]
                 self.directions[direction] = exit
                 exit.directions[globals()[direction.title()]().reverse] = self
             else:
@@ -112,8 +112,8 @@ class Grid(Room):
             direction = Direction.get_random()
             if not grid[rand_y][rand_x].directions[direction]:
                 room_key = self.area.name+":"+str(exit)
-                grid[rand_y][rand_x].directions[direction] = Room.rooms[room_key]
-                Room.rooms[room_key].directions[globals()[direction.title()].reverse] = grid[rand_y][rand_x]
+                grid[rand_y][rand_x].directions[direction] = __ROOMS__[room_key]
+                __ROOMS__[room_key].directions[globals()[direction.title()].reverse] = grid[rand_y][rand_x]
                 exit = None
     
     def setIfEmpty(self, direction, roomToSet):
@@ -126,7 +126,6 @@ class Grid(Room):
 
     def copy(self):
         r = super(Grid, self).copy(Grid())
-        r.rooms = self.rooms
         r.exit = self.exit
         r.counts = self.counts
         return r

@@ -231,6 +231,8 @@ def look(actor, args):
     actor.notify(msg)
 
 def quit(actor, args):
+    from . import persistence
+    persistence.saveUser(actor)
     actor.client.disconnect()
 
 def who(actor, args):

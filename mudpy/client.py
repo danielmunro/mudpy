@@ -117,10 +117,10 @@ class Login:
             else:
                 raise LoginException("That is not a valid alignment. What "+ \
                                      "is your alignment? ")
+            self.newuser.loggedin()
             persistence.saveUser(self.newuser)
             self.client.user = self.newuser
             debug.log('client created new user as '+str(self.newuser))
-            self.newuser.loggedin()
 
         step = self.todo.pop(0)
 

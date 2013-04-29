@@ -349,7 +349,7 @@ class User(Actor):
     def die(self):
         super(User, self).die()
         self.room.actors.remove(self)
-        self.room = room.Room.rooms[room.Room.REGENROOMID]
+        self.room = room.__ROOMS__[room.__START_ROOM__]
         self.room.actors.append(self)
         self.room.announce({
             self: "You feel a rejuvinating rush as you pass through this mortal plane.",
@@ -381,9 +381,10 @@ class User(Actor):
 
         from . import factory, server
         from command import Command
+        if not self.room:
+            self.room = room.__ROOMS__[room.__START_ROOM__]
         server.__instance__.heartbeat.attach('tick', self.tick)
         factory.new(Command(), "look").tryPerform(self)
-        self.room = room.Room.rooms[room.Room.DEFAULTROOMID]
         self.room.actors.append(self)
         self.notify("\n"+self.prompt())
         debug.log('client logged in as '+str(self))

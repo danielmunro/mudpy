@@ -3,8 +3,7 @@ based on wireframes.
 
 """
 
-from .room import Room
-from . import debug
+from . import debug, room
 import os, json, operator
 
 __wireframes__ = {}
@@ -27,7 +26,7 @@ def new(instance, name):
     try:
         found = __wireframes__[instance.__class__.__name__][name]
     except KeyError:
-        raise FactoryException("Factory does not know how to create "+name)
+        raise FactoryException("Factory does not know how to create "+str(name))
     return build(instance, found[instance.__class__.__name__])
 
 def add(wireframes):
@@ -91,34 +90,33 @@ def parse(path):
     #build out the room tree
     random_halls = []
     grids = []
-    from .room import Randomhall, Grid
-    for room_id, room in Room.rooms.iteritems():
-        room.initialize_directions()
-        if isinstance(room, Randomhall):
-            random_halls.append(room)
-        if isinstance(room, Grid):
-            grids.append(room)
-        for direction_id, direction in Room.rooms[room_id].directions.items():
+    for room_id, _room in room.__ROOMS__.iteritems():
+        _room.initialize_directions()
+        if isinstance(_room, room.Randomhall):
+            random_halls.append(_room)
+        if isinstance(_room, room.Grid):
+            grids.append(_room)
+        for direction_id, direction in room.__ROOMS__[room_id].directions.items():
             if direction:
                 try:
                     if type(direction) is int:
-                        direction = Room.rooms[room_id].area.name+":"+str(direction)
-                    Room.rooms[room_id].directions[direction_id] = Room.rooms[direction]
+                        direction = room.__ROOMS__[room_id].area.name+":"+str(direction)
+                    room.__ROOMS__[room_id].directions[direction_id] = room.__ROOMS__[direction]
                 except KeyError:
                     debug.log("Room id "+str(direction)+" is not defined, removing", "notice")
-                    del Room.rooms[room_id].directions[direction_id]
-    for room in random_halls:
-        room_count = room.buildDungeon()
-        while room_count < room.rooms:
-            room_count = room.buildDungeon(room_count)
-    for room in grids:
-        rows = room.counts['west'] + room.counts['east']
+                    del room.__ROOMS__[room_id].directions[direction_id]
+    for _room in random_halls:
+        room_count = _room.buildDungeon()
+        while room_count < _room.rooms:
+            room_count = _room.buildDungeon(room_count)
+    for _room in grids:
+        rows = _room.counts['west'] + _room.counts['east']
         rows = rows if rows > 0 else 1
-        cols = room.counts['north'] + room.counts['south']
+        cols = _room.counts['north'] + _room.counts['south']
         cols = cols if cols > 0 else 1
         grid = [[row for row in range(rows)] for col in range(cols)]
-        grid[room.counts['north']-1][room.counts['west']-1] = room
-        room.buildDungeon(0, 0, grid)
+        grid[_room.counts['north']-1][_room.counts['west']-1] = _room
+        _room.buildDungeon(0, 0, grid)
 
     debug.log('scripts initialized')
 
@@ -302,11 +300,20 @@ def done_mob(parent, mob):
     mob.race = new(actor.Race(), mob.race)
     server.__instance__.heartbeat.attach('tick', mob.tick)
 
-def done_room(parent, room):
+def done_room(parent, _room):
     """Last steps to finalize parsing a room."""
 
-    room.area = __lastarea__
-    Room.rooms[room.area.name+":"+str(room.id)] = room
+    _room.area = __lastarea__
+
+    try:
+        room.__ROOMS__[_room.get_full_id()] = _room
+    except AttributeError:
+        pass
+
+    try:
+        room.__START_ROOM__ = _room.__START_ROOM__
+    except AttributeError:
+        pass
 
 def done_grid(parent, room):
     done_room(parent, room)

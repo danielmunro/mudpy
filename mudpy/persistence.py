@@ -11,7 +11,7 @@ def loadUser(name):
         import factory
         from actor import User, Race
         from client import ClientFactory
-        from room import Room
+        from . import room
         user = User()
         user.id = userid
         load(user, user.persistibleProperties)
@@ -22,7 +22,7 @@ def loadUser(name):
 
         # room
         roomid = conn.hget('UserRooms', userid)
-        user.room = Room.rooms[roomid]
+        user.room = room.__ROOMS__[roomid]
         user.room.actors.append(user)
     return user
 
@@ -30,7 +30,7 @@ def saveUser(user):
     save(user, user.persistibleProperties)
     conn = db()
     conn.hset('Users', user.name, user.id)
-    conn.hset('UserRooms', user.id, user.room.getFullID())
+    conn.hset('UserRooms', user.id, user.room.get_full_id())
     conn.hset('UserRaces', user.id, user.race.name)
     
 def getRandomID():
