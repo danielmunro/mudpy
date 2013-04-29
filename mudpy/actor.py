@@ -172,7 +172,7 @@ class Actor(Observer):
     
     def move(self, validDirections = []):
         from . import command, factory, room
-        factory.new(command.Command(), choice(validDirections) if validDirections else room.Direction.getRandom(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
+        factory.new(command.Command(), choice(validDirections) if validDirections else room.Direction.get_random(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
     
     def die(self):
         if self.target:

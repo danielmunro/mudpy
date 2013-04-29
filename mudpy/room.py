@@ -65,7 +65,7 @@ class Randomhall(Room):
         self.probabilities = dict((direction, .5) for direction in self.directions)
     
     def buildDungeon(self, roomCount = 0):
-        direction = Direction.getRandom(list(direction for direction, room in self.directions.iteritems() if not room))
+        direction = Direction.get_random(list(direction for direction, room in self.directions.iteritems() if not room))
         if self.probabilities[direction] > random():
             if self.rooms < roomCount:
                 exit = Room.rooms[self.area.name+":"+str(self.exit)]
@@ -109,7 +109,7 @@ class Grid(Room):
         while exit:
             rand_x = int(round(random()*xlen))
             rand_y = int(round(random()*ylen))
-            direction = Direction.getRandom()
+            direction = Direction.get_random()
             if not grid[rand_y][rand_x].directions[direction]:
                 room_key = self.area.name+":"+str(exit)
                 grid[rand_y][rand_x].directions[direction] = Room.rooms[room_key]
@@ -135,7 +135,7 @@ class Direction(object):
     name = ""
     
     @staticmethod
-    def getRandom(allowedDirections = []):
+    def get_random(allowedDirections = []):
         return choice(allowedDirections if allowedDirections else list(direction.name for direction in Direction.__subclasses__()))
 
 class North(Direction):
