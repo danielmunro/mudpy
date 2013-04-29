@@ -55,9 +55,8 @@ def moveDirection(actor, args, direction):
         actor.notify("You are incapacitated and will die soon if not aided.")
         return
 
-    try:
-        newRoom = actor.room.directions[direction]
-    except KeyError:
+    new_room = actor.room.directions[direction]
+    if not new_room:
         actor.notify("Alas, nothing is there.")
         return
 
@@ -66,7 +65,7 @@ def moveDirection(actor, args, direction):
         actor.attributes.movement -= cost
         actor.room.notify(actor, str(actor).capitalize()+" leaves "+direction+".")
         actor.room.actors.remove(actor)
-        actor.room = newRoom
+        actor.room = new_room
         actor.room.actors.append(actor)
         actor.room.notify(actor, str(actor).capitalize()+" has arrived.")
         import factory
