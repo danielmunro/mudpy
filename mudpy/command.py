@@ -30,7 +30,9 @@ def practice(actor, args):
             actor.notify("You cannot practice that.")
 
 def north(actor, args):
-    actor.move("north")
+    #actor.move("north")
+    print args
+    actor.dispatch("move", direction=args[0])
 
 def south(actor, args):
     actor.move("south")
