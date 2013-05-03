@@ -171,8 +171,6 @@ class Actor(Observer):
         return str(self).title()+' '+description+'.'
     
     def move(self, direction):
-        from . import command, factory
-
         if self.target:
             self.notify("You are fighting!")
             return
