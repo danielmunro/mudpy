@@ -170,9 +170,46 @@ class Actor(Observer):
 
         return str(self).title()+' '+description+'.'
     
-    def move(self, validDirections = []):
-        from . import command, factory, room
-        factory.new(command.Command(), choice(validDirections) if validDirections else room.Direction.get_random(direction for direction, room in self.room.directions.iteritems() if room)).tryPerform(self)
+    def move(self, direction):
+        from . import command, factory
+
+        if self.target:
+            self.notify("You are fighting!")
+            return
+
+        if self.disposition == Disposition.INCAPACITATED:
+            self.notify("You are incapacitated and will die soon if not aided.")
+            return
+
+        new_room = self.room.directions[direction]
+        if not new_room:
+            self.notify("Alas, nothing is there.")
+            return
+
+        cost = self.getMovementCost()
+        if(self.attributes.movement >= cost):
+            # actor is leaving, subtract movement cost
+            self.attributes.movement -= cost
+
+            # remove actor from room
+            self.room.dispatch('leaving', actor=self, direction=direction)
+            self.room.actors.remove(self)
+            self.room.detach('leaving', self.leaving)
+            self.room.detach('arriving', self.arriving)
+
+            # place actor in new room
+            self.room = new_room
+            self.room.actors.append(self)
+            self.room.dispatch('arriving', actor=self, direction=room.Direction.get_reverse(direction))
+            self.room.attach('leaving', self.leaving)
+            self.room.attach('arriving', self.arriving)
+            self.moved(direction)
+            debug.log(str(self)+' moves to '+str(self.room))
+        else:
+            self.notify("You are too tired to move.")
+
+    def moved(self, args):
+        pass
     
     def die(self):
         if self.target:
@@ -235,13 +272,19 @@ class Actor(Observer):
     def lookedAt(self):
         return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
 
-    def startAffect(self, affect):
-        self.room.announce(affect.getMessages('success', self))
-        self.affects.append(affect)
+    def startAffect(self, args):
+        self.room.announce(args['affect'].getMessages('success', self))
+        self.affects.append(args['affect'])
     
     def endAffect(self, affect):
-        self.room.announce(affect.getMessages('end', self))
+        self.room.announce(args['affect'].getMessages('end', self))
         self.affects.remove(affect)
+
+    def leaving(self, actor):
+        pass
+
+    def arriving(self, actor):
+        pass
     
     @staticmethod
     def getDamageVerb(dam_roll):
@@ -289,7 +332,8 @@ class Mob(Actor):
     def decrementMovementTimer(self):
         self.movement_timer -= 1;
         if self.movement_timer < 0:
-            self.move()
+            direction = choice([direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area])
+            self.move(direction)
             self.movement_timer = self.movement
     
     def normalizestats(self):
@@ -302,9 +346,6 @@ class Mob(Actor):
         self.room.announce({
             "*": str(self).title()+" arrives in a puff of smoke."
         })
-
-    def move(self, validDirections = []):
-        super(Mob, self).move(validDirections if validDirections else list(direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area))
     
 class User(Actor):
     persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'trains', 'practices', 'disposition', 'proficiencies']
@@ -396,6 +437,19 @@ class User(Actor):
                     return True
             self.client.attach('input', checkInput)
 
+    def leaving(self, args):
+        super(User, self).leaving(args)
+        if not args['actor'] == self:
+            self.notify(str(args['actor'])+" left heading "+args['direction']+".\n")
+
+    def arriving(self, args):
+        super(User, self).arriving(args)
+        self.notify(str(args['actor'])+" arrived from the "+args['direction']+".\n")
+
+    def moved(self, args):
+        from . import factory, command
+        factory.new(command.Command(), "look").tryPerform(self)
+
     def __str__(self):
         return self.name.title()
 
@@ -415,7 +469,7 @@ class Attack:
         self.damroll = 0
         self.defroll = 0
 
-        self.aggressor.dispatch(attackstart=self)
+        self.aggressor.dispatch('attackstart', attack=self)
 
         # initial rolls for attack/defense
         hit_roll = aggressor.getAttribute('hit') + self.getAttributeModifier(aggressor, 'dex')
@@ -435,7 +489,7 @@ class Attack:
         except AttributeError:
             ac = 0
 
-        self.aggressor.dispatch(attackmodifier=self)
+        self.aggressor.dispatch('attackmodifier', attack=self)
 
         # roll the dice and determine if the attack was successful
         roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
@@ -464,7 +518,7 @@ class Attack:
             aggressor.target.curhp -= dam_roll
             aggressor.target.normalizestats()
 
-        aggressor.dispatch(attackresolution=self)
+        aggressor.dispatch('attackresolution', attack=self)
     
     def getAttributeModifier(self, actor, attributeName):
         return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4

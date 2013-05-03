@@ -21,15 +21,15 @@ class Affect(Observer, room.Reporter):
         """Apply the affect to a receiver."""
 
         try:
-            self.attach('start', receiver.startAffect)
-            self.attach('end', receiver.endAffect)
+            self.attach("start", receiver.startAffect)
+            self.attach("end", receiver.endAffect)
         except AttributeError:
             debug.log(str(receiver)+
                 " does not have startAffect() and/or endAffect() defined",
                 "error")
-        server.__instance__.heartbeat.attach('tick', self.tick)
+        server.__instance__.heartbeat.attach("tick", self.tick)
         self.set_attributes_from_receiver(receiver)
-        self.dispatch(start = self)
+        self.dispatch("start", affect=self)
     
     def set_attributes_from_receiver(self, receiver):
         """Calculate modifiers that are percentages of an attribute of the
@@ -50,8 +50,8 @@ class Affect(Observer, room.Reporter):
 
         self.timeout -= 1
         if self.timeout < 0:
-            server.__instance__.heartbeat.detach('tick', self.tick)
-            self.dispatch(end = self)
+            server.__instance__.heartbeat.detach("tick", self.tick)
+            self.dispatch("end", affect=self)
 
     def __str__(self):
         return self.name

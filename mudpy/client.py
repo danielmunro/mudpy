@@ -27,7 +27,7 @@ class Client(observer.Observer, Protocol):
     def disconnect(self):
         """Called when a client loses their connection."""
 
-        self.client_factory.dispatch(destroyed=self.poll)
+        self.client_factory.dispatch('destroyed', client=self)
         self.user.room.actors.remove(self.user)
         self.transport.loseConnection()
     
@@ -52,7 +52,7 @@ class Client(observer.Observer, Protocol):
         elif data:
             args = data.split(" ")
             args.insert(0, self.user)
-            handled = self.dispatch(input=args)
+            handled = self.dispatch('input', args=args)
             if not handled:
                 self.user.notify("What was that?")
 
@@ -151,7 +151,7 @@ class ClientFactory(tFactory, observer.Observer):
         client = Client()
         client.client_factory = self
         client.attach('input', command.checkInput)
-        self.dispatch(created=client.poll)
+        self.dispatch('created', client=client)
         return client
 
 class LoginException(Exception):

@@ -37,21 +37,21 @@ class Instance:
         method will start the main game loop.
 
         """
-        def set_client_poll(client_poll):
+        def set_client_poll(args):
             """Called when the client_factory reports that a client is
             created.
 
             """
 
-            __instance__.heartbeat.attach("cycle", client_poll)
+            __instance__.heartbeat.attach("cycle", args['client'].poll)
 
-        def unset_client_poll(client_poll):
+        def unset_client_poll(args):
             """Called when the client_factory reports that a client has been
             destroyed.
 
             """
 
-            __instance__.heartbeat.detach("cycle", client_poll)
+            __instance__.heartbeat.detach("cycle", args['client'].poll)
 
 
         # call set_client_poll whenever client_factory creates a new client,

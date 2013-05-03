@@ -1,25 +1,40 @@
-from item import Inventory
-from random import random, choice
+"""Rooms in a mud represent the physical space in which the creatures, mobs,
+items, and players occupy. They can be towns, trails, forests, mines, oceans,
+dungeons, and more.
+
+"""
+
+from . import item, observer
+import random
 
 __START_ROOM__ = None
 __ROOMS__ = {}
 
-class Room(object):
+class Room(observer.Observer):
+    """Basic space representation, initialized by the factory.parser functions
+    on game start, based on json game configuration files. Has a name (title),
+    description, a list of actors in the room, an inventory of items, and a
+    dictionary of possible directions to leave.
+
+    """
 
     def __init__(self):
+        super(Room, self).__init__()
         self.id = 0
         self.name = ''
         self.description = ''
         self.actors = []
-        self.inventory = Inventory()
+        self.inventory = item.Inventory()
         self.directions = {}
         self.area = None
     
-    def notify(self, notifier, message):
-        for actor in list(actor for actor in self.actors if not actor is notifier):
-            actor.notify(message+"\n")
-    
     def announce(self, messages):
+        """Will take a message and convey it to the various actors in the
+        room. Any updates at the room level will be broadcasted through
+        here.
+
+        """
+
         announcedActors = []
         generalMessage = ""
         for actor, message in messages.iteritems():
@@ -62,11 +77,13 @@ class Randomhall(Room):
         super(Randomhall, self).__init__()
         self.rooms = 0
         self.exit = 0
-        self.probabilities = dict((direction, .5) for direction in self.directions)
+        self.probabilities = \
+                dict((direction, .5) for direction in self.directions)
     
     def buildDungeon(self, roomCount = 0):
-        direction = Direction.get_random(list(direction for direction, room in self.directions.iteritems() if not room))
-        if self.probabilities[direction] > random():
+        direction = Direction.get_random(list(direction \
+                for direction, room in self.directions.iteritems() if not room))
+        if self.probabilities[direction] > random.random():
             if self.rooms < roomCount:
                 exit = __ROOMS__[self.area.name+":"+str(self.exit)]
                 self.directions[direction] = exit
@@ -74,10 +91,11 @@ class Randomhall(Room):
             else:
                 return self.copy(direction).buildDungeon(roomCount+1)
         else:
-            rooms = list(room for room in self.directions.values() if isinstance(room, Randomhall))
+            rooms = list(room for room in self.directions.values() if \
+                                            isinstance(room, Randomhall))
             if rooms:
-                return choice(rooms).buildDungeon(roomCount)
-        return roomCount;
+                return random.choice(rooms).buildDungeon(roomCount)
+        return roomCount
     
     def copy(self, direction):
         r = super(Randomhall, self).copy(Randomhall())
@@ -107,13 +125,15 @@ class Grid(Room):
                     grid[y-1][x].setIfEmpty('south', grid[y][x])
         exit = self.exit
         while exit:
-            rand_x = int(round(random()*xlen))
-            rand_y = int(round(random()*ylen))
+            rand_x = int(round(random.random()*xlen))
+            rand_y = int(round(random.random()*ylen))
             direction = Direction.get_random()
             if not grid[rand_y][rand_x].directions[direction]:
                 room_key = self.area.name+":"+str(exit)
                 grid[rand_y][rand_x].directions[direction] = __ROOMS__[room_key]
-                __ROOMS__[room_key].directions[globals()[direction.title()].reverse] = grid[rand_y][rand_x]
+                class_name = direction.title()
+                __ROOMS__[room_key].directions[globals()[class_name].reverse]=\
+                                                        grid[rand_y][rand_x]
                 exit = None
     
     def setIfEmpty(self, direction, roomToSet):
@@ -135,7 +155,12 @@ class Direction(object):
     
     @staticmethod
     def get_random(allowedDirections = []):
-        return choice(allowedDirections if allowedDirections else list(direction.name for direction in Direction.__subclasses__()))
+        return random.choice(allowedDirections if allowedDirections else \
+            list(direction.name for direction in Direction.__subclasses__()))
+
+    @staticmethod
+    def get_reverse(direction):
+        return globals()[direction.title()].reverse
 
 class North(Direction):
     name = "north"

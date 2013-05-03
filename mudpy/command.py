@@ -1,8 +1,9 @@
 from actor import Disposition
-from . import debug, utility
+from . import debug, utility, room
 
 def checkInput(args):
     import factory
+    args = args['args']
     try:
         action = factory.new(Command(), factory.match(args[1], 'Command')['wireframe'])
     except (factory.FactoryException, TypeError) as e:
@@ -29,50 +30,22 @@ def practice(actor, args):
             actor.notify("You cannot practice that.")
 
 def north(actor, args):
-    moveDirection(actor, args, "north")
+    actor.move("north")
 
 def south(actor, args):
-    moveDirection(actor, args, "south")
+    actor.move("south")
 
 def east(actor, args):
-    moveDirection(actor, args, "east")
+    actor.move("east")
 
 def west(actor, args):
-    moveDirection(actor, args, "west")
+    actor.move("west")
 
 def up(actor, args):
-    moveDirection(actor, args, "up")
+    actor.move("up")
 
 def down(actor, args):
-    moveDirection(actor, args, "down")
-
-def moveDirection(actor, args, direction):
-    if actor.target:
-        actor.notify("You are fighting!")
-        return
-
-    if actor.disposition == Disposition.INCAPACITATED:
-        actor.notify("You are incapacitated and will die soon if not aided.")
-        return
-
-    new_room = actor.room.directions[direction]
-    if not new_room:
-        actor.notify("Alas, nothing is there.")
-        return
-
-    cost = actor.getMovementCost()
-    if(actor.attributes.movement >= cost):
-        actor.attributes.movement -= cost
-        actor.room.notify(actor, str(actor).capitalize()+" leaves "+direction+".")
-        actor.room.actors.remove(actor)
-        actor.room = new_room
-        actor.room.actors.append(actor)
-        actor.room.notify(actor, str(actor).capitalize()+" has arrived.")
-        import factory
-        factory.new(Command(), "look").tryPerform(actor)
-        debug.log(str(actor)+' moves to '+str(actor.room))
-    else:
-        actor.notify("You are too tired to move.")
+    actor.move("down")
 
 def train(actor, args):
     if actor.trains < 1:
@@ -259,10 +232,7 @@ class Command(object):
             self.perform(actor, args)
 
     def perform(self, actor, args):
-        try:
-            globals()[self.name](actor, args)
-        except Exception as e:
-            debug.log(e, "error")
+        globals()[self.name](actor, args)
     
     def __str__(self):
         return self.name
