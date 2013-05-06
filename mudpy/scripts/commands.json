@@ -1,10 +1,4 @@
 [{
-	"Depends":{
-		"properties":{
-			"on":[]
-		}
-	}
-},{
 	"Factory":{
 		"wireframes":[{
 			"Command":{
