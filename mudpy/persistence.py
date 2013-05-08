@@ -23,7 +23,6 @@ def loadUser(name):
         # room
         roomid = conn.hget('UserRooms', userid)
         user.room = room.__ROOMS__[roomid]
-        user.room.actors.append(user)
     return user
 
 def saveUser(user):
