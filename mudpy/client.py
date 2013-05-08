@@ -4,7 +4,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import command, debug, persistence, actor, factory, observer
+from . import debug, factory, observer
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
@@ -84,6 +84,8 @@ class Login:
 
             """
 
+            from . import actor, persistence
+
             user = persistence.loadUser(data)
             if user:
                 user.client = self.client
@@ -97,6 +99,8 @@ class Login:
         
         def race(data):
             """If a new alt, have them select a race."""
+
+            from . import actor, persistence
 
             try:
                 self.newuser.race = factory.new(actor.Race(), data)
@@ -147,6 +151,8 @@ class ClientFactory(tFactory, observer.Observer):
         client object.
 
         """
+
+        from . import command
 
         client = Client()
         client.client_factory = self
