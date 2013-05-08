@@ -1,13 +1,32 @@
 from __future__ import division
-from . import debug, persistence, room, utility
-from observer import Observer
-from attributes import Attributes
-from item import Inventory, Corpse
+from . import debug, persistence, room, utility, server, factory, proficiency, \
+                item, attributes, observer, command, affect
+import time, random
+    
+def get_damage_verb(dam_roll):
+    if dam_roll < 5:
+        return "clumsy"
+    elif dam_roll < 10:
+        return "amateur"
+    elif dam_roll < 15:
+        return "competent"
+    else:
+        return "skillful"
 
-from random import choice, randint, uniform
-import time
+def get_default_attributes():
+    a = attributes.Attributes()
+    a.hp = 20
+    a.mana = 100
+    a.movement = 100
+    a.ac_bash = 100
+    a.ac_pierce = 100
+    a.ac_slash = 100
+    a.ac_magic = 100
+    a.hit = 1
+    a.dam = 1
+    return a
 
-class Actor(Observer):
+class Actor(observer.Observer):
     MAX_STAT = 25
 
     def __init__(self):
@@ -19,8 +38,8 @@ class Actor(Observer):
         self.level = 0
         self.experience = 0
         self.alignment = 0
-        self.attributes = self.getDefaultAttributes()
-        self.trainedAttributes = Attributes()
+        self.attributes = get_default_attributes()
+        self.trainedAttributes = attributes.Attributes()
         self.curhp = self.attributes.hp
         self.curmana = self.attributes.mana
         self.curmovement = self.attributes.movement
@@ -29,7 +48,7 @@ class Actor(Observer):
         self.abilities = []
         self.affects = []
         self.target = None
-        self.inventory = Inventory()
+        self.inventory = item.Inventory()
         self.race = None
         self.trains = 0
         self.practices = 0
@@ -53,9 +72,7 @@ class Actor(Observer):
         try:
             self.proficiencies[proficiency].level += level
         except KeyError:
-            import factory
-            from proficiency import Proficiency
-            self.proficiencies[proficiency] = factory.new(Proficiency(), proficiency)
+            self.proficiencies[proficiency] = factory.new(proficiency.Proficiency(), proficiency)
             self.proficiencies[proficiency].level = level
     
     def getEquipmentByPosition(self, position):
@@ -86,13 +103,13 @@ class Actor(Observer):
         pass
     
     def tick(self):
-        modifier = uniform(0.05, 0.125)
+        modifier = random.uniform(0.05, 0.125)
         if self.disposition == Disposition.INCAPACITATED:
             modifier = -modifier
         elif self.disposition == Disposition.LAYING:
-            modifier += uniform(0.01, 0.05)
+            modifier += random.uniform(0.01, 0.05)
         elif self.disposition == Disposition.SLEEPING:
-            modifier += uniform(0.05, 0.1)
+            modifier += random.uniform(0.05, 0.1)
         self.curhp += self.getAttribute('hp') * modifier
         self.curmana += self.getAttribute('mana') * modifier
         self.curmovement += self.getAttribute('movement') * modifier
@@ -118,7 +135,7 @@ class Actor(Observer):
         for equipment in self.equipped.values():
             if equipment:
                 amount += getattr(equipment.attributes, attributeName)
-        if attributeName in Attributes.stats:
+        if attributeName in attributes.Attributes.stats:
             return min(amount, self.getMaxAttribute(attributeName))
         return amount
 
@@ -136,7 +153,6 @@ class Actor(Observer):
         return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
     
     def doRegularAttacks(self, recursedAttackIndex = 0):
-        from . import server
         if self.target:
             if not self.target.target:
                 self.target.target = self
@@ -189,19 +205,12 @@ class Actor(Observer):
             # actor is leaving, subtract movement cost
             self.attributes.movement -= cost
 
-            # remove actor from room
-            self.room.dispatch('leaving', actor=self, direction=direction)
-            self.room.actors.remove(self)
-            self.room.detach('leaving', self.leaving)
-            self.room.detach('arriving', self.arriving)
+            self.room.actor_leave(self, direction)
 
-            # place actor in new room
             self.room = new_room
-            self.room.actors.append(self)
-            self.room.dispatch('arriving', actor=self, direction=room.Direction.get_reverse(direction))
-            self.room.attach('leaving', self.leaving)
-            self.room.attach('arriving', self.arriving)
+            self.room.actor_arrive(self, room.Direction.get_reverse(direction))
             self.moved(direction)
+
             debug.log(str(self)+' moves to '+str(self.room))
         else:
             self.notify("You are too tired to move.")
@@ -215,7 +224,7 @@ class Actor(Observer):
         self.removeFromBattle()
         self.disposition = Disposition.LAYING
         self.curhp = 1
-        corpse = Corpse()
+        corpse = item.Corpse()
         corpse.name = "the corpse of "+str(self)
         corpse.description = "The corpse of "+str(self)+" lies here."
         corpse.weight = self.race.size * 20
@@ -238,12 +247,12 @@ class Actor(Observer):
         leveldiff = self.level - killer.level
         experience = 200 + 30 * leveldiff
         if leveldiff > 5:
-            experience *= 1 + randint(0, leveldiff*2) / 100
+            experience *= 1 + random.randint(0, leveldiff*2) / 100
         aligndiff = abs(self.alignment - killer.alignment) / 2000
         if aligndiff > 0.5:
-            mod = randint(15, 35) / 100
+            mod = random.randint(15, 35) / 100
             experience *= 1 + aligndiff - mod
-        experience = uniform(experience * 0.8, experience * 1.2)
+        experience = random.uniform(experience * 0.8, experience * 1.2)
         return experience if experience > 0 else 0
 
     def getExperiencePerLevel(self):
@@ -283,31 +292,9 @@ class Actor(Observer):
 
     def arriving(self, actor):
         pass
-    
-    @staticmethod
-    def getDamageVerb(dam_roll):
-        if dam_roll < 5:
-            return "clumsy"
-        elif dam_roll < 10:
-            return "amateur"
-        elif dam_roll < 15:
-            return "competent"
-        else:
-            return "skillful"
 
-    @staticmethod
-    def getDefaultAttributes():
-        a = Attributes()
-        a.hp = 20
-        a.mana = 100
-        a.movement = 100
-        a.ac_bash = 100
-        a.ac_pierce = 100
-        a.ac_slash = 100
-        a.ac_magic = 100
-        a.hit = 1
-        a.dam = 1
-        return a
+    def disposition_changed(self, args):
+        pass
 
 class Mob(Actor):
     ROLE_TRAINER = 'trainer'
@@ -330,7 +317,7 @@ class Mob(Actor):
     def decrementMovementTimer(self):
         self.movement_timer -= 1;
         if self.movement_timer < 0:
-            direction = choice([direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area])
+            direction = random.choice([direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area])
             self.move(direction)
             self.movement_timer = self.movement
     
@@ -349,7 +336,6 @@ class User(Actor):
     persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'trains', 'practices', 'disposition', 'proficiencies']
 
     def __init__(self):
-        from . import server
         super(User, self).__init__()
         self.delay_counter = 0
         self.last_delay = 0
@@ -397,7 +383,6 @@ class User(Actor):
         self.notify("\n"+self.prompt())
     
     def updateDelay(self):
-        from . import server
         if self.delay_counter > 0:
             if not self.last_delay:
                 server.__instance__.heartbeat.detach('cycle', self.client.poll)
@@ -418,13 +403,11 @@ class User(Actor):
         def performAbility(ability):
             self.delay_counter += ability.delay+1
 
-        from . import factory, server
-        from command import Command
         if not self.room:
             self.room = room.__ROOMS__[room.__START_ROOM__]
         server.__instance__.heartbeat.attach('tick', self.tick)
-        factory.new(Command(), "look").tryPerform(self)
-        self.room.actors.append(self)
+        factory.new(command.Command(), "look").tryPerform(self)
+        self.room.actor_arrive(self)
         self.notify("\n"+self.prompt())
         debug.log('client logged in as '+str(self))
         for ability in self.getAbilities():
@@ -445,8 +428,12 @@ class User(Actor):
         self.notify(str(args['actor'])+" arrived from the "+args['direction']+".\n")
 
     def moved(self, args):
-        from . import factory, command
         factory.new(command.Command(), "look").tryPerform(self)
+
+    def disposition_changed(self, args):
+        super(User, self).disposition_changed(args)
+        if args['actor'] != self:
+            self.notify(args['changed'])
 
     def __str__(self):
         return self.name.title()
@@ -490,19 +477,19 @@ class Attack:
         self.aggressor.dispatch('attackmodifier', attack=self)
 
         # roll the dice and determine if the attack was successful
-        roll = uniform(hit_roll/2, hit_roll) - uniform(def_roll/2, def_roll) - ac
+        roll = random.uniform(hit_roll/2, hit_roll) - random.uniform(def_roll/2, def_roll) - ac
 
         self.success = roll > 0
         if self.success:
             isHit = "hits"
             dam_roll = aggressor.getAttribute('dam') + self.getAttributeModifier(aggressor, 'str')
-            dam_roll = uniform(dam_roll/2, dam_roll)
+            dam_roll = random.uniform(dam_roll/2, dam_roll)
         else:
             isHit = "misses"
             dam_roll = 0
 
         # update the room on the attack progress
-        verb = Actor.getDamageVerb(dam_roll)
+        verb = get_damage_verb(dam_roll)
         ucname = str(aggressor).title()
         tarname = str(aggressor.target)
         aggressor.room.announce({
@@ -521,7 +508,7 @@ class Attack:
     def getAttributeModifier(self, actor, attributeName):
         return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4
 
-class Ability(Observer, room.Reporter):
+class Ability(observer.Observer, room.Reporter):
 
     def __init__(self):
         self.name = "an ability"
@@ -550,11 +537,8 @@ class Ability(Observer, room.Reporter):
             invoker.notify("You do not have enough energy to do that.")
 
     def perform(self, invoker, receiver, args):
-        import factory
-        from affect import Affect
-
         for affectname in self.affects:
-            factory.new(Affect(), affectname).start(receiver)
+            factory.new(affect.Affect(), affectname).start(receiver)
 
     def rollsSuccess(self, invoker, receiver):
         return True # chosen by coin toss, guaranteed to be random
@@ -588,18 +572,16 @@ class Race:
         self.isPlayable = False
         self.damType = "bash"
         self.proficiencies = {}
-        self.attributes = Attributes()
+        self.attributes = attributes.Attributes()
         self.abilities = []
         self.affects = []
     
-    def addProficiency(self, proficiency, level):
+    def addProficiency(self, prof, level):
         try:
-            self.proficiencies[proficiency].level += level
+            self.proficiencies[prof].level += level
         except KeyError:
-            import factory
-            from proficiency import Proficiency
-            self.proficiencies[proficiency] = factory.new(Proficiency(), proficiency)
-            self.proficiencies[proficiency].level = level
+            self.proficiencies[prof] = factory.new(proficiency.Proficiency(), prof)
+            self.proficiencies[prof].level = level
 
     def __str__(self):
         return self.name

@@ -1,5 +1,4 @@
-from actor import Disposition
-from . import debug, utility, room
+from . import debug, utility
 
 def checkInput(args):
     import factory
@@ -109,26 +108,23 @@ def equipped(actor, args):
         msg += re.sub("\d+", "", p)+": "+str(e)+"\n"
     actor.notify("You are wearing: "+msg)
 
-def sit(actor, args):
-    actor.disposition = Disposition.SITTING
-    actor.room.announce({
-        actor: "You sit down and rest.",
-        "*": str(actor).title()+" sits down and rests."
-    })
+def sit(sitter, args):
+    from . import actor
+    sitter.disposition = actor.Disposition.SITTING
+    sitter.room.dispatch("disposition_changed", actor=sitter, changed=str(sitter).title()+" sits down and rest.")
+    sitter.notify("You sit down and rest.")
 
 def sleep(actor, args):
-    actor.disposition = Disposition.SLEEPING
-    actor.room.announce({
-        actor: "You go to sleep.",
-        "*": str(actor).title()+" goes to sleep."
-    })
+    from . import actor
+    actor.disposition = actor.Disposition.SLEEPING
+    actor.room.dispatch("disposition_changed", actor=actor, changed=str(actor).title()+" goes to sleep.")
+    actor.notify("You go to sleep.")
 
 def wake(actor, args):
-    actor.disposition = Disposition.STANDING
-    actor.room.announce({
-        actor: "You stand up.",
-        "*": str(actor).title()+" stands up."
-    })
+    from . import actor
+    actor.disposition = actor.Disposition.STANDING
+    actor.room.dispatch("disposition_changed", actor=actor, changed=str(actor).title()+" stands up.")
+    actor.notify("You stand up.")
 
 def kill(actor, args):
     target = utility.match_partial(args[0], actor.room.actors)
@@ -225,11 +221,12 @@ class Command(object):
         self.name = ""
         self.requiresStandingDisposition = False
 
-    def tryPerform(self, actor, args = []):
-        if self.requiresStandingDisposition and actor.disposition != Disposition.STANDING:
-            actor.notify("You are incapacitated and cannot do that." if actor.disposition == Disposition.INCAPACITATED else "You need to be standing to do that.")
+    def tryPerform(self, performer, args = []):
+        from . import actor
+        if self.requiresStandingDisposition and performer.disposition != actor.Disposition.STANDING:
+            performer.notify("You are incapacitated and cannot do that." if performer.disposition == actor.Disposition.INCAPACITATED else "You need to be standing to do that.")
         else:
-            self.perform(actor, args)
+            self.perform(performer, args)
 
     def perform(self, actor, args):
         globals()[self.name](actor, args)
