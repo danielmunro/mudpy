@@ -7,7 +7,7 @@
 },{
 	"Factory":{
 		"wireframes":[{
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"sneak",
 					"level":0,
@@ -25,7 +25,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"berserk",
 					"level":0,
@@ -45,7 +45,7 @@
 				
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"bash",
 					"level":0,
@@ -70,7 +70,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"dirt kick",
 					"level":5,
@@ -94,7 +94,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"kick",
 					"level":10,
@@ -118,7 +118,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"hand to hand",
 					"level":0,
@@ -127,7 +127,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"infravision",
 					"level":0,
@@ -136,7 +136,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"second attack",
 					"level":10,
@@ -145,7 +145,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"cure light",
 					"level":0,
@@ -154,7 +154,7 @@
 				}
 			}
 		}, {
-			"Ability":{
+			"mudpy.actor.Ability":{
 				"properties":{
 					"name":"heal",
 					"level":20,

@@ -1,154 +1,154 @@
 [{
 	"Factory":{
 		"wireframes":[{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"practice"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"train"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"wear"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"remove"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"equipped"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"sit"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"sleep"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"wake"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"inventory"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"score"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"look"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"quit"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"who"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"affects"
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"kill",
 					"requiresStandingDisposition":true
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"flee",
 					"requiresStandingDisposition":true
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"get",
 					"requiresStandingDisposition":true
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"drop",
 					"requiresStandingDisposition":true
 				}
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"north"
 				},
 				"priority":1
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"south"
 				},
 				"priority":1
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"east"
 				},
 				"priority": 1
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"west"
 				},
 				"priority": 1
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"up"
 				},
 				"priority": 1
 			}
 		},{
-			"Command":{
+			"mudpy.command.Command":{
 				"properties":{
 					"name":"down"
 				},

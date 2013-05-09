@@ -1,56 +1,56 @@
 [{
 	"Factory":{
 		"wireframes":[{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"parry",
 					"hook":"attackstart"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"dodge",
 					"hook":"attackstart"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"light armor",
 					"hook":"attacked"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"heavy armor",
 					"hook":"attacked"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"slash",
 					"hook":"attackmodifier"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"pierce",
 					"hook":"attackmodifier"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"bash",
 					"hook":"attackmodifier"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"melee",
 					"improvechance":0.99,
@@ -58,63 +58,63 @@
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"sneak",
 					"hook":"move"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"haggle",
 					"hook":["buy", "sell"]
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"alchemy",
 					"hook":"brew"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"curative",
 					"hook":"cast"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"healing",
 					"hook":"cast"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"maladictions",
 					"hook":"cast"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"benedictions",
 					"hook":"cast"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"sorcery",
 					"hook":"cast"
 				}
 			}
 		},{
-			"Proficiency":{
+			"mudpy.proficiency.Proficiency":{
 				"properties":{
 					"name":"elemental",
 					"hook":"cast"

@@ -23,11 +23,13 @@ def new(instance, name):
     
     """
 
+    key = instance.__module__+'.'+instance.__class__.__name__
+
     try:
-        found = __wireframes__[instance.__class__.__name__][name]
+        found = __wireframes__[key][name]
     except KeyError:
         raise FactoryException("Factory does not know how to create "+str(name))
-    return build(instance, found[instance.__class__.__name__])
+    return build(instance, found[key])
 
 def add(wireframes):
     """Adds a new wireframe definition for an instance type."""

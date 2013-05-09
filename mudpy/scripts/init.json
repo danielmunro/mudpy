@@ -1,7 +1,7 @@
 [{
 	"Factory":{
 		"wireframes":[{
-			"Instance":{
+			"mudpy.server.Instance":{
 				"properties":{
 					"port":9000,
 					"name":"mud",

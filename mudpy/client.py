@@ -51,8 +51,7 @@ class Client(observer.Observer, Protocol):
             return self.login.step(data)
         elif data:
             args = data.split(" ")
-            args.insert(0, self.user)
-            handled = self.dispatch('input', args=args)
+            handled = self.dispatch('input', user=self.user, args=args)
             if not handled:
                 self.user.notify("What was that?")
 
@@ -152,11 +151,8 @@ class ClientFactory(tFactory, observer.Observer):
 
         """
 
-        from . import command
-
         client = Client()
         client.client_factory = self
-        client.attach('input', command.checkInput)
         self.dispatch('created', client=client)
         return client
 

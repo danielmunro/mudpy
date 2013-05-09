@@ -405,6 +405,7 @@ class User(Actor):
 
         if not self.room:
             self.room = room.__ROOMS__[room.__START_ROOM__]
+        self.client.attach('input', self.check_input)
         server.__instance__.heartbeat.attach('tick', self.tick)
         factory.new(command.Command(), "look").tryPerform(self)
         self.room.actor_arrive(self)
@@ -417,6 +418,13 @@ class User(Actor):
                     ability.tryPerform(self, args[2:])
                     return True
             self.client.attach('input', checkInput)
+
+    def check_input(self, args):
+        args = args['args']
+        try:
+            getattr(self, "command_"+factory.match(args[0], 'Command')['wireframe'])(args)
+        except (AttributeError, factory.FactoryException):
+            self.notify("What was that?")
 
     def leaving(self, args):
         super(User, self).leaving(args)

@@ -1,7 +1,7 @@
 [{
 	"Factory":{
 		"wireframes":[{
-			"Affect":{
+			"mudpy.affect.Affect":{
 				"properties":{
 					"name":"sneak",
 					"messages":{
@@ -16,7 +16,7 @@
 				}
 			}
 		},{
-			"Affect":{
+			"mudpy.affect.Affect":{
 				"properties":{
 					"name":"berserk",
 					"messages":{
@@ -37,7 +37,7 @@
 				}
 			}
 		},{
-			"Affect":{
+			"mudpy.affect.Affect":{
 				"properties":{
 					"name":"stun"
 				},
