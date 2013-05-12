@@ -33,6 +33,12 @@ class Client(observer.Observer, Protocol):
     
     def dataReceived(self, data):
         self.commandbuffer.append(data.strip())
+
+    def get_new_user(self):
+        """Returns a user of the type defined in the configs."""
+
+        user_module = __import__(self.client_factory.config.user_module, None, None, 'User')
+        return user_module.User()
     
     def poll(self):
         """Listener for game cycle, checks the command buffer for new input.
@@ -85,21 +91,21 @@ class Login:
 
             from . import actor, persistence
 
-            user = persistence.loadUser(data)
+            user = persistence.loadUser(data, self.client.get_new_user())
             if user:
                 user.client = self.client
                 self.client.user = user
                 user.loggedin()
                 return
-            self.newuser = actor.User()
+            self.newuser = get_new_user()
             self.newuser.client = self.client
             self.newuser.name = data
             self.client.write("What is your race? ")
-        
+
         def race(data):
             """If a new alt, have them select a race."""
 
-            from . import actor, persistence
+            from . import actor
 
             try:
                 self.newuser.race = factory.new(actor.Race(), data)
@@ -110,6 +116,8 @@ class Login:
         
         def alignment(data):
             """New alts need an alignment."""
+
+            from . import persistence
 
             if "good".find(data) == 0:
                 self.newuser.alignment = 1000
@@ -143,6 +151,7 @@ class ClientFactory(tFactory, observer.Observer):
     protocol = Client
 
     def __init__(self):
+        self.config = factory.new(Config(), "main")
         super(ClientFactory, self).__init__()
 
     def buildProtocol(self, addr):
@@ -155,6 +164,12 @@ class ClientFactory(tFactory, observer.Observer):
         client.client_factory = self
         self.dispatch('created', client=client)
         return client
+
+class Config:
+    """Maintains configurations specific to the mud mudpy is running."""
+
+    def __init__(self):
+        self.user_module = None
 
 class LoginException(Exception):
     """Raised when unexpected input in received during the login process."""

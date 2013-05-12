@@ -3,16 +3,13 @@ import time, hashlib, random, redis
 def db():
     return redis.Redis(host='localhost', port=6379, db=10)
 
-def loadUser(name):
+def loadUser(name, user):
     conn = db()
     userid = conn.hget('Users', name)
-    user = None
     if userid:
         import factory
         from actor import User, Race
-        from client import ClientFactory
-        from . import room
-        user = User()
+        from . import room, client
         user.id = userid
         load(user, user.persistibleProperties)
 

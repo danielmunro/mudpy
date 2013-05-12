@@ -296,6 +296,24 @@ class Actor(observer.Observer):
     def disposition_changed(self, args):
         pass
 
+    def command_north(self, args):
+        self.move("north")
+
+    def command_south(self, args):
+        self.move("south")
+
+    def command_east(self, args):
+        self.move("east")
+
+    def command_west(self, args):
+        self.move("west")
+
+    def command_up(self, args):
+        self.move("up")
+
+    def command_down(self, args):
+        self.move("down")
+
 class Mob(Actor):
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
@@ -407,7 +425,7 @@ class User(Actor):
             self.room = room.__ROOMS__[room.__START_ROOM__]
         self.client.attach('input', self.check_input)
         server.__instance__.heartbeat.attach('tick', self.tick)
-        factory.new(command.Command(), "look").tryPerform(self)
+        self.command_look()
         self.room.actor_arrive(self)
         self.notify("\n"+self.prompt())
         debug.log('client logged in as '+str(self))
@@ -421,10 +439,15 @@ class User(Actor):
 
     def check_input(self, args):
         args = args['args']
-        try:
-            getattr(self, "command_"+factory.match(args[0], 'Command')['wireframe'])(args)
-        except (AttributeError, factory.FactoryException):
-            self.notify("What was that?")
+        command = factory.match(args[0], 'mudpy.command.Command')
+        handled = False
+        if command:
+            try:
+                getattr(self, "command_"+command['wireframe'])(args)
+                handled = True
+            except (AttributeError, factory.FactoryException) as e:
+                pass
+        return handled
 
     def leaving(self, args):
         super(User, self).leaving(args)
@@ -436,12 +459,29 @@ class User(Actor):
         self.notify(str(args['actor'])+" arrived from the "+args['direction']+".\n")
 
     def moved(self, args):
-        factory.new(command.Command(), "look").tryPerform(self)
+        self.command_look()
 
     def disposition_changed(self, args):
         super(User, self).disposition_changed(args)
         if args['actor'] != self:
             self.notify(args['changed'])
+
+    def command_look(self, args=None):
+        if not args:
+            # room and exits
+            msg = "%s\n%s\n\n[Exits %s]\n" % (self.room.name, self.room.description, "".join(direction[:1] for direction, room in self.room.directions.iteritems() if room))
+            # items
+            msg += self.room.inventory.inspection(' is here.')
+            # actors
+            msg += "\n".join(_actor.lookedAt().capitalize() for _actor in self.room.actors if _actor is not self)+"\n"
+        else:
+            lookingAt = utility.match_partial(args[0], self.inventory.items, self.room.inventory.items, self.room.actors)
+            msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
+        self.notify(msg)
+
+    def command_affects(self, args):
+        self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
+                    " ticks" for x in self.affects))
 
     def __str__(self):
         return self.name.title()

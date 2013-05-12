@@ -28,24 +28,6 @@ def practice(actor, args):
         else:
             actor.notify("You cannot practice that.")
 
-def north(actor, args):
-    actor.move("north")
-
-def south(actor, args):
-    actor.move("south")
-
-def east(actor, args):
-    actor.move("east")
-
-def west(actor, args):
-    actor.move("west")
-
-def up(actor, args):
-    actor.move("up")
-
-def down(actor, args):
-    actor.move("down")
-
 def train(actor, args):
     if actor.trains < 1:
         actor.notify("You don't have any trains.")
@@ -186,19 +168,6 @@ def score(actor, args):
         actor.getAlignment())
     actor.notify(msg);
 
-def look(actor, args):
-    if len(args) == 0:
-        # room and exits
-        msg = "%s\n%s\n\n[Exits %s]\n" % (actor.room.name, actor.room.description, "".join(direction[:1] for direction, room in actor.room.directions.iteritems() if room))
-        # items
-        msg += actor.room.inventory.inspection(' is here.')
-        # actors
-        msg += "\n".join(_actor.lookedAt().capitalize() for _actor in actor.room.actors if _actor is not actor)+"\n"
-    else:
-        lookingAt = utility.match_partial(args[0], actor.inventory.items, actor.room.inventory.items, actor.room.actors)
-        msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
-    actor.notify(msg)
-
 def quit(actor, args):
     from . import persistence
     persistence.saveUser(actor)
@@ -211,9 +180,6 @@ def who(actor, args):
     l = len(actor.client.factory.clients)
     wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
     actor.notify(wholist)
-
-def affects(actor, args):
-    actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+" ticks" for x in actor.affects));
 
 class Command(object):
 
