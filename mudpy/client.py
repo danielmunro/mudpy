@@ -97,7 +97,7 @@ class Login:
                 self.client.user = user
                 user.loggedin()
                 return
-            self.newuser = get_new_user()
+            self.newuser = self.client.get_new_user()
             self.newuser.client = self.client
             self.newuser.name = data
             self.client.write("What is your race? ")
