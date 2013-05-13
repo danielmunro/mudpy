@@ -171,7 +171,6 @@ def _parse_json(data, parent = None):
 
     """
 
-    instances = []
     for item in data:
         for _class in item:
             _class = str(_class)
@@ -179,10 +178,9 @@ def _parse_json(data, parent = None):
                 module_parts = _class.split(".")
                 module = __import__(module_parts[0]+"."+module_parts[1], fromlist=[module_parts[1]])
                 instance = getattr(module, module_parts[2])()
-                instances.append(build(instance, item[_class], parent))
+                build(instance, item[_class], parent)
             else:
                 build(None, item, parent)
-    return instances
 
 def build(instance, properties, parent = None):
     """Takes an instance of a game object and a list of properties and call
