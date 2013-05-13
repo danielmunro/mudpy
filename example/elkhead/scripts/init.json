@@ -1,24 +1,22 @@
 [{
-    "Factory":{
-        "wireframes":[{
-            "mudpy.server.Instance":{
-                "properties":{
-                    "port":9000,
-                    "name":"mud",
-                    "display_name":"My Great Mud"
-                }
+    "wireframes":[{
+        "mudpy.server.Instance":{
+            "properties":{
+                "port":9000,
+                "name":"mud",
+                "display_name":"My Great Mud"
             }
-        },{
-            "mudpy.client.Config":{
-                "properties":{
-                    "name":"main",
-                    "user_module":"elkhead.user"
-                }
+        }
+    },{
+        "mudpy.client.Config":{
+            "properties":{
+                "name":"main",
+                "user_module":"elkhead.user"
             }
-        }]
-    }
+        }
+    }]
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "__START_ROOM__":"midgaard:82"
         }

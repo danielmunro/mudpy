@@ -1,5 +1,5 @@
 [{
-    "Area":{
+    "mudpy.room.Area":{
         "properties":{
             "name":"midgaard",
             "terrain":"city",
@@ -7,7 +7,7 @@
         }
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":1,
             "name":"Temple of Midgaard",
@@ -18,7 +18,7 @@
             }
         },
         "mobs":[{
-            "Mob":{
+            "mudpy.actor.Mob":{
                 "properties":{
                     "name":"Hassan",
                     "long":"Hassan stands here, waiting to dispense some justice",
@@ -39,7 +39,7 @@
         }]
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":82,
             "name":"The temple altar",
@@ -49,7 +49,7 @@
             }
         },
         "inventory":[{
-            "Item":{
+            "mudpy.item.Item":{
                 "properties":{
                     "name":"a sacrificial pit",
                     "description":"A pit is here, containing treasures donated from other adventurers.",
@@ -59,7 +59,7 @@
             }
         }],
         "mobs":[{
-            "Mob":{
+            "mudpy.actor.Mob":{
                 "properties":{
                     "name":"an acolyte of the temple",
                     "long":"an acolyte of the temple stands before you, ready to help you practice",
@@ -72,7 +72,7 @@
         }]
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":2,
             "name":"Temple Garden",
@@ -85,7 +85,7 @@
             }
         },
         "inventory":[{
-            "Drink":{
+            "mudpy.item.Drink":{
                 "properties":{
                     "name":"an ornate fountain",
                     "description":"An ornately carved fountain is the centerpiece to the temple garden.",
@@ -95,7 +95,7 @@
                 }
             }
         },{
-            "Item":{
+            "mudpy.item.Item":{
                 "properties":{
                     "name":"a small plaque",
                     "description":"A small brass plaque is here, affixed to the temple wall, it reads:\nWelcome to Midgaard.",
@@ -104,7 +104,7 @@
             }
         }],
         "mobs":[{
-            "Mob":{
+            "mudpy.actor.Mob":{
                 "properties":{
                     "id":1,
                     "name":"an adept of Mojo",
@@ -118,7 +118,7 @@
         }]
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":80,
             "name":"Entrance to the Cleric's Guild",
@@ -129,7 +129,7 @@
         }
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":3,
             "name":"Midgaard Market Square",
@@ -170,7 +170,7 @@
         }]
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":75,
             "name":"Midgaard sewer system",
@@ -182,7 +182,7 @@
         }
     }
 },{
-    "Grid":{
+    "mudpy.room.Grid":{
         "properties":{
             "id":100,
             "name":"Midgaard sewers",
@@ -200,7 +200,7 @@
         }
     }
 },{
-    "Room":{
+    "mudpy.room.Room":{
         "properties":{
             "id":101,
             "name":"Thieves' hideout in the Midgaard sewers",

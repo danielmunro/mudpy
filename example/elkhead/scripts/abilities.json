@@ -1,167 +1,165 @@
 [{
-	"Depends":{
+	"mudpy.factory.Depends":{
 		"properties":{
 			"on":["affects.json"]
 		}
 	}
 },{
-	"Factory":{
-		"wireframes":[{
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"sneak",
-					"level":0,
-					"type":"skill",
-					"hook":"input",
-					"costs":{
-						"movement":1
-					},
-					"affects":["sneak"],
-					"messages":{
-						"fail":{
-							"invoker":"You fail to move silently."
-						}
-					}
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"berserk",
-					"level":0,
-					"type":"skill",
-					"hook":"input",
-					"delay": 2,
-					"costs":{
-						"movement":0.5
-					},
-					"affects":["berserk"],
-					"messages":{
-						"fail":{
-							"invoker":"Your face gets red as you huff and stomp around."
-						}
-					}
-				}
-				
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"bash",
-					"level":0,
-					"type":"skill",
-					"hook":"input",
-					"delay":2,
-					"aggro":true,
-					"costs":{
-						"movement":5
-					},
-					"affects":["stun"],
-					"messages":{
-						"success":{
-							"invoker":"You slam into %s and send them flying!",
-							"*":"%s slams into %s!"
-						},
-						"fail":{
-							"invoker":"You fall flat on your face!",
-							"*": "%s falls flat on its face!"
-						}
-					}
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"dirt kick",
-					"level":5,
-					"type":"skill",
-					"hook":"input",
-					"delay":1,
-					"aggro":true,
-					"costs":{
-						"movement":3
-					},
-					"messages":{
-						"success":{
-							"invoker":"You kick dirt into %s's eyes!",
-							"*":"%s kicks dirt into %s's eyes!"
-						},
-						"fail":{
-							"invoker":"You kick around some dirt.",
-							"*": "%s kicks around some dirt."
-						}
-					}
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"kick",
-					"level":10,
-					"type":"skill",
-					"hook":"input",
-					"delay":1,
-					"aggro":true,
-					"costs":{
-						"movement":2
-					},
-					"messages":{
-						"success":{
-							"invoker":"Your kick lands a direct hit on %s!",
-							"*":"%s kicks %s, it's a direct hit."
-						},
-						"fail":{
-							"invoker":"You kick your legs widly.",
-							"*": "%s kicks and misses."
-						}
-					}
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"hand to hand",
-					"level":0,
-					"type":"skill",
-					"hook":"hit"
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"infravision",
-					"level":0,
-					"type":"skill",
-					"hook":"look"
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"second attack",
-					"level":10,
-					"type":"skill",
-					"hook":"attack"
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"cure light",
-					"level":0,
-					"type":"spell",
-					"hook":"input"
-				}
-			}
-		}, {
-			"mudpy.actor.Ability":{
-				"properties":{
-					"name":"heal",
-					"level":20,
-					"type":"spell",
-					"hook":"input"
-				}
-			}
-		}]
-	}
+    "wireframes":[{
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"sneak",
+                "level":0,
+                "type":"skill",
+                "hook":"input",
+                "costs":{
+                    "movement":1
+                },
+                "affects":["sneak"],
+                "messages":{
+                    "fail":{
+                        "invoker":"You fail to move silently."
+                    }
+                }
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"berserk",
+                "level":0,
+                "type":"skill",
+                "hook":"input",
+                "delay": 2,
+                "costs":{
+                    "movement":0.5
+                },
+                "affects":["berserk"],
+                "messages":{
+                    "fail":{
+                        "invoker":"Your face gets red as you huff and stomp around."
+                    }
+                }
+            }
+            
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"bash",
+                "level":0,
+                "type":"skill",
+                "hook":"input",
+                "delay":2,
+                "aggro":true,
+                "costs":{
+                    "movement":5
+                },
+                "affects":["stun"],
+                "messages":{
+                    "success":{
+                        "invoker":"You slam into %s and send them flying!",
+                        "*":"%s slams into %s!"
+                    },
+                    "fail":{
+                        "invoker":"You fall flat on your face!",
+                        "*": "%s falls flat on its face!"
+                    }
+                }
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"dirt kick",
+                "level":5,
+                "type":"skill",
+                "hook":"input",
+                "delay":1,
+                "aggro":true,
+                "costs":{
+                    "movement":3
+                },
+                "messages":{
+                    "success":{
+                        "invoker":"You kick dirt into %s's eyes!",
+                        "*":"%s kicks dirt into %s's eyes!"
+                    },
+                    "fail":{
+                        "invoker":"You kick around some dirt.",
+                        "*": "%s kicks around some dirt."
+                    }
+                }
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"kick",
+                "level":10,
+                "type":"skill",
+                "hook":"input",
+                "delay":1,
+                "aggro":true,
+                "costs":{
+                    "movement":2
+                },
+                "messages":{
+                    "success":{
+                        "invoker":"Your kick lands a direct hit on %s!",
+                        "*":"%s kicks %s, it's a direct hit."
+                    },
+                    "fail":{
+                        "invoker":"You kick your legs widly.",
+                        "*": "%s kicks and misses."
+                    }
+                }
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"hand to hand",
+                "level":0,
+                "type":"skill",
+                "hook":"hit"
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"infravision",
+                "level":0,
+                "type":"skill",
+                "hook":"look"
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"second attack",
+                "level":10,
+                "type":"skill",
+                "hook":"attack"
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"cure light",
+                "level":0,
+                "type":"spell",
+                "hook":"input"
+            }
+        }
+    }, {
+        "mudpy.actor.Ability":{
+            "properties":{
+                "name":"heal",
+                "level":20,
+                "type":"spell",
+                "hook":"input"
+            }
+        }
+    }]
 }]

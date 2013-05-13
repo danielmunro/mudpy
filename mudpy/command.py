@@ -1,33 +1,5 @@
 from . import debug, utility
 
-def checkInput(args):
-    import factory
-    args = args['args']
-    try:
-        action = factory.new(Command(), factory.match(args[1], 'Command')['wireframe'])
-    except (factory.FactoryException, TypeError) as e:
-        return False
-    action.tryPerform(args[0], args[2:])
-    return True
-
-def practice(actor, args):
-    if len(args) == 0:
-        actor.notify("Your proficiencies:\n"+"\n".join(name+": "+str(proficiency.level) for name, proficiency in actor.getProficiencies().iteritems()))
-    else:
-        from actor import Mob
-        if not any(mob.role == Mob.ROLE_ACOLYTE for mob in actor.room.mobs()):
-            actor.notify("No one is here to help you practice.")
-            return;
-        proficiency = ""
-        for p in actor.getProficiencies():
-            if p.find(args[0]) == 0:
-                proficiency = p
-        if proficiency:
-            actor.getProficiency(proficiency).level += 1
-            actor.notify("You get better at "+proficiency+"!")
-        else:
-            actor.notify("You cannot practice that.")
-
 def train(actor, args):
     if actor.trains < 1:
         actor.notify("You don't have any trains.")
@@ -90,23 +62,11 @@ def equipped(actor, args):
         msg += re.sub("\d+", "", p)+": "+str(e)+"\n"
     actor.notify("You are wearing: "+msg)
 
-def sit(sitter, args):
-    from . import actor
-    sitter.disposition = actor.Disposition.SITTING
-    sitter.room.dispatch("disposition_changed", actor=sitter, changed=str(sitter).title()+" sits down and rest.")
-    sitter.notify("You sit down and rest.")
-
 def sleep(actor, args):
     from . import actor
     actor.disposition = actor.Disposition.SLEEPING
     actor.room.dispatch("disposition_changed", actor=actor, changed=str(actor).title()+" goes to sleep.")
     actor.notify("You go to sleep.")
-
-def wake(actor, args):
-    from . import actor
-    actor.disposition = actor.Disposition.STANDING
-    actor.room.dispatch("disposition_changed", actor=actor, changed=str(actor).title()+" stands up.")
-    actor.notify("You stand up.")
 
 def kill(actor, args):
     target = utility.match_partial(args[0], actor.room.actors)
@@ -185,17 +145,21 @@ class Command(object):
 
     def __init__(self):
         self.name = ""
-        self.requiresStandingDisposition = False
+        self.required_dispositions = []
 
-    def tryPerform(self, performer, args = []):
+    def try_perform(self, performer, args = []):
         from . import actor
-        if self.requiresStandingDisposition and performer.disposition != actor.Disposition.STANDING:
-            performer.notify("You are incapacitated and cannot do that." if performer.disposition == actor.Disposition.INCAPACITATED else "You need to be standing to do that.")
+        if self.required_dispositions and performer.disposition \
+                                not in self.required_dispositions:
+            performer.notify("You are incapacitated and cannot do that." \
+                if performer.disposition == actor.Disposition.INCAPACITATED \
+                else "You need to be "+(" or ".join(self.required_dispositions))+" to do that.")
         else:
-            self.perform(performer, args)
-
-    def perform(self, actor, args):
-        globals()[self.name](actor, args)
+            try:
+                getattr(performer, "command_"+self.name)(args)
+            except AttributeError as e:
+                #debug.log(str(type(performer))+" needs to implement command_"+self.name, "notice")
+                debug.log(e, "notice")
     
     def __str__(self):
         return self.name

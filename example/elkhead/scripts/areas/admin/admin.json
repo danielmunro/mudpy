@@ -1,11 +1,11 @@
 [{
-	"Area":{
+	"mudpy.room.Area":{
 		"properties":{
 			"name":"Purgatory"
 		}
 	}
 },{
-	"Room":{
+	"mudpy.room.Room":{
 		"properties":{
 			"id":1,
 			"name":"Purgatory",

@@ -1,51 +1,49 @@
 [{
-	"Factory":{
-		"wireframes":[{
-			"mudpy.affect.Affect":{
-				"properties":{
-					"name":"sneak",
-					"messages":{
-						"success":{
-							"invoker":"You silently fade into the shadows."
-						},
-						"end":{
-							"invoker":"You no longer move silently.",
-							"*":"%s appears from the shadows."
-						}
-					}
-				}
-			}
-		},{
-			"mudpy.affect.Affect":{
-				"properties":{
-					"name":"berserk",
-					"messages":{
-						"success":{
-							"invoker":"Your pulse speeds up as you are consumed by rage!",
-							"*":"%s goes into a rage!"
-						},
-						"end":{
-							"invoker":"You calm down.",
-							"*":"%s calms down."
-						}
-					}
-				},
-				"attributes":{
-					"hp":0.1,
-					"hit":0.1,
-					"dam":0.1
-				}
-			}
-		},{
-			"mudpy.affect.Affect":{
-				"properties":{
-					"name":"stun"
-				},
-				"attributes":{
-					"int":-1,
-					"dex":-1
-				}
-			}
-		}]
-	}
+    "wireframes":[{
+        "mudpy.affect.Affect":{
+            "properties":{
+                "name":"sneak",
+                "messages":{
+                    "success":{
+                        "invoker":"You silently fade into the shadows."
+                    },
+                    "end":{
+                        "invoker":"You no longer move silently.",
+                        "*":"%s appears from the shadows."
+                    }
+                }
+            }
+        }
+    },{
+        "mudpy.affect.Affect":{
+            "properties":{
+                "name":"berserk",
+                "messages":{
+                    "success":{
+                        "invoker":"Your pulse speeds up as you are consumed by rage!",
+                        "*":"%s goes into a rage!"
+                    },
+                    "end":{
+                        "invoker":"You calm down.",
+                        "*":"%s calms down."
+                    }
+                }
+            },
+            "attributes":{
+                "hp":0.1,
+                "hit":0.1,
+                "dam":0.1
+            }
+        }
+    },{
+        "mudpy.affect.Affect":{
+            "properties":{
+                "name":"stun"
+            },
+            "attributes":{
+                "int":-1,
+                "dex":-1
+            }
+        }
+    }]
 }]

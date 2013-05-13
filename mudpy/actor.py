@@ -64,9 +64,9 @@ class Actor(observer.Observer):
         return d
 
     def getProficiency(self, proficiency):
-        for p in self.getProficiencies():
-            if(p.name == proficiency):
-                return p
+        for p, prof in self.getProficiencies().iteritems():
+            if(prof.name == proficiency):
+                return prof
     
     def addProficiency(self, proficiency, level):
         try:
@@ -314,6 +314,18 @@ class Actor(observer.Observer):
     def command_down(self, args):
         self.move("down")
 
+    def command_sit(self, args):
+        self.disposition = Disposition.SITTING
+        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" sits down and rest.")
+
+    def command_wake(self, args):
+        self.disposition = Disposition.STANDING
+        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" stands up.")
+
+    def command_sleep(self, args):
+        self.disposition = Disposition.SLEEPING
+        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" goes to sleep.")
+
 class Mob(Actor):
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
@@ -439,14 +451,12 @@ class User(Actor):
 
     def check_input(self, args):
         args = args['args']
-        command = factory.match(args[0], 'mudpy.command.Command')
-        handled = False
-        if command:
-            try:
-                getattr(self, "command_"+command['wireframe'])(args)
-                handled = True
-            except (AttributeError, factory.FactoryException) as e:
-                pass
+        try:
+            com = factory.new(command.Command(), factory.match(args[0], 'mudpy.command.Command')['wireframe'])
+            com.try_perform(self, args)
+            handled = True
+        except factory.FactoryException:
+            handled = False
         return handled
 
     def leaving(self, args):
@@ -482,6 +492,33 @@ class User(Actor):
     def command_affects(self, args):
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
                     " ticks" for x in self.affects))
+
+    def command_sit(self, args):
+        super(User, self).command_sit(args)
+        self.notify("You sit down and rest.")
+
+    def command_wake(self, args):
+        super(User, self).command_wake(args)
+        self.notify("You stand up.")
+
+    def command_sleep(self, args):
+        super(User, self).command_sleep(args)
+        self.notify("You go to sleep.")
+
+    def command_practice(self, args):
+        if len(args) == 1:
+            self.notify("Your proficiencies:\n" + \
+                    "\n".join(name+": "+str(proficiency.level) \
+                    for name, proficiency in self.getProficiencies().iteritems()))
+        elif any(mob.role == Mob.ROLE_ACOLYTE for mob in self.room.mobs()):
+            for p in self.getProficiencies():
+                if p.find(args[1]) == 0:
+                    self.getProficiency(p).level += 1
+                    self.notify("You get better at "+p+"!")
+                    return
+                self.notify("You cannot practice that.")
+        else:
+            self.notify("No one is here to help you practice.")
 
     def __str__(self):
         return self.name.title()
@@ -604,7 +641,7 @@ class Ability(observer.Observer, room.Reporter):
         return True
     
     def __str__(self):
-        return self.name;
+        return self.name
 
 class Race:
     SIZE_TINY = 1

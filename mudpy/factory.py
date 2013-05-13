@@ -171,21 +171,24 @@ def _parse_json(data, parent = None):
 
     """
 
+    """
     from .room import Room, Randomhall, Grid, Area
     from .item import Item, Drink
     from .actor import Mob, Ability
     from .factory import Depends
+    """
 
     instances = []
     for item in data:
         for _class in item:
             _class = str(_class)
-            try:
-                instances.append(build(locals()[_class](),
-                                                    item[_class],
-                                                    parent))
-            except KeyError:
-                build(None, item[_class], parent)
+            if "." in _class:
+                module_parts = _class.split('.')
+                module = __import__(module_parts[0]+'.'+module_parts[1], fromlist=[module_parts[1]])
+                instance = getattr(module, module_parts[2])()
+                instances.append(build(instance, item[_class], parent))
+            else:
+                build(None, item, parent)
     return instances
 
 def build(instance, properties, parent = None):

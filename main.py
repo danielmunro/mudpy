@@ -8,6 +8,7 @@ from mudpy import factory, server, client, debug
 import sys
 
 # set some global variables from arguments passed to the script
+
 try:
     __scripts_directory__ = sys.argv[1]
     __mud__name__ = sys.argv[2]
@@ -18,8 +19,11 @@ except IndexError:
                 "base init.json configuration, ie:\n\n python main.py "+ \
                 "mudpy/scripts mud\n", "error")
 
-# parse the scripts directory, sets up all of the initial state for the game,
+# parse the scripts directories, sets up all of the initial state for the game,
 # as well as wireframes for building more game objects during the run
+
+factory.parse('mudpy/scripts')
+
 try:
     factory.parse(__scripts_directory__)
 except IOError:
@@ -30,6 +34,7 @@ except IOError:
 # assign a configuration to the server instance, parsed from the
 # __scripts_directory__. Start the configured server, and have it use the
 # ClientFactory to handle new connections
+
 try:
     factory.new(server.__instance__, __mud__name__).start_listening(\
                                                     client.ClientFactory())
