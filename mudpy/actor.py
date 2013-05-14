@@ -493,8 +493,8 @@ class User(Actor):
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
         self.client = client
 
-    def command_look(self, args=None):
-        if not args:
+    def command_look(self, args=[]):
+        if len(args) <= 1:
             # room and exits
             msg = "%s\n%s\n\n[Exits %s]\n" % (self.room.name, self.room.description, "".join(direction[:1] for direction, room in self.room.directions.iteritems() if room))
             # items
