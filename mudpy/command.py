@@ -128,11 +128,6 @@ def score(actor, args):
         actor.getAlignment())
     actor.notify(msg);
 
-def quit(actor, args):
-    from . import persistence
-    persistence.saveUser(actor)
-    actor.client.disconnect()
-
 def who(actor, args):
     wholist = '';
     for i in actor.client.factory.clients:

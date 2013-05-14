@@ -520,6 +520,10 @@ class User(Actor):
         else:
             self.notify("No one is here to help you practice.")
 
+    def command_quit(self, args):
+        persistence.saveUser(self)
+        self.client.disconnect()
+
     def __str__(self):
         return self.name.title()
 
