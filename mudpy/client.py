@@ -91,7 +91,7 @@ class Login:
 
             from . import actor, persistence
 
-            user = persistence.loadUser(data, self.client.get_new_user())
+            user = persistence.load(data)
             if user:
                 user.client = self.client
                 self.client.user = user
@@ -129,7 +129,7 @@ class Login:
                 raise LoginException("That is not a valid alignment. What "+ \
                                      "is your alignment? ")
             self.newuser.loggedin()
-            persistence.saveUser(self.newuser)
+            persistence.save(self.newuser)
             self.client.user = self.newuser
             debug.log('client created new user as '+str(self.newuser))
 

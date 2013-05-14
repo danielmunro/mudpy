@@ -1,7 +1,9 @@
 from __future__ import division
 from . import debug, persistence, room, utility, server, factory, proficiency, \
                 item, attributes, observer, command, affect
-import time, random
+import time, random, os, pickle
+
+__SAVE_DIR__ = 'users'
     
 def get_damage_verb(dam_roll):
     if dam_roll < 5:
@@ -26,12 +28,22 @@ def get_default_attributes():
     a.dam = 1
     return a
 
+def get_user_file(name):
+    return os.path.join(os.getcwd(), __SAVE_DIR__, name+'.pk')
+
+def load(name):
+    user = None
+    user_file = get_user_file(name)
+    if os.path.isfile(user_file):
+        with open(user_file, 'rb') as fp:
+            user = pickle.load(fp)
+    return user
+
 class Actor(observer.Observer):
     MAX_STAT = 25
 
     def __init__(self):
         super(Actor, self).__init__()
-        self.id = persistence.getRandomID()
         self.name = "an actor"
         self.long = ""
         self.description = ""
@@ -69,6 +81,7 @@ class Actor(observer.Observer):
                 return prof
     
     def addProficiency(self, proficiency, level):
+        proficiency = str(proficiency)
         try:
             self.proficiencies[proficiency].level += level
         except KeyError:
@@ -363,8 +376,6 @@ class Mob(Actor):
         })
     
 class User(Actor):
-    persistibleProperties = ['id', 'name', 'long', 'level', 'experience', 'alignment', 'attributes', 'trainedAttributes', 'affects', 'sex', 'abilities', 'inventory', 'trains', 'practices', 'disposition', 'proficiencies']
-
     def __init__(self):
         super(User, self).__init__()
         self.delay_counter = 0
@@ -427,12 +438,11 @@ class User(Actor):
     def levelUp(self):
         super(User, self).levelUp()
         self.notify("You leveled up!")
+
+    def performAbility(ability):
+        self.delay_counter += ability.delay+1
     
     def loggedin(self):
-
-        def performAbility(ability):
-            self.delay_counter += ability.delay+1
-
         if not self.room:
             self.room = room.__ROOMS__[room.__START_ROOM__]
         self.client.attach('input', self.check_input)
@@ -442,7 +452,7 @@ class User(Actor):
         self.notify("\n"+self.prompt())
         debug.log('client logged in as '+str(self))
         for ability in self.getAbilities():
-            ability.attach('perform', performAbility)
+            ability.attach('perform', self.performAbility)
             def checkInput(args):
                 if ability.name.startswith(args[1]):
                     ability.tryPerform(self, args[2:])
@@ -475,6 +485,13 @@ class User(Actor):
         super(User, self).disposition_changed(args)
         if args['actor'] != self:
             self.notify(args['changed'])
+
+    def save(self):
+        client = self.client
+        self.client = None
+        with open(get_user_file(self.name), 'wb') as fp:
+            pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
+        self.client = client
 
     def command_look(self, args=None):
         if not args:
@@ -521,7 +538,7 @@ class User(Actor):
             self.notify("No one is here to help you practice.")
 
     def command_quit(self, args):
-        persistence.saveUser(self)
+        self.save()
         self.client.disconnect()
 
     def __str__(self):
@@ -666,6 +683,7 @@ class Race:
         self.affects = []
     
     def addProficiency(self, prof, level):
+        prof = str(prof)
         try:
             self.proficiencies[prof].level += level
         except KeyError:

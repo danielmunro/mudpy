@@ -4,13 +4,12 @@ different ways.
 
 """
 
-from . import persistence, attributes
+from . import attributes
 
 class Inventory:
     """A bucket of items."""
 
     def __init__(self):
-        self.id = persistence.getRandomID()
         self.items = []
         self.item_count = {}
     
@@ -56,16 +55,6 @@ class Inventory:
 
         return sum(item.weight for item in self.items)
     
-    def save(self):
-        """Save the items in this inventory."""
-
-        persistence.save(self, ['id', 'items'])
-    
-    def load(self):
-        """Load this inventory."""
-
-        persistence.load(self, ['id', 'items'])
-    
     def __str__(self):
         return self.inspection()
 
@@ -73,7 +62,6 @@ class Item(object):
     """Generic item class for properties shared across all item types."""
 
     def __init__(self):
-        self.id = persistence.getRandomID()
         self.name = "a generic item"
         self.description = "a generic item is here"
         self.value = 0
@@ -82,14 +70,6 @@ class Item(object):
         self.can_own = True
         self.level = 1
         self.repop = 1
-    
-    def save(self):
-        """Save the item."""
-        persistence.save(self, ['id', 'name', 'value', 'weight'])
-    
-    def load(self):
-        """Load the item."""
-        persistence.load(self, ['id', 'name', 'value', 'weight'])
 
     def __str__(self):
         return self.name
