@@ -1,5 +1,5 @@
 from __future__ import division
-from . import debug, persistence, room, utility, server, factory, proficiency, \
+from . import debug, room, utility, server, factory, proficiency, \
                 item, attributes, observer, command, affect
 import time, random, os, pickle
 
@@ -217,9 +217,7 @@ class Actor(observer.Observer):
         if(self.attributes.movement >= cost):
             # actor is leaving, subtract movement cost
             self.attributes.movement -= cost
-
             self.room.actor_leave(self, direction)
-
             self.room = new_room
             self.room.actor_arrive(self, room.Direction.get_reverse(direction))
             self.moved(direction)
@@ -414,9 +412,9 @@ class User(Actor):
     
     def die(self):
         super(User, self).die()
-        self.room.actors.remove(self)
+        self.room.actor_leave(self)
         self.room = room.__ROOMS__[room.__START_ROOM__]
-        self.room.actors.append(self)
+        self.room.actor_arrive(self)
         self.room.announce({
             self: "You feel a rejuvinating rush as you pass through this mortal plane.",
             "*": str(self).title()+" arrives in a puff of smoke."
@@ -443,14 +441,21 @@ class User(Actor):
         self.delay_counter += ability.delay+1
     
     def loggedin(self):
-        if not self.room:
-            self.room = room.__ROOMS__[room.__START_ROOM__]
-        self.client.attach('input', self.check_input)
-        server.__instance__.heartbeat.attach('tick', self.tick)
-        self.command_look()
+        # set the room
+        try:
+            new_room_id = getattr(self, 'room_id')
+        except AttributeError:
+            new_room_id = room.__START_ROOM__
+        self.room = room.__ROOMS__[new_room_id]
         self.room.actor_arrive(self)
-        self.notify("\n"+self.prompt())
-        debug.log('client logged in as '+str(self))
+
+        # attach a listener to client input
+        self.client.attach('input', self.check_input)
+
+        # attach a listener to the server tick
+        server.__instance__.heartbeat.attach('tick', self.tick)
+
+        # attach listeners to client input for abilities
         for ability in self.getAbilities():
             ability.attach('perform', self.performAbility)
             def checkInput(args):
@@ -458,6 +463,12 @@ class User(Actor):
                     ability.tryPerform(self, args[2:])
                     return True
             self.client.attach('input', checkInput)
+
+        # look and prompt
+        self.command_look()
+        self.notify("\n"+self.prompt())
+
+        debug.log('client logged in as '+str(self))
 
     def check_input(self, args):
         args = args['args']
@@ -488,10 +499,14 @@ class User(Actor):
 
     def save(self):
         client = self.client
+        room = self.room
         self.client = None
+        self.room = None
+        self.room_id = room.get_full_id()
         with open(get_user_file(self.name), 'wb') as fp:
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
         self.client = client
+        self.room = room
 
     def command_look(self, args=[]):
         if len(args) <= 1:

@@ -89,9 +89,9 @@ class Login:
 
             """
 
-            from . import actor, persistence
+            from . import actor
 
-            user = persistence.load(data)
+            user = actor.load(data)
             if user:
                 user.client = self.client
                 self.client.user = user
@@ -117,8 +117,6 @@ class Login:
         def alignment(data):
             """New alts need an alignment."""
 
-            from . import persistence
-
             if "good".find(data) == 0:
                 self.newuser.alignment = 1000
             elif "neutral".find(data) == 0:
@@ -128,9 +126,9 @@ class Login:
             else:
                 raise LoginException("That is not a valid alignment. What "+ \
                                      "is your alignment? ")
-            self.newuser.loggedin()
-            persistence.save(self.newuser)
             self.client.user = self.newuser
+            self.newuser.loggedin()
+            self.newuser.save()
             debug.log('client created new user as '+str(self.newuser))
 
         step = self.todo.pop(0)
