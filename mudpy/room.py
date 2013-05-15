@@ -69,14 +69,14 @@ class Room(observer.Observer):
             except KeyError:
                 self.directions[direction.name] = None
 
-    def actor_leave(self, actor, direction=""):
-        self.actors.remove(actor)
+    def actor_leave(self, actor, direction="sky"):
         self.dispatch('leaving', actor=actor, direction=direction)
+        self.actors.remove(actor)
         self.detach('leaving', actor.leaving)
         self.detach('arriving', actor.arriving)
         self.detach('disposition_changed', actor.disposition_changed)
     
-    def actor_arrive(self, actor, direction=""):
+    def actor_arrive(self, actor, direction="sky"):
         self.actors.append(actor)
         self.dispatch('arriving', actor=actor, direction=direction)
         self.attach('leaving', actor.leaving)
