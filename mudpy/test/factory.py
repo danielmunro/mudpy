@@ -16,7 +16,7 @@ class TestFactory(unittest.TestCase):
 
 		def getJsonStringWireframes():
 			return """[{
-			"FooMock":{
+			"mudpy.mudpy.test.factory.FooMock":{
 				"properties":{
 					"name":"bar",
 					"level":1,
@@ -45,7 +45,7 @@ class TestFactory(unittest.TestCase):
 
 	def testAddWireframes(self):
 		self.assertEquals(1, len(factory.__wireframes__))
-		self.assertIn("FooMock", factory.__wireframes__.keys())
+		self.assertIn("mudpy.mudpy.test.factory.FooMock", factory.__wireframes__.keys())
 
 	def testNewWireframe(self):
 		foo = factory.new(FooMock(), "bar")

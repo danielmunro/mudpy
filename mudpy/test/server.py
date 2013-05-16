@@ -5,7 +5,7 @@ class TestServer(unittest.TestCase):
 
 	def setUp(self):
 		factory.add(json.loads("""[{
-				"Instance":{
+				"mudpy.mudpy.server.Instance":{
 					"properties":{
 						"port":9000,
 						"name":"mud",
