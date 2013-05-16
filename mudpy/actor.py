@@ -31,6 +31,10 @@ def get_default_attributes():
 def get_user_file(name):
     return os.path.join(os.getcwd(), __SAVE_DIR__, name+'.pk')
 
+def is_valid_name(name):
+    name_len = len(name)
+    return name.isalpha() and name_len > 2 and name_len < 12
+
 def load(name):
     user = None
     user_file = get_user_file(name)

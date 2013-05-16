@@ -91,6 +91,10 @@ class Login:
 
             from . import actor
 
+            if not actor.is_valid_name(data):
+                raise LoginException("That name does not appear to be valid, "+\
+                                     "try again. ")
+
             user = actor.load(data)
             if user:
                 user.client = self.client
