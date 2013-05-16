@@ -3,16 +3,14 @@ to be used to apply attribute changes to an actor or item.
 
 """
 
-from attributes import Attributes
-from observer import Observer
-from . import debug, server, room
+from . import debug, server, room, attributes, observer
 
-class Affect(Observer, room.Reporter):
+class Affect(observer.Observer, room.Reporter):
     """Give an actor or item an affect."""
 
     def __init__(self):
         self.name = "an affect"
-        self.attributes = Attributes()
+        self.attributes = attributes.Attributes()
         self.timeout = 0
         self.messages = {}
         super(Affect, self).__init__()
