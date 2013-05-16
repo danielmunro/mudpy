@@ -1,7 +1,7 @@
 from __future__ import division
 from . import debug, room, utility, server, factory, proficiency, \
                 item, attributes, observer, command, affect
-import time, random, os, pickle
+import time, random, os, pickle, re
 
 __SAVE_DIR__ = 'users'
     
@@ -341,6 +341,70 @@ class Actor(observer.Observer):
         self.disposition = Disposition.SLEEPING
         self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" goes to sleep.")
 
+    def command_wear(self, args):
+        equipment = utility.match_partial(args[1], self.inventory.items)
+        if equipment:
+            currentEq = self.getEquipmentByPosition(equipment.position)
+            if currentEq:
+                self.command_remove(['remove', currentEq.name])
+            if self.setEquipment(equipment):
+                self.notify("You wear "+str(equipment)+".")
+                self.inventory.remove(equipment)
+            else:
+                self.notify("You are not qualified enough to equip "+str(equipment)+".")
+        else:
+            self.notify("You have nothing like that.")
+    
+    def command_remove(self, args):
+        equipment = utility.match_partial(args[1], list(equipment for equipment in self.equipped.values() if equipment))
+        if equipment:
+            self.setEquipmentByPosition(equipment.position, None)
+            self.notify("You remove "+str(equipment)+" and place it in your inventory.")
+            self.inventory.append(equipment)
+        else:
+            self.notify("You are not wearing that.")
+
+    def command_kill(self, args):
+        target = utility.match_partial(args[1], self.room.actors)
+        if target:
+            self.target = target
+            server.__instance__.heartbeat.attach('pulse', actor.pulse)
+            self.room.announce({
+                self: 'You scream and attack!',
+                '*': str(self)+' screams and attacks '+str(target)+'!'
+            })
+        else:
+            self.notify("They aren't here.")
+
+    def command_flee(self, args):
+        if self.target:
+            self.removeFromBattle()
+            self.room.announce({
+                self: "You run scared!",
+                "*": str(self).title()+" runs scared!"
+            })
+            self.move()
+        else:
+            self.notify("You're not fighting anyone!")
+
+    def command_get(self, args):
+        item = utility.match_partial(args[1], self.room.inventory.items)
+        if item and item.can_own:
+            self.room.inventory.remove(item)
+            self.inventory.append(item)
+            self.notify("You pick up "+str(item)+" off the floor.")
+        else:
+            self.notify("Nothing is there." if not item else "You cannot pick up "+str(item)+".")
+
+    def command_drop(self, args):
+        item = utility.match_partial(args[1], actor.inventory.items)
+        if item:
+            self.inventory.remove(item)
+            self.room.inventory.append(item)
+            self.notify("You drop "+str(item)+" to the floor.")
+        else:
+            self.notify("Nothing is there.")
+
 class Mob(Actor):
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
@@ -559,6 +623,68 @@ class User(Actor):
     def command_quit(self, args):
         self.save()
         self.client.disconnect()
+
+    def command_equipped(self, args):
+        msg = ""
+        for p, e in self.equipped.iteritems():
+            msg += re.sub("\d+", "", p)+": "+str(e)+"\n"
+        self.notify("You are wearing: "+msg)
+
+    def command_score(self, args):
+        msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs\nYou have %i trains, %i practices\nYou are level %i with %i experience, %i to next level\nYour alignment is: %s" % ( \
+            self, self.race, self.curhp, self.getAttribute('hp'), self.curmana, \
+            self.getAttribute('mana'), self.curmovement, self.getAttribute('movement'), \
+            self.getAttribute('str'), self.getUnmodifiedAttribute('str'), \
+            self.getAttribute('int'), self.getUnmodifiedAttribute('int'), \
+            self.getAttribute('wis'), self.getUnmodifiedAttribute('wis'), \
+            self.getAttribute('dex'), self.getUnmodifiedAttribute('dex'), \
+            self.getAttribute('con'), self.getUnmodifiedAttribute('con'), \
+            self.getAttribute('cha'), self.getUnmodifiedAttribute('cha'), \
+            self.inventory.get_weight(), self.getMaxWeight(), \
+            self.trains, self.practices, self.level, self.experience, self.experience % self.getExperiencePerLevel(), \
+            self.getAlignment())
+        self.notify(msg);
+
+    def command_inventory(self, args):
+        self.notify("Your inventory:\n"+str(actor.inventory))
+
+    def command_who(self, args):
+        wholist = '';
+        for i in self.client.factory.clients:
+            wholist += str(i.user) if i.user else ""
+        l = len(self.client.factory.clients)
+        wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
+        self.notify(wholist)
+
+    def command_train(self, args):
+        if self.trains < 1:
+            self.notify("You don't have any trains.")
+            return
+        hasTrainer = False
+        if not any(mob.role == Mob.ROLE_TRAINER for mob in self.room.mobs()):
+            actor.notify("There are no trainers here.")
+            return
+        if len(args) == 0:
+            message = ""
+            for stat in attributes.Attributes.stats:
+                attr = self.getAttribute(stat)
+                mattr = self.getMaxAttribute(stat)
+                if attr+1 <= mattr:
+                    message += stat+" "
+            self.notify("You can train: "+message)
+            return
+        stat = args[0]
+        if stat in attributes.Attributes.stats:
+            attr = self.getAttribute(stat)
+            mattr = self.getMaxAttribute(stat)
+            if attr+1 <= mattr:
+                setattr(self.trainedAttributes, stat, getattr(self.trainedAttributes, stat)+1)
+                self.trains -= 1
+                self.notify("Your "+stat+" increases!")
+            else:
+                self.notify("You cannot train "+stat+" any further.")
+        else:
+            self.notify("You cannot train that.")
 
     def __str__(self):
         return self.name.title()
