@@ -231,7 +231,7 @@ def desc_proficiencies(actor, proficiencies):
     """Proficiencies descriptor method, assigns proficiencies to a game object."""
 
     for proficiency in proficiencies:
-        actor.addProficiency(proficiency, proficiencies[proficiency])
+        actor.add_proficiency(proficiency, proficiencies[proficiency])
 
 def desc_inventory(instance, inventory):
     """Inventory descriptor method, calls _parse_json() to initialize the items

@@ -70,29 +70,34 @@ class Actor(observer.Observer):
         self.practices = 0
         self.disposition = Disposition.STANDING
         self.proficiencies = dict()
-        
-        self.equipped = dict((position, None) for position in ['light', 'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs', 'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1', 'wield0', 'wield1', 'float'])
         self.attacks = ['reg']
+        
+        self.equipped = dict((position, None) for position in ['light',
+            'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
+            'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
+            'wield0', 'wield1', 'float'])
     
-    def getProficiencies(self):
+    def get_proficiencies(self):
         d = dict(self.proficiencies)
         d.update(self.race.proficiencies)
         return d
 
-    def getProficiency(self, proficiency):
-        for p, prof in self.getProficiencies().iteritems():
+    def get_proficiency(self, proficiency):
+        for p, prof in self.get_proficiencies().iteritems():
             if(prof.name == proficiency):
                 return prof
     
-    def addProficiency(self, proficiency, level):
+    def add_proficiency(self, proficiency, level):
         proficiency = str(proficiency)
         try:
             self.proficiencies[proficiency].level += level
         except KeyError:
-            self.proficiencies[proficiency] = factory.new(proficiency.Proficiency(), proficiency)
+            self.proficiencies[proficiency] = factory.new(
+                    proficiency.Proficiency(),
+                    proficiency)
             self.proficiencies[proficiency].level = level
     
-    def getEquipmentByPosition(self, position):
+    def get_equipment_by_position(self, position):
         for _position in self.equipped:
             if _position.find(position) == 0:
                 return self.equipped[_position]
@@ -107,13 +112,16 @@ class Actor(observer.Observer):
                 return True
         return False
     
-    def getMovementCost(self):
-        return self.race.movementCost + 1 if self.isEncumbered() else self.race.movementCost
+    def get_movement_cost(self):
+        if self.is_encumbered():
+            return self.race.movementCost + 1
+        else:
+            return self.race. movementCost
     
     def getMaxWeight(self):
         return 100+(self.level*100)
     
-    def isEncumbered(self):
+    def is_encumbered(self):
         return self.inventory.get_weight() > self.getMaxWeight() * 0.95
     
     def notify(self, message):
@@ -143,7 +151,9 @@ class Actor(observer.Observer):
                 setattr(self, actorattr, maxstat)
 
     def getUnmodifiedAttribute(self, attributeName):
-        return getattr(self.attributes, attributeName) + getattr(self.trainedAttributes, attributeName) + getattr(self.race.attributes, attributeName)
+        return getattr(self.attributes, attributeName) + \
+                getattr(self.trainedAttributes, attributeName) + \
+                getattr(self.race.attributes, attributeName)
 
     def getAttribute(self, attributeName):
         amount = self.getUnmodifiedAttribute(attributeName)
@@ -158,7 +168,9 @@ class Actor(observer.Observer):
 
     def getMaxAttribute(self, attributeName):
         racialAttr = getattr(self.race.attributes, attributeName)
-        return min(getattr(self.attributes, attributeName) + racialAttr + 4, racialAttr + 8)
+        return min(
+                getattr(self.attributes, attributeName) + racialAttr + 4, 
+                racialAttr + 8)
     
     def getAbilities(self):
         return self.abilities + self.race.abilities
@@ -217,7 +229,7 @@ class Actor(observer.Observer):
             self.notify("Alas, nothing is there.")
             return
 
-        cost = self.getMovementCost()
+        cost = self.get_movement_cost()
         if(self.attributes.movement >= cost):
             # actor is leaving, subtract movement cost
             self.attributes.movement -= cost
@@ -248,7 +260,10 @@ class Actor(observer.Observer):
             self.inventory.remove(i)
             corpse.inventory.append(i)
         self.room.inventory.append(corpse)
-        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" dies.")
+        self.room.dispatch(
+                "disposition_changed", 
+                actor=self, 
+                changed=str(self).title()+" dies.")
     
     def reward_kill(self, victim):
         self.experience += victim.get_kill_experience(self)
@@ -331,35 +346,47 @@ class Actor(observer.Observer):
 
     def command_sit(self, args):
         self.disposition = Disposition.SITTING
-        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" sits down and rest.")
+        self.room.dispatch(
+                "disposition_changed", 
+                actor=self, 
+                changed=str(self).title()+" sits down and rest.")
 
     def command_wake(self, args):
         self.disposition = Disposition.STANDING
-        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" stands up.")
+        self.room.dispatch(
+                "disposition_changed", 
+                actor=self, 
+                changed=str(self).title()+" stands up.")
 
     def command_sleep(self, args):
         self.disposition = Disposition.SLEEPING
-        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" goes to sleep.")
+        self.room.dispatch(
+                "disposition_changed", 
+                actor=self, 
+                changed=str(self).title()+" goes to sleep.")
 
     def command_wear(self, args):
         equipment = utility.match_partial(args[1], self.inventory.items)
         if equipment:
-            currentEq = self.getEquipmentByPosition(equipment.position)
+            currentEq = self.get_equipment_by_position(equipment.position)
             if currentEq:
                 self.command_remove(['remove', currentEq.name])
             if self.setEquipment(equipment):
                 self.notify("You wear "+str(equipment)+".")
                 self.inventory.remove(equipment)
             else:
-                self.notify("You are not qualified enough to equip "+str(equipment)+".")
+                self.notify("You are not qualified enough to equip "+\
+                            str(equipment)+".")
         else:
             self.notify("You have nothing like that.")
     
     def command_remove(self, args):
-        equipment = utility.match_partial(args[1], list(equipment for equipment in self.equipped.values() if equipment))
+        equipment = utility.match_partial(args[1], 
+            list(eq for eq in self.equipped.values() if eq))
         if equipment:
             self.setEquipmentByPosition(equipment.position, None)
-            self.notify("You remove "+str(equipment)+" and place it in your inventory.")
+            self.notify("You remove "+str(equipment)+\
+                    " and place it in your inventory.")
             self.inventory.append(equipment)
         else:
             self.notify("You are not wearing that.")
@@ -394,7 +421,10 @@ class Actor(observer.Observer):
             self.inventory.append(item)
             self.notify("You pick up "+str(item)+" off the floor.")
         else:
-            self.notify("Nothing is there." if not item else "You cannot pick up "+str(item)+".")
+            if item:
+                self.notify("You cannot pick up "+str(item)+".")
+            else:
+                self.notify("Nothing is there.")
 
     def command_drop(self, args):
         item = utility.match_partial(args[1], actor.inventory.items)
@@ -424,9 +454,11 @@ class Mob(Actor):
             self.decrementMovementTimer()
     
     def decrementMovementTimer(self):
-        self.movement_timer -= 1;
+        self.movement_timer -= 1
         if self.movement_timer < 0:
-            direction = random.choice([direction for direction, room in self.room.directions.iteritems() if room and room.area == self.room.area])
+            direction = random.choice([direction for direction, room in 
+                self.room.directions.iteritems() if room and 
+                room.area == self.room.area])
             self.move(direction)
             self.movement_timer = self.movement
     
@@ -576,15 +608,27 @@ class User(Actor):
     def command_look(self, args=[]):
         if len(args) <= 1:
             # room and exits
-            msg = "%s\n%s\n\n[Exits %s]\n" % (self.room.name, self.room.description, "".join(direction[:1] for direction, room in self.room.directions.iteritems() if room))
+            msg = "%s\n%s\n\n[Exits %s]\n" % (
+                    self.room.name, 
+                    self.room.description, 
+                    "".join(direction[:1] for direction, room in 
+                        self.room.directions.iteritems() if room))
             # items
             msg += self.room.inventory.inspection(' is here.')
             # actors
-            msg += "\n".join(_actor.lookedAt().capitalize() for _actor in self.room.actors if _actor is not self)+"\n"
+            msg += "\n".join(_actor.lookedAt().capitalize() for _actor in 
+                                self.room.actors if _actor is not self)+"\n"
         else:
-            lookingAt = utility.match_partial(args[0], self.inventory.items, self.room.inventory.items, self.room.actors)
-            msg = lookingAt.description.capitalize()+"\n" if lookingAt else "Nothing is there."
-        self.notify(msg)
+            lookingAt = utility.match_partial(
+                    args[0], 
+                    self.inventory.items, 
+                    self.room.inventory.items, 
+                    self.room.actors)
+            if lookingAt:
+                msg = lookingAt.description.capitalize()
+            else:
+                msg = "Nothing is there."
+        self.notify(msg+"\n")
 
     def command_affects(self, args):
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
@@ -606,11 +650,12 @@ class User(Actor):
         if len(args) == 1:
             self.notify("Your proficiencies:\n" + \
                     "\n".join(name+": "+str(proficiency.level) \
-                    for name, proficiency in self.getProficiencies().iteritems()))
+                    for name, proficiency in 
+                        self.get_proficiencies().iteritems()))
         elif any(mob.role == Mob.ROLE_ACOLYTE for mob in self.room.mobs()):
-            for p in self.getProficiencies():
+            for p in self.get_proficiencies():
                 if p.find(args[1]) == 0:
-                    self.getProficiency(p).level += 1
+                    self.get_proficiency(p).level += 1
                     self.notify("You get better at "+p+"!")
                     return
                 self.notify("You cannot practice that.")
@@ -628,30 +673,41 @@ class User(Actor):
         self.notify("You are wearing: "+msg)
 
     def command_score(self, args):
-        msg = "You are %s, a %s\n%i/%i hp %i/%i mana %i/%i mv\nstr (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i), cha(%i/%i)\nYou are carrying %g/%i lbs\nYou have %i trains, %i practices\nYou are level %i with %i experience, %i to next level\nYour alignment is: %s" % ( \
-            self, self.race, self.curhp, self.getAttribute('hp'), self.curmana, \
-            self.getAttribute('mana'), self.curmovement, self.getAttribute('movement'), \
-            self.getAttribute('str'), self.getUnmodifiedAttribute('str'), \
-            self.getAttribute('int'), self.getUnmodifiedAttribute('int'), \
-            self.getAttribute('wis'), self.getUnmodifiedAttribute('wis'), \
-            self.getAttribute('dex'), self.getUnmodifiedAttribute('dex'), \
-            self.getAttribute('con'), self.getUnmodifiedAttribute('con'), \
-            self.getAttribute('cha'), self.getUnmodifiedAttribute('cha'), \
-            self.inventory.get_weight(), self.getMaxWeight(), \
-            self.trains, self.practices, self.level, self.experience, self.experience % self.getExperiencePerLevel(), \
+        msg = "You are %s, a %s\n"+\
+            "%i/%i hp %i/%i mana %i/%i mv\n"+\
+            "str (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i),"+\
+            "cha(%i/%i)\nYou are carrying %g/%i lbs\n"+\
+            "You have %i trains, %i practices\n"+\
+            "You are level %i with %i experience, %i to next level\n"+\
+            "Your alignment is: %s" % ( \
+            self, self.race, self.curhp, self.getAttribute('hp'), self.curmana,
+            self.getAttribute('mana'), self.curmovement,
+            self.getAttribute('movement'),
+            self.getAttribute('str'), self.getUnmodifiedAttribute('str'),
+            self.getAttribute('int'), self.getUnmodifiedAttribute('int'),
+            self.getAttribute('wis'), self.getUnmodifiedAttribute('wis'),
+            self.getAttribute('dex'), self.getUnmodifiedAttribute('dex'),
+            self.getAttribute('con'), self.getUnmodifiedAttribute('con'),
+            self.getAttribute('cha'), self.getUnmodifiedAttribute('cha'),
+            self.inventory.get_weight(), self.getMaxWeight(),
+            self.trains, self.practices, self.level, self.experience,
+            self.experience % self.getExperiencePerLevel(),
             self.get_alignment())
-        self.notify(msg);
+        self.notify(msg)
 
     def command_inventory(self, args):
         self.notify("Your inventory:\n"+str(actor.inventory))
 
     def command_who(self, args):
-        wholist = '';
+        """
+        wholist = ''
         for i in self.client.factory.clients:
             wholist += str(i.user) if i.user else ""
         l = len(self.client.factory.clients)
         wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
         self.notify(wholist)
+        """
+        pass
 
     def command_train(self, args):
         if self.trains < 1:
@@ -824,7 +880,7 @@ class Race:
         self.abilities = []
         self.affects = []
     
-    def addProficiency(self, prof, level):
+    def add_proficiency(self, prof, level):
         prof = str(prof)
         try:
             self.proficiencies[prof].level += level
