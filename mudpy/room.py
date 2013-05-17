@@ -8,6 +8,7 @@ from . import item, observer
 import random
 
 __START_ROOM__ = None
+__PURGATORY__ = None
 __ROOMS__ = {}
 
 class Room(observer.Observer):
@@ -69,14 +70,14 @@ class Room(observer.Observer):
             except KeyError:
                 self.directions[direction.name] = None
 
-    def actor_leave(self, actor, direction="sky"):
+    def actor_leave(self, actor, direction=""):
         self.dispatch('leaving', actor=actor, direction=direction)
         self.actors.remove(actor)
         self.detach('leaving', actor.leaving)
         self.detach('arriving', actor.arriving)
         self.detach('disposition_changed', actor.disposition_changed)
     
-    def actor_arrive(self, actor, direction="sky"):
+    def actor_arrive(self, actor, direction=""):
         self.actors.append(actor)
         self.dispatch('arriving', actor=actor, direction=direction)
         self.attach('leaving', actor.leaving)
@@ -139,8 +140,8 @@ class Grid(Room):
                     grid[y-1][x].setIfEmpty('south', grid[y][x])
         exit = self.exit
         while exit:
-            rand_x = int(round(random.random()*xlen))
-            rand_y = int(round(random.random()*ylen))
+            rand_x = int(round(random.random()*xlen))-1
+            rand_y = int(round(random.random()*ylen))-1
             direction = Direction.get_random()
             if not grid[rand_y][rand_x].directions[direction]:
                 room_key = self.area.name+":"+str(exit)
