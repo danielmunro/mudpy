@@ -311,6 +311,11 @@ def done_room(parent, _room):
     except AttributeError:
         pass
 
+    try:
+        room.__PURGATORY__ = _room.__PURGATORY__
+    except AttributeError:
+        pass
+
 def done_grid(parent, room):
     done_room(parent, room)
 

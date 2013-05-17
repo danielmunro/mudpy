@@ -16,9 +16,25 @@
         }
     }]
 },{
+    "mudpy.room.Area":{
+        "properties":{
+            "name":"administrata",
+            "terrain":"ether"
+        }
+    }
+},{
     "mudpy.room.Room":{
         "properties":{
             "__START_ROOM__":"midgaard:82"
+        }
+    }
+},{
+    "mudpy.room.Room":{
+        "properties":{
+            "__PURGATORY__":"administrata:1",
+            "id":1,
+            "name":"Purgatory",
+            "description":"The lair of souls awaiting rebirth."
         }
     }
 }]

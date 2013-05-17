@@ -235,8 +235,8 @@ class Actor(observer.Observer):
     
     def die(self):
         if self.target:
-            self.target.rewardExperienceFrom(self)
-        self.removeFromBattle()
+            self.target.reward_kill(self)
+        self.end_battle()
         self.disposition = Disposition.LAYING
         self.curhp = 1
         corpse = item.Corpse()
@@ -244,13 +244,14 @@ class Actor(observer.Observer):
         corpse.description = "The corpse of "+str(self)+" lies here."
         corpse.weight = self.race.size * 20
         corpse.material = "flesh"
-        for item in self.inventory.items:
-            self.inventory.remove(item)
-            corpse.inventory.append(item)
+        for i in self.inventory.items:
+            self.inventory.remove(i)
+            corpse.inventory.append(i)
         self.room.inventory.append(corpse)
+        self.room.dispatch("disposition_changed", actor=self, changed=str(self).title()+" dies.")
     
-    def rewardExperienceFrom(self, victim):
-        self.experience += victim.getKillExperience(self)
+    def reward_kill(self, victim):
+        self.experience += victim.get_kill_experience(self)
         diff = self.experience / self.getExperiencePerLevel()
         if diff > self.level:
             gain = 0
@@ -258,7 +259,7 @@ class Actor(observer.Observer):
                 self.levelUp()
                 gain += 1
     
-    def getKillExperience(self, killer):
+    def get_kill_experience(self, killer):
         leveldiff = self.level - killer.level
         experience = 200 + 30 * leveldiff
         if leveldiff > 5:
@@ -276,14 +277,13 @@ class Actor(observer.Observer):
     def levelUp(self):
         self.level += 1
     
-    def removeFromBattle(self):
-        if self.target and self.target.target is self:
-            self.target.target = None
-
+    def end_battle(self):
         if self.target:
+            if self.target.target is self:
+                self.target.target = None
             self.target = None
     
-    def getAlignment(self):
+    def get_alignment(self):
         if self.alignment <= -1000:
             return "evil"
         elif self.alignment <= 0:
@@ -368,7 +368,7 @@ class Actor(observer.Observer):
         target = utility.match_partial(args[1], self.room.actors)
         if target:
             self.target = target
-            server.__instance__.heartbeat.attach('pulse', actor.pulse)
+            server.__instance__.heartbeat.attach('pulse', self.pulse)
             self.room.announce({
                 self: 'You scream and attack!',
                 '*': str(self)+' screams and attacks '+str(target)+'!'
@@ -378,7 +378,7 @@ class Actor(observer.Observer):
 
     def command_flee(self, args):
         if self.target:
-            self.removeFromBattle()
+            self.end_battle()
             self.room.announce({
                 self: "You run scared!",
                 "*": str(self).title()+" runs scared!"
@@ -437,9 +437,9 @@ class Mob(Actor):
     
     def die(self):
         super(Mob, self).die()
-        self.room.announce({
-            "*": str(self).title()+" arrives in a puff of smoke."
-        })
+        self.room.actor_leave(self)
+        self.room = room.__ROOMS__[room.__PURGATORY__]
+        self.room.actor_arrive(self)
     
 class User(Actor):
     def __init__(self):
@@ -483,11 +483,7 @@ class User(Actor):
         self.room.actor_leave(self)
         self.room = room.__ROOMS__[room.__START_ROOM__]
         self.room.actor_arrive(self)
-        self.room.announce({
-            self: "You feel a rejuvinating rush as you pass through this mortal plane.",
-            "*": str(self).title()+" arrives in a puff of smoke."
-        })
-        self.notify("\n"+self.prompt())
+        self.notify("You feel a rejuvinating rush as you pass through this mortal plane.")
     
     def updateDelay(self):
         if self.delay_counter > 0:
@@ -515,7 +511,7 @@ class User(Actor):
         except AttributeError:
             new_room_id = room.__START_ROOM__
         self.room = room.__ROOMS__[new_room_id]
-        self.room.actor_arrive(self)
+        self.room.actor_arrive(self, "sky")
 
         # attach a listener to client input
         self.client.attach('input', self.check_input)
@@ -550,12 +546,13 @@ class User(Actor):
 
     def leaving(self, args):
         super(User, self).leaving(args)
-        if not args['actor'] == self:
+        if not args['actor'] == self and args['direction']:
             self.notify(str(args['actor'])+" left heading "+args['direction']+".\n")
 
     def arriving(self, args):
         super(User, self).arriving(args)
-        self.notify(str(args['actor'])+" arrived from the "+args['direction']+".\n")
+        if args['direction']:
+            self.notify(str(args['actor'])+" arrived from the "+args['direction']+".\n")
 
     def moved(self, args):
         self.command_look()
@@ -563,7 +560,7 @@ class User(Actor):
     def disposition_changed(self, args):
         super(User, self).disposition_changed(args)
         if args['actor'] != self:
-            self.notify(args['changed'])
+            self.notify(args['changed']+"\n")
 
     def save(self):
         client = self.client
@@ -642,7 +639,7 @@ class User(Actor):
             self.getAttribute('cha'), self.getUnmodifiedAttribute('cha'), \
             self.inventory.get_weight(), self.getMaxWeight(), \
             self.trains, self.practices, self.level, self.experience, self.experience % self.getExperiencePerLevel(), \
-            self.getAlignment())
+            self.get_alignment())
         self.notify(msg);
 
     def command_inventory(self, args):
