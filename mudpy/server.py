@@ -12,23 +12,14 @@ class Instance:
     """Information about the implementation of this mud.py server."""
     
     def __init__(self):
-
-        # reference for a server Instance config. factory will use it as a 
-        # a unique identifier
-        self.name = ""
-
-        # the port to listen on for connections from telnet clients
-        self.port = 0
-
-        # display_name is the name of the particular mud being built using
-        # mud.py framework.
-        self.display_name = ""
-
         # initialize heartbeat, which records the time of initialization and
         # keeps track of its own reference to the reactor. Heartbeat uses
         # reactor to call functions in the game thread from the thread
         # listening to the network
         self.heartbeat = Heartbeat()
+
+        # object to encapsulate configuration values
+        self.config = Config()
 
     def start_listening(self, client_factory):
         """Takes a client_factory (twisted Factory implementation), and set it
@@ -61,18 +52,33 @@ class Instance:
 
         # define an endpoint for the reactor in mud.py's ClientFactory, an
         # implementation of twisted's Factory
-        TCP4ServerEndpoint(reactor, self.port).listen(client_factory)
+        TCP4ServerEndpoint(reactor, self.config.port).listen(client_factory)
 
         # start running the game thread
         reactor.callInThread(self.heartbeat.start)
 
-        debug.log(str(self)+" ready to accept clients on port "+str(self.port))
+        debug.log(str(self)+" ready to accept clients on port "+str(self.config.port))
 
         # start the twisted client listener thread
         reactor.run()
     
     def __str__(self):
-        return self.name
+        return self.config.name
+
+class Config:
+    """Maintains configuration specific to the mud mudp is running."""
+
+    def __init__(self):
+        # reference for a server Instance config. factory will use it as a 
+        # a unique identifier
+        self.name = ""
+
+        # the port to listen on for connections from telnet clients
+        self.port = 0
+
+        # display_name is the name of the particular mud being built using
+        # mud.py framework.
+        self.display_name = ""
 
 class Heartbeat(observer.Observer):
     """The timekeeper for mud.py. Fires off game cycles for each loop within

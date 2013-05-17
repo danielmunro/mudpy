@@ -35,9 +35,5 @@ except IOError:
 # __scripts_directory__. Start the configured server, and have it use the
 # ClientFactory to handle new connections
 
-try:
-    factory.new(server.__instance__, __mud__name__).start_listening(\
-                                                    client.ClientFactory())
-except factory.FactoryException:
-    debug.log("invalid mud name passed as second argument. This needs to be"+ \
-                "the Instance name defined in your scripts/init.json", "error")
+server.__instance__.config = factory.new(server.Config(), __mud__name__)
+server.__instance__.start_listening(client.ClientFactory())
