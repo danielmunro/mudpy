@@ -91,11 +91,11 @@ class Login:
 
             from . import actor
 
-            if not actor.is_valid_name(data):
+            if not actor.User.is_valid_name(data):
                 raise LoginException("That name does not appear to be valid, "+\
                                      "try again. ")
 
-            user = actor.load(data)
+            user = actor.User.load(data)
             if user:
                 user.client = self.client
                 self.client.user = user
@@ -131,6 +131,7 @@ class Login:
                 raise LoginException("That is not a valid alignment. What "+ \
                                      "is your alignment? ")
             self.client.user = self.newuser
+            self.newuser.set_experience_per_level()
             self.newuser.loggedin()
             self.newuser.save()
             debug.log('client created new user as '+str(self.newuser))

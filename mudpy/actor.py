@@ -1,3 +1,8 @@
+"""The actor module is the 'meat' of the framework, defines users and mobs and
+how they interact with the world.
+
+"""
+
 from __future__ import division
 from . import debug, room, utility, server, factory, proficiency, \
                 item, attributes, observer, command, affect
@@ -6,6 +11,10 @@ import time, random, os, pickle, re
 __SAVE_DIR__ = 'users'
     
 def get_damage_verb(dam_roll):
+    """A string representation of the severity of damage dam_roll will cause.
+
+    """
+
     if dam_roll < 5:
         return "clumsy"
     elif dam_roll < 10:
@@ -16,34 +25,27 @@ def get_damage_verb(dam_roll):
         return "skillful"
 
 def get_default_attributes():
-    a = attributes.Attributes()
-    a.hp = 20
-    a.mana = 100
-    a.movement = 100
-    a.ac_bash = 100
-    a.ac_pierce = 100
-    a.ac_slash = 100
-    a.ac_magic = 100
-    a.hit = 1
-    a.dam = 1
-    return a
+    """Starting attributes for level 1 actors."""
 
-def get_user_file(name):
-    return os.path.join(os.getcwd(), __SAVE_DIR__, name+'.pk')
+    attr = attributes.Attributes()
+    attr.hp = 20
+    attr.mana = 100
+    attr.movement = 100
+    attr.ac_bash = 100
+    attr.ac_pierce = 100
+    attr.ac_slash = 100
+    attr.ac_magic = 100
+    attr.hit = 1
+    attr.dam = 1
+    return attr
 
-def is_valid_name(name):
-    name_len = len(name)
-    return name.isalpha() and name_len > 2 and name_len < 12
+def get_attr_mod(actor, attribute_name):
+    """Returns a small integer to be used in fight calculations."""
 
-def load(name):
-    user = None
-    user_file = get_user_file(name)
-    if os.path.isfile(user_file):
-        with open(user_file, 'rb') as fp:
-            user = pickle.load(fp)
-    return user
+    return (actor.get_attribute(attribute_name) / Actor.MAX_STAT) * 4
 
 class Actor(observer.Observer):
+    """Abstract 'person' in the game, base object for users and mobs."""
     MAX_STAT = 25
 
     def __init__(self):
@@ -53,14 +55,16 @@ class Actor(observer.Observer):
         self.description = ""
         self.level = 0
         self.experience = 0
+        self.experience_per_level = 0
         self.alignment = 0
         self.attributes = get_default_attributes()
-        self.trainedAttributes = attributes.Attributes()
+        self.trained_attributes = attributes.Attributes()
         self.curhp = self.attributes.hp
         self.curmana = self.attributes.mana
         self.curmovement = self.attributes.movement
         self.sex = "neutral"
         self.room = None
+        self.room_id = 0 # we only save the room id, not the room itself
         self.abilities = []
         self.affects = []
         self.target = None
@@ -78,56 +82,87 @@ class Actor(observer.Observer):
             'wield0', 'wield1', 'float'])
     
     def get_proficiencies(self):
-        d = dict(self.proficiencies)
-        d.update(self.race.proficiencies)
-        return d
+        """Returns all actor's proficiencies, including known ones and ones
+        granted from racial bonuses.
 
-    def get_proficiency(self, proficiency):
-        for p, prof in self.get_proficiencies().iteritems():
-            if(prof.name == proficiency):
+        """
+
+        all_proficiencies = dict(self.proficiencies)
+        all_proficiencies.update(self.race.proficiencies)
+        return all_proficiencies
+
+    def get_proficiency(self, _proficiency):
+        """Checks if an actor has a given proficiency and returns the object
+        if successfully found.
+
+        """
+
+        for prof in self.get_proficiencies():
+            if(prof.name == _proficiency):
                 return prof
     
-    def add_proficiency(self, proficiency, level):
-        proficiency = str(proficiency)
+    def add_proficiency(self, _proficiency, level):
+        """Adds a proficiency to the actor."""
+
+        _proficiency = str(proficiency)
         try:
-            self.proficiencies[proficiency].level += level
+            self.proficiencies[_proficiency].level += level
         except KeyError:
-            self.proficiencies[proficiency] = factory.new(
+            self.proficiencies[_proficiency] = factory.new(
                     proficiency.Proficiency(),
-                    proficiency)
-            self.proficiencies[proficiency].level = level
+                    _proficiency)
+            self.proficiencies[_proficiency].level = level
     
     def get_equipment_by_position(self, position):
+        """Returns what the actor has equipped for requested position."""
+
         for _position in self.equipped:
             if _position.find(position) == 0:
                 return self.equipped[_position]
     
-    def setEquipment(self, equipment):
-        return self.setEquipmentByPosition(equipment.position, equipment)
-    
-    def setEquipmentByPosition(self, position, equipment):
-        for _position in self.equipped:
-            if _position.find(position) == 0:
-                self.equipped[_position] = equipment
-                return True
-        return False
+    def set_equipment(self, equipment):
+        """Equips an item, allowing the actor to take advantage of its
+        properties.
+
+        """
+
+        return self._set_equipment_by_position(equipment.position, equipment)
     
     def get_movement_cost(self):
+        """Returns the movement cost of moving an actor from one room to
+        an adjacent room.
+
+        """
+
         if self.is_encumbered():
-            return self.race.movementCost + 1
+            return self.race.movement_cost + 1
         else:
-            return self.race. movementCost
+            return self.race. movement_cost
     
-    def getMaxWeight(self):
+    def get_max_weight(self):
+        """Returns the maximum weight that an actor can carry."""
+
         return 100+(self.level*100)
     
     def is_encumbered(self):
-        return self.inventory.get_weight() > self.getMaxWeight() * 0.95
+        """If an actor is encumbered, certain tasks become more difficult."""
+
+        return self.inventory.get_weight() > self.get_max_weight() * 0.95
     
     def notify(self, message):
+        """Called to tell the actor a generic message. Only utilized by the 
+        user class for transporting messages to the client.
+
+        """
+
         pass
     
     def tick(self):
+        """Called on the actor by the server, part of a series of "heartbeats".
+        Responsible for regening the actor's hp, mana, and movement.
+        
+        """
+
         modifier = random.uniform(0.05, 0.125)
         if self.disposition == Disposition.INCAPACITATED:
             modifier = -modifier
@@ -135,68 +170,67 @@ class Actor(observer.Observer):
             modifier += random.uniform(0.01, 0.05)
         elif self.disposition == Disposition.SLEEPING:
             modifier += random.uniform(0.05, 0.1)
-        self.curhp += self.getAttribute('hp') * modifier
-        self.curmana += self.getAttribute('mana') * modifier
-        self.curmovement += self.getAttribute('movement') * modifier
-        self.normalizestats()
+        self.curhp += self.get_attribute('hp') * modifier
+        self.curmana += self.get_attribute('mana') * modifier
+        self.curmovement += self.get_attribute('movement') * modifier
+        self._normalizestats()
     
     def pulse(self):
-        self.doRegularAttacks()
-    
-    def normalizestats(self):
-        for attr in ['hp', 'mana', 'movement']:
-            maxstat = self.getAttribute(attr)
-            actorattr = 'cur'+attr
-            if getattr(self, actorattr) > maxstat:
-                setattr(self, actorattr, maxstat)
+        """Called during regular heartbeats by the server, initiates battle
+        rounds between aggressors.
 
-    def getUnmodifiedAttribute(self, attributeName):
-        return getattr(self.attributes, attributeName) + \
-                getattr(self.trainedAttributes, attributeName) + \
-                getattr(self.race.attributes, attributeName)
+        """
 
-    def getAttribute(self, attributeName):
-        amount = self.getUnmodifiedAttribute(attributeName)
-        for affect in self.affects:
-            amount += getattr(affect.attributes, attributeName)
+        self._do_regular_attacks()
+
+    def get_attribute(self, attribute_name):
+        """Calculates the value of the attribute_name passed in, based on a
+        number of variables, such as the starting attribute value, plus the
+        trained values, racial modifiers, and affect modifiers.
+
+        """
+
+        amount = self._get_unmodified_attribute(attribute_name)
+        for _affect in self.affects:
+            amount += getattr(_affect.attributes, attribute_name)
         for equipment in self.equipped.values():
             if equipment:
-                amount += getattr(equipment.attributes, attributeName)
-        if attributeName in attributes.Attributes.stats:
-            return min(amount, self.getMaxAttribute(attributeName))
+                amount += getattr(equipment.attributes, attribute_name)
+        if attribute_name in attributes.Attributes.stats:
+            return min(amount, self.get_max_attribute(attribute_name))
         return amount
 
-    def getMaxAttribute(self, attributeName):
-        racialAttr = getattr(self.race.attributes, attributeName)
+    def get_max_attribute(self, attribute_name):
+        """Returns the max attainable value for an attribute."""
+
+        racial_attr = getattr(self.race.attributes, attribute_name)
         return min(
-                getattr(self.attributes, attributeName) + racialAttr + 4, 
-                racialAttr + 8)
+                getattr(self.attributes, attribute_name) + racial_attr + 4, 
+                racial_attr + 8)
     
-    def getAbilities(self):
+    def get_abilities(self):
+        """Returns abilities available to the actor, including known ones and
+        ones granted from racial bonuses.
+
+        """
+
         return self.abilities + self.race.abilities
 
     def __str__(self):
         return self.name
     
-    def getWieldedWeapons(self):
+    def get_wielded_weapons(self):
+        """Helper function to return the weapons the actor has wielded."""
+
         return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
     
-    def doRegularAttacks(self, recursedAttackIndex = 0):
-        if self.target:
-            if not self.target.target:
-                self.target.target = self
-                server.__instance__.heartbeat.attach('pulse', self.target.pulse)
-
-            if self.disposition != Disposition.INCAPACITATED:
-                try:
-                    Attack(self, self.attacks[recursedAttackIndex])
-                    self.doRegularAttacks(recursedAttackIndex + 1)
-                except IndexError: pass
-        else:
-            server.__instance__.heartbeat.detach('pulse', self)
-    
     def status(self):
-        hppercent = self.curhp / self.getAttribute('hp')
+        """A string representation of the approximate physical health of the
+        actor, based on the percentage of hp remaining.
+
+        """
+
+        hppercent = self.curhp / self.get_attribute('hp')
         
         if hppercent < 0.1:
             description = 'is in awful condition'
@@ -216,6 +250,8 @@ class Actor(observer.Observer):
         return str(self).title()+' '+description+'.'
     
     def move(self, direction):
+        """Try to move the actor in the given direction."""
+
         if self.target:
             self.notify("You are fighting!")
             return
@@ -236,16 +272,19 @@ class Actor(observer.Observer):
             self.room.actor_leave(self, direction)
             self.room = new_room
             self.room.actor_arrive(self, room.Direction.get_reverse(direction))
-            self.moved(direction)
+            self._moved(direction)
 
             debug.log(str(self)+' moves to '+str(self.room))
         else:
             self.notify("You are too tired to move.")
-
-    def moved(self, args):
-        pass
     
     def die(self):
+        """What happens when the user is killed (regardless of the method of
+        death). Does basic things such as creating the corpse and dispatching
+        a disposition change event.
+        
+        """
+
         if self.target:
             self.target.reward_kill(self)
         self.end_battle()
@@ -266,15 +305,25 @@ class Actor(observer.Observer):
                 changed=str(self).title()+" dies.")
     
     def reward_kill(self, victim):
+        """Applies kill experience from the victim to the killer and checks
+        for a level up.
+
+        """
+
         self.experience += victim.get_kill_experience(self)
-        diff = self.experience / self.getExperiencePerLevel()
+        diff = self.experience / self.get_experience_per_level()
         if diff > self.level:
             gain = 0
             while gain < diff:
-                self.levelUp()
+                self._level_up()
                 gain += 1
     
     def get_kill_experience(self, killer):
+        """The experience the killer gets for killing this actor, based on many
+        factors including level difference.
+
+        """
+
         leveldiff = self.level - killer.level
         experience = 200 + 30 * leveldiff
         if leveldiff > 5:
@@ -286,19 +335,38 @@ class Actor(observer.Observer):
         experience = random.uniform(experience * 0.8, experience * 1.2)
         return experience if experience > 0 else 0
 
-    def getExperiencePerLevel(self):
-        return 1000
+    def get_experience_per_level(self):
+        """The experience the actor needs to level up."""
 
-    def levelUp(self):
-        self.level += 1
+        return self.experience_per_level
+    
+    def set_experience_per_level(self):
+        """Based on the current configuration of proficiencies, calculate how
+        much experience the actor needs to obtain to get a level.
+
+        @todo: stub out this function.
+        
+        """
+
+        return self.experience_per_level + 1000
     
     def end_battle(self):
+        """Ensure the actor is removed from battle, unless multiple actors are
+        targeting this actor.
+
+        """
+
         if self.target:
             if self.target.target is self:
                 self.target.target = None
             self.target = None
     
     def get_alignment(self):
+        """A string representation of the actor's alignment. Alignment is
+        changed based on the actor's actions.
+
+        """
+
         if self.alignment <= -1000:
             return "evil"
         elif self.alignment <= 0:
@@ -306,45 +374,129 @@ class Actor(observer.Observer):
         elif self.alignment >= 1000:
             return "good"
     
-    def lookedAt(self):
+    def looked_at(self):
+        """What a user sees when they look at the actor."""
+
         return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
 
-    def startAffect(self, args):
+    def start_affect(self, args):
+        """Called when an affect is started on an actor."""
+
         self.room.announce(args['affect'].getMessages('success', self))
         self.affects.append(args['affect'])
     
-    def endAffect(self, affect):
+    def end_affect(self, args):
+        """Called when an affect timer runs out on an actor."""
+
         self.room.announce(args['affect'].getMessages('end', self))
-        self.affects.remove(affect)
+        self.affects.remove(args['affect'])
 
     def leaving(self, actor):
+        """Called when an actor leaves a room."""
+
         pass
 
     def arriving(self, actor):
+        """Called when an actor enters a new room."""
+
         pass
 
     def disposition_changed(self, args):
+        """Called when an actor gets assigned a new disposition from the
+        Disposition class.
+
+        """
+
+        pass
+    
+    def _set_equipment_by_position(self, position, equipment):
+        """Sets a piece of equipment by a specific position."""
+
+        for _position in self.equipped:
+            if _position.find(position) == 0:
+                self.equipped[_position] = equipment
+                return True
+        return False
+    
+    def _normalizestats(self):
+        """Ensures hp, mana, and movement do not exceed their maxes during a
+        tick.
+
+        """
+
+        for attr in ['hp', 'mana', 'movement']:
+            maxstat = self.get_attribute(attr)
+            actorattr = 'cur'+attr
+            if getattr(self, actorattr) > maxstat:
+                setattr(self, actorattr, maxstat)
+
+    def _get_unmodified_attribute(self, attribute_name):
+        """Returns the "base" value of the requested attribute, which consists
+        of the starting actor value plus trained amounts and racial bonuses.
+
+        """
+
+        return getattr(self.attributes, attribute_name) + \
+                getattr(self.trained_attributes, attribute_name) + \
+                getattr(self.race.attributes, attribute_name)
+    
+    def _do_regular_attacks(self, recursed_attack_index = 0):
+        """Recurse through the attacks the user is able to make for a round of
+        battle.
+
+        """
+
+        if self.target:
+            if not self.target.target:
+                self.target.target = self
+                server.__instance__.heartbeat.attach('pulse', self.target.pulse)
+
+            if self.disposition != Disposition.INCAPACITATED:
+                try:
+                    Attack(self, self.attacks[recursed_attack_index])
+                    self._do_regular_attacks(recursed_attack_index + 1)
+                except IndexError:
+                    pass
+        else:
+            server.__instance__.heartbeat.detach('pulse', self)
+
+    def _moved(self, args):
+        """Called when an actor moves."""
+
         pass
 
+    def _level_up(self):
+        """Increase the actor's level."""
+
+        self.level += 1
+
     def command_north(self, args):
+        """Attempt to move the actor in the north direction."""
         self.move("north")
 
     def command_south(self, args):
+        """Attempt to move the actor in the south direction."""
         self.move("south")
 
     def command_east(self, args):
+        """Attempt to move the actor in the east direction."""
         self.move("east")
 
     def command_west(self, args):
+        """Attempt to move the actor in the west direction."""
         self.move("west")
 
     def command_up(self, args):
+        """Attempt to move the actor in the up direction."""
         self.move("up")
 
     def command_down(self, args):
+        """Attempt to move the actor in the down direction."""
         self.move("down")
 
     def command_sit(self, args):
+        """Change the actor's disposition to sitting."""
+
         self.disposition = Disposition.SITTING
         self.room.dispatch(
                 "disposition_changed", 
@@ -352,6 +504,8 @@ class Actor(observer.Observer):
                 changed=str(self).title()+" sits down and rest.")
 
     def command_wake(self, args):
+        """Change the actor's disposition to standing."""
+
         self.disposition = Disposition.STANDING
         self.room.dispatch(
                 "disposition_changed", 
@@ -359,6 +513,8 @@ class Actor(observer.Observer):
                 changed=str(self).title()+" stands up.")
 
     def command_sleep(self, args):
+        """Change the actor's disposition to sleeping."""
+
         self.disposition = Disposition.SLEEPING
         self.room.dispatch(
                 "disposition_changed", 
@@ -366,12 +522,16 @@ class Actor(observer.Observer):
                 changed=str(self).title()+" goes to sleep.")
 
     def command_wear(self, args):
+        """Attempt to wear a piece of equipment or a weapon from the inventory.
+        
+        """
+
         equipment = utility.match_partial(args[1], self.inventory.items)
         if equipment:
-            currentEq = self.get_equipment_by_position(equipment.position)
-            if currentEq:
-                self.command_remove(['remove', currentEq.name])
-            if self.setEquipment(equipment):
+            current_eq = self.get_equipment_by_position(equipment.position)
+            if current_eq:
+                self.command_remove(['remove', current_eq.name])
+            if self.set_equipment(equipment):
                 self.notify("You wear "+str(equipment)+".")
                 self.inventory.remove(equipment)
             else:
@@ -381,10 +541,12 @@ class Actor(observer.Observer):
             self.notify("You have nothing like that.")
     
     def command_remove(self, args):
+        """Attempt to remove a worn piece of equipment or weapon."""
+
         equipment = utility.match_partial(args[1], 
             list(eq for eq in self.equipped.values() if eq))
         if equipment:
-            self.setEquipmentByPosition(equipment.position, None)
+            self._set_equipment_by_position(equipment.position, None)
             self.notify("You remove "+str(equipment)+\
                     " and place it in your inventory.")
             self.inventory.append(equipment)
@@ -392,6 +554,8 @@ class Actor(observer.Observer):
             self.notify("You are not wearing that.")
 
     def command_kill(self, args):
+        """Attempt to kill another actor within the same room."""
+
         target = utility.match_partial(args[1], self.room.actors)
         if target:
             self.target = target
@@ -404,6 +568,11 @@ class Actor(observer.Observer):
             self.notify("They aren't here.")
 
     def command_flee(self, args):
+        """Attempt to flee from a battle. This will cause the actor to flee
+        to another room in a random direction.
+
+        """
+
         if self.target:
             self.end_battle()
             self.room.announce({
@@ -415,27 +584,41 @@ class Actor(observer.Observer):
             self.notify("You're not fighting anyone!")
 
     def command_get(self, args):
-        item = utility.match_partial(args[1], self.room.inventory.items)
-        if item and item.can_own:
-            self.room.inventory.remove(item)
-            self.inventory.append(item)
-            self.notify("You pick up "+str(item)+" off the floor.")
+        """Locates and transfers an item from an accessible inventory into
+        the actor's inventory. An accessible inventory is the room's inventory
+        or the inventory of a container in the room or in the actor's
+        inventory.
+
+        """
+
+        _item = utility.match_partial(args[1], self.room.inventory.items)
+        if _item and _item.can_own:
+            self.room.inventory.remove(_item)
+            self.inventory.append(_item)
+            self.notify("You pick up "+str(_item)+" off the floor.")
         else:
-            if item:
-                self.notify("You cannot pick up "+str(item)+".")
+            if _item:
+                self.notify("You cannot pick up "+str(_item)+".")
             else:
                 self.notify("Nothing is there.")
 
     def command_drop(self, args):
-        item = utility.match_partial(args[1], actor.inventory.items)
-        if item:
-            self.inventory.remove(item)
-            self.room.inventory.append(item)
-            self.notify("You drop "+str(item)+" to the floor.")
+        """Removes an item from the actor's inventory and adds it to the room
+        inventory.
+
+        """
+
+        _item = utility.match_partial(args[1], actor.inventory.items)
+        if _item:
+            self.inventory.remove(_item)
+            self.room.inventory.append(_item)
+            self.notify("You drop "+str(_item)+" to the floor.")
         else:
             self.notify("Nothing is there.")
 
 class Mob(Actor):
+    """NPCs of the game, mobs are the inhabitants of the mud world."""
+
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
 
@@ -451,21 +634,26 @@ class Mob(Actor):
     def tick(self):
         super(Mob, self).tick()
         if self.movement:
-            self.decrementMovementTimer()
+            self.decrement_movement_timer()
     
-    def decrementMovementTimer(self):
+    def decrement_movement_timer(self):
+        """Counts down to 0, at which point the mob will attempt to move from
+        their current room to a new one. They cannot move to new areas however.
+
+        """
+
         self.movement_timer -= 1
         if self.movement_timer < 0:
-            direction = random.choice([direction for direction, room in 
-                self.room.directions.iteritems() if room and 
-                room.area == self.room.area])
+            direction = random.choice([direction for direction, _room in 
+                self.room.directions.iteritems() if _room and 
+                _room.area == self.room.area])
             self.move(direction)
             self.movement_timer = self.movement
     
-    def normalizestats(self):
+    def _normalizestats(self):
         if self.curhp < 0:
             self.die()
-        super(Mob, self).normalizestats()
+        super(Mob, self)._normalizestats()
     
     def die(self):
         super(Mob, self).die()
@@ -474,6 +662,8 @@ class Mob(Actor):
         self.room.actor_arrive(self)
     
 class User(Actor):
+    """The actor controlled by a client connected by the server."""
+
     def __init__(self):
         super(User, self).__init__()
         self.delay_counter = 0
@@ -482,12 +672,16 @@ class User(Actor):
         self.practices = 5
         self.client = None
         server.__instance__.heartbeat.attach('stat', self.stat)
-        server.__instance__.heartbeat.attach('cycle', self.updateDelay)
+        server.__instance__.heartbeat.attach('cycle', self.update_delay)
     
     def prompt(self):
+        """The status prompt for a user. By default, shows current hp, mana,
+        and movement. Not yet configurable."""
+
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
     
     def notify(self, message):
+        super(User, self).notify(message)
         if self.client.user:
             self.client.write(message)
     
@@ -496,10 +690,15 @@ class User(Actor):
         self.notify("\n"+self.prompt())
     
     def stat(self):
+        """Notifies the user of the target's status (if any) and supplies a
+        fresh prompt.
+
+        """
+
         if self.target:
             self.notify(self.target.status()+"\n\n"+self.prompt())
     
-    def normalizestats(self):
+    def _normalizestats(self):
         if self.curhp < -9:
             self.die()
         elif self.curhp <= 0:
@@ -508,7 +707,7 @@ class User(Actor):
         elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
             self.disposition = Disposition.LAYING
             self.notify("You suddenly feel a bit better.\n")
-        super(User, self).normalizestats()
+        super(User, self)._normalizestats()
     
     def die(self):
         super(User, self).die()
@@ -517,7 +716,12 @@ class User(Actor):
         self.room.actor_arrive(self)
         self.notify("You feel a rejuvinating rush as you pass through this mortal plane.")
     
-    def updateDelay(self):
+    def update_delay(self):
+        """Removes the client from polling for input if the user has a delay
+        applied to it.
+
+        """
+
         if self.delay_counter > 0:
             if not self.last_delay:
                 server.__instance__.heartbeat.detach('cycle', self.client.poll)
@@ -529,18 +733,24 @@ class User(Actor):
             server.__instance__.heartbeat.attach('cycle', self.client.poll)
             self.last_delay = 0
     
-    def levelUp(self):
-        super(User, self).levelUp()
+    def _level_up(self):
+        super(User, self)._level_up()
         self.notify("You leveled up!")
 
-    def performAbility(ability):
+    def perform_ability(self, ability):
+        """Applies delay to the user when performing an ability."""
         self.delay_counter += ability.delay+1
     
     def loggedin(self):
+        """Miscellaneous setup tasks for when a user logs in. Nothing too
+        exciting.
+
+        """
+
         # set the room
-        try:
-            new_room_id = getattr(self, 'room_id')
-        except AttributeError:
+        if self.room_id:
+            new_room_id = self.room_id
+        else:
             new_room_id = room.__START_ROOM__
         self.room = room.__ROOMS__[new_room_id]
         self.room.actor_arrive(self, "sky")
@@ -552,13 +762,19 @@ class User(Actor):
         server.__instance__.heartbeat.attach('tick', self.tick)
 
         # attach listeners to client input for abilities
-        for ability in self.getAbilities():
-            ability.attach('perform', self.performAbility)
-            def checkInput(args):
-                if ability.name.startswith(args[1]):
-                    ability.tryPerform(self, args[2:])
-                    return True
-            self.client.attach('input', checkInput)
+        for ability in self.get_abilities():
+            ability.attach('perform', self.perform_ability)
+            if ability.hook == 'input':
+                def check_input(args):
+                    """Checks if the user is trying to perform an ability with
+                    a given input.
+
+                    """
+
+                    if ability.name.startswith(args[1]):
+                        ability.try_perform(self, args[2:])
+                        return True
+                self.client.attach('input', check_input)
 
         # look and prompt
         self.command_look()
@@ -567,6 +783,11 @@ class User(Actor):
         debug.log('client logged in as '+str(self))
 
     def check_input(self, args):
+        """Takes input from the user and tries to find a match against known
+        commands.
+
+        """
+
         args = args['args']
         try:
             com = factory.new(command.Command(), factory.match(args[0], 'mudpy.command.Command')['wireframe'])
@@ -586,7 +807,8 @@ class User(Actor):
         if args['direction']:
             self.notify(str(args['actor'])+" arrived from the "+args['direction']+".\n")
 
-    def moved(self, args):
+    def _moved(self, args):
+        super(User, self)._moved(args)
         self.command_look()
 
     def disposition_changed(self, args):
@@ -595,17 +817,52 @@ class User(Actor):
             self.notify(args['changed']+"\n")
 
     def save(self):
+        """Persists the user as a pickle dump."""
+
         client = self.client
-        room = self.room
+        _room = self.room
         self.client = None
         self.room = None
-        self.room_id = room.get_full_id()
-        with open(get_user_file(self.name), 'wb') as fp:
+        self.room_id = _room.get_full_id()
+        with open(User.get_save_file(self.name), 'wb') as fp:
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
         self.client = client
-        self.room = room
+        self.room = _room
 
-    def command_look(self, args=[]):
+    @staticmethod
+    def get_save_file(name):
+        """The path to the user file based on the name given."""
+
+        return os.path.join(os.getcwd(), __SAVE_DIR__, name+'.pk')
+
+    @staticmethod
+    def load(name):
+        """Attempts to load a user from the user save file. If the file does
+        not exist, the client is trying to create a new user.
+
+        """
+
+        user = None
+        user_file = User.get_save_file(name)
+        if os.path.isfile(user_file):
+            with open(user_file, 'rb') as fp:
+                user = pickle.load(fp)
+        return user
+
+    @staticmethod
+    def is_valid_name(name):
+        """Check if a user name is a valid format."""
+
+        name_len = len(name)
+        return name.isalpha() and name_len > 2 and name_len < 12
+
+    def command_look(self, args = None):
+        """Describes the room and its inhabitants to the user, including
+        actors, items on the ground, and the exits.
+
+        """
+
+        args = args or []
         if len(args) <= 1:
             # room and exits
             msg = "%s\n%s\n\n[Exits %s]\n" % (
@@ -616,21 +873,23 @@ class User(Actor):
             # items
             msg += self.room.inventory.inspection(' is here.')
             # actors
-            msg += "\n".join(_actor.lookedAt().capitalize() for _actor in 
+            msg += "\n".join(_actor.looked_at().capitalize() for _actor in 
                                 self.room.actors if _actor is not self)+"\n"
         else:
-            lookingAt = utility.match_partial(
+            looking_at = utility.match_partial(
                     args[0], 
                     self.inventory.items, 
                     self.room.inventory.items, 
                     self.room.actors)
-            if lookingAt:
-                msg = lookingAt.description.capitalize()
+            if looking_at:
+                msg = looking_at.description.capitalize()
             else:
                 msg = "Nothing is there."
         self.notify(msg+"\n")
 
     def command_affects(self, args):
+        """Describes the affects currently active on the user."""
+
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
                     " ticks" for x in self.affects))
 
@@ -647,56 +906,72 @@ class User(Actor):
         self.notify("You go to sleep.")
 
     def command_practice(self, args):
+        """Describes proficiency information to the user and if an acolyte is
+        present, allows the user to get better at those proficiencies.
+
+        """
+
         if len(args) == 1:
             self.notify("Your proficiencies:\n" + \
                     "\n".join(name+": "+str(proficiency.level) \
                     for name, proficiency in 
                         self.get_proficiencies().iteritems()))
         elif any(mob.role == Mob.ROLE_ACOLYTE for mob in self.room.mobs()):
-            for p in self.get_proficiencies():
-                if p.find(args[1]) == 0:
-                    self.get_proficiency(p).level += 1
-                    self.notify("You get better at "+p+"!")
+            for prof in self.get_proficiencies():
+                if prof.find(args[1]) == 0:
+                    self.get_proficiency(prof).level += 1
+                    self.notify("You get better at "+prof+"!")
                     return
                 self.notify("You cannot practice that.")
         else:
             self.notify("No one is here to help you practice.")
 
     def command_quit(self, args):
+        """Saves and disconnects the user."""
+
         self.save()
         self.client.disconnect()
 
     def command_equipped(self, args):
+        """Tells the user what they have equipped."""
+
         msg = ""
-        for p, e in self.equipped.iteritems():
-            msg += re.sub("\d+", "", p)+": "+str(e)+"\n"
+        for position, equipment in self.equipped.iteritems():
+            msg += re.sub("\d+", "", position)+": "+str(equipment)+"\n"
         self.notify("You are wearing: "+msg)
 
     def command_score(self, args):
-        msg = "You are %s, a %s\n"+\
+        """Provides a more detailed score card of the user's status, including
+        name, race, attributes, carrying weight, trains, practices, and
+        experience.
+
+        """
+
+        self.notify("You are %s, a %s\n"+\
             "%i/%i hp %i/%i mana %i/%i mv\n"+\
             "str (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i),"+\
             "cha(%i/%i)\nYou are carrying %g/%i lbs\n"+\
             "You have %i trains, %i practices\n"+\
             "You are level %i with %i experience, %i to next level\n"+\
             "Your alignment is: %s" % ( \
-            self, self.race, self.curhp, self.getAttribute('hp'), self.curmana,
-            self.getAttribute('mana'), self.curmovement,
-            self.getAttribute('movement'),
-            self.getAttribute('str'), self.getUnmodifiedAttribute('str'),
-            self.getAttribute('int'), self.getUnmodifiedAttribute('int'),
-            self.getAttribute('wis'), self.getUnmodifiedAttribute('wis'),
-            self.getAttribute('dex'), self.getUnmodifiedAttribute('dex'),
-            self.getAttribute('con'), self.getUnmodifiedAttribute('con'),
-            self.getAttribute('cha'), self.getUnmodifiedAttribute('cha'),
-            self.inventory.get_weight(), self.getMaxWeight(),
+            self, self.race, self.curhp, self.get_attribute('hp'), self.curmana,
+            self.get_attribute('mana'), self.curmovement,
+            self.get_attribute('movement'),
+            self.get_attribute('str'), self._get_unmodified_attribute('str'),
+            self.get_attribute('int'), self._get_unmodified_attribute('int'),
+            self.get_attribute('wis'), self._get_unmodified_attribute('wis'),
+            self.get_attribute('dex'), self._get_unmodified_attribute('dex'),
+            self.get_attribute('con'), self._get_unmodified_attribute('con'),
+            self.get_attribute('cha'), self._get_unmodified_attribute('cha'),
+            self.inventory.get_weight(), self.get_max_weight(),
             self.trains, self.practices, self.level, self.experience,
-            self.experience % self.getExperiencePerLevel(),
-            self.get_alignment())
-        self.notify(msg)
+            self.experience % self.get_experience_per_level(),
+            self.get_alignment()))
 
     def command_inventory(self, args):
-        self.notify("Your inventory:\n"+str(actor.inventory))
+        """Relays the user's inventory of items back to them."""
+
+        self.notify("Your inventory:\n"+str(self.inventory))
 
     def command_who(self, args):
         """
@@ -710,28 +985,32 @@ class User(Actor):
         pass
 
     def command_train(self, args):
+        """Handles training the user and displaying information about what
+        attributes may still be trained. Requires a trainer in the room.
+
+        """
+
         if self.trains < 1:
             self.notify("You don't have any trains.")
             return
-        hasTrainer = False
         if not any(mob.role == Mob.ROLE_TRAINER for mob in self.room.mobs()):
-            actor.notify("There are no trainers here.")
+            self.notify("There are no trainers here.")
             return
         if len(args) == 0:
             message = ""
             for stat in attributes.Attributes.stats:
-                attr = self.getAttribute(stat)
-                mattr = self.getMaxAttribute(stat)
+                attr = self.get_attribute(stat)
+                mattr = self.get_max_attribute(stat)
                 if attr+1 <= mattr:
                     message += stat+" "
             self.notify("You can train: "+message)
             return
         stat = args[0]
         if stat in attributes.Attributes.stats:
-            attr = self.getAttribute(stat)
-            mattr = self.getMaxAttribute(stat)
+            attr = self.get_attribute(stat)
+            mattr = self.get_max_attribute(stat)
             if attr+1 <= mattr:
-                setattr(self.trainedAttributes, stat, getattr(self.trainedAttributes, stat)+1)
+                setattr(self.trained_attributes, stat, getattr(self.trained_attributes, stat)+1)
                 self.trains -= 1
                 self.notify("Your "+stat+" increases!")
             else:
@@ -743,6 +1022,14 @@ class User(Actor):
         return self.name.title()
 
 class Disposition:
+    """Dispositions are physical stances the actor can have. They define which
+    commands are available to the actor, and affect regen rates.
+
+    """
+
+    def __init__(self):
+        pass
+
     STANDING = 'standing'
     SITTING = 'sitting'
     LAYING = 'laying'
@@ -750,6 +1037,11 @@ class Disposition:
     INCAPACITATED = 'incapacitated'
 
 class Attack:
+    """One attack object is created for each aggressor during an attack round
+    to resolve all of that aggressor's attacks. The aggressor automatically
+    targets the actor stored in aggressor.target.
+    
+    """
 
     def __init__(self, aggressor, attackname):
         self.aggressor = aggressor
@@ -761,20 +1053,20 @@ class Attack:
         self.aggressor.dispatch('attackstart', attack=self)
 
         # initial rolls for attack/defense
-        hit_roll = aggressor.getAttribute('hit') + self.getAttributeModifier(aggressor, 'dex')
-        def_roll = self.getAttributeModifier(aggressor.target, 'dex') / 2
+        hit_roll = aggressor.get_attribute('hit') + get_attr_mod(aggressor, 'dex')
+        def_roll = get_attr_mod(aggressor.target, 'dex') / 2
         def_roll += 5 - aggressor.target.race.size
 
         # determine dam type from weapon
-        weapons = aggressor.getWieldedWeapons()
+        weapons = aggressor.get_wielded_weapons()
         try:
-            damType = weapons[0].damageType
+            dam_type = weapons[0].damage_type
         except IndexError:
-            damType = aggressor.race.damType
+            dam_type = aggressor.race.dam_type
 
         # get the ac bonus from the damage type
         try:
-            ac = aggressor.target.getAttribute('ac_'+damType) / 100
+            ac = aggressor.target.get_attribute('ac_'+dam_type) / 100
         except AttributeError:
             ac = 0
 
@@ -785,11 +1077,11 @@ class Attack:
 
         self.success = roll > 0
         if self.success:
-            isHit = "hits"
-            dam_roll = aggressor.getAttribute('dam') + self.getAttributeModifier(aggressor, 'str')
+            is_hit = "hits"
+            dam_roll = aggressor.get_attribute('dam') + get_attr_mod(aggressor, 'str')
             dam_roll = random.uniform(dam_roll/2, dam_roll)
         else:
-            isHit = "misses"
+            is_hit = "misses"
             dam_roll = 0
 
         # update the room on the attack progress
@@ -797,22 +1089,23 @@ class Attack:
         ucname = str(aggressor).title()
         tarname = str(aggressor.target)
         aggressor.room.announce({
-            aggressor: "("+attackname+") Your "+verb+" attack "+isHit+" "+tarname+".",
-            aggressor.target: ucname+"'s "+verb+" attack "+isHit+" you.",
-            "*": ucname+"'s "+verb+" attack "+isHit+" "+tarname+"."
+            aggressor: "("+attackname+") Your "+verb+" attack "+is_hit+" "+tarname+".",
+            aggressor.target: ucname+"'s "+verb+" attack "+is_hit+" you.",
+            "*": ucname+"'s "+verb+" attack "+is_hit+" "+tarname+"."
         })
 
         #need to do this check again here, can't have the actor dead before the hit message
         if roll > 0: 
             aggressor.target.curhp -= dam_roll
-            aggressor.target.normalizestats()
 
         aggressor.dispatch('attackresolution', attack=self)
-    
-    def getAttributeModifier(self, actor, attributeName):
-        return (actor.getAttribute(attributeName) / Actor.MAX_STAT) * 4
 
 class Ability(observer.Observer, room.Reporter):
+    """Represents something cool an actor can do. Invoked when the hook is
+    triggered on the parent actor. Applies costs in the costs dict, and affects
+    in the affects list.
+    
+    """
 
     def __init__(self):
         self.name = "an ability"
@@ -826,28 +1119,39 @@ class Ability(observer.Observer, room.Reporter):
         self.messages = {}
         super(Ability, self).__init__()
     
-    def tryPerform(self, invoker, args):
+    def try_perform(self, invoker, args):
+        """Parses the user input, finds a target, applies the ability cost,
+        and invokes the ability.
+
+        """
+
         try:
             receiver = utility.match_partial(args[-1], invoker.room.actors)
         except IndexError:
             receiver = invoker
-        if self.applyCost(invoker):
+        if self.apply_cost(invoker):
             invoker.delay_counter += self.delay + 1
-            if self.rollsSuccess(invoker, receiver):
-                self.perform(invoker, receiver, args)
+            success = random.randint(0, 1)
+            if success:
+                self.perform(receiver)
             else:
                 receiver.room.announce(self.getMessages('fail', invoker, receiver))
         else:
             invoker.notify("You do not have enough energy to do that.")
 
-    def perform(self, invoker, receiver, args):
+    def perform(self, receiver):
+        """Initialize all the affects associated with this ability."""
+
         for affectname in self.affects:
             factory.new(affect.Affect(), affectname).start(receiver)
-
-    def rollsSuccess(self, invoker, receiver):
-        return True # chosen by coin toss, guaranteed to be random
     
-    def applyCost(self, invoker):
+    def apply_cost(self, invoker):
+        """Iterates over the cost property, checks that all requirements are
+        met, applies each cost, then returns true. If costs cannot be met by
+        the invoking actor, this method will return false.
+
+        """
+
         for attr, cost in self.costs.iteritems():
             curattr = getattr(invoker, 'cur'+attr)
             cost *= curattr if cost > 0 and cost < 1 else 1
@@ -863,6 +1167,11 @@ class Ability(observer.Observer, room.Reporter):
         return self.name
 
 class Race:
+    """Gives various properties to an actor that have far reaching affects
+    throughout the game.
+
+    """
+
     SIZE_TINY = 1
     SIZE_SMALL = 2
     SIZE_NORMAL = 3
@@ -872,15 +1181,20 @@ class Race:
     def __init__(self):
         self.name = "critter"
         self.size = self.SIZE_NORMAL
-        self.movementCost = 1
-        self.isPlayable = False
-        self.damType = "bash"
+        self.movement_cost = 1
+        self.is_playable = False
+        self.dam_type = "bash"
         self.proficiencies = {}
         self.attributes = attributes.Attributes()
         self.abilities = []
         self.affects = []
     
     def add_proficiency(self, prof, level):
+        """Give a proficiency to this race. Actor's proficiencies are a
+        composite of what they know and the race they are assigned.
+
+        """
+
         prof = str(prof)
         try:
             self.proficiencies[prof].level += level

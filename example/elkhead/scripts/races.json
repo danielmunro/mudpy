@@ -9,14 +9,14 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"human",
-                "isPlayable":true
+                "is_playable":true
             }
         }
     },{
         "mudpy.actor.Race":{
             "properties":{
                 "name":"faerie",
-                "isPlayable":true,
+                "is_playable":true,
                 "size":1
             },
             "attributes":{
@@ -37,7 +37,7 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"ogre",
-                "isPlayable":true,
+                "is_playable":true,
                 "size":4
             },
             "attributes":{
@@ -59,7 +59,7 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"giant",
-                "isPlayable":true,
+                "is_playable":true,
                 "size":5
             },
             "attributes":{
@@ -82,7 +82,7 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"volare",
-                "isPlayable":true
+                "is_playable":true
             },
             "attributes":{
                 "str":11,
@@ -101,7 +101,7 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"gnome",
-                "isPlayable":true,
+                "is_playable":true,
                 "size":2
             },
             "attributes":{
@@ -124,7 +124,7 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"elf",
-                "isPlayable":true,
+                "is_playable":true,
                 "size":2
             },
             "attributes":{
@@ -148,7 +148,7 @@
         "mudpy.actor.Race":{
             "properties":{
                 "name":"dwarf",
-                "isPlayable":true,
+                "is_playable":true,
                 "size":2
             },
             "attributes":{

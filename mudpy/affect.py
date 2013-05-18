@@ -19,11 +19,11 @@ class Affect(observer.Observer, room.Reporter):
         """Apply the affect to a receiver."""
 
         try:
-            self.attach("start", receiver.startAffect)
-            self.attach("end", receiver.endAffect)
+            self.attach("start", receiver.start_affect)
+            self.attach("end", receiver.end_affect)
         except AttributeError:
             debug.log(str(receiver)+
-                " does not have startAffect() and/or endAffect() defined",
+                " does not have start_affect() and/or end_affect() defined",
                 "error")
         server.__instance__.heartbeat.attach("tick", self.tick)
         self.set_attributes_from_receiver(receiver)
@@ -40,7 +40,7 @@ class Affect(observer.Observer, room.Reporter):
         for attr in vars(self.attributes):
             modifier = getattr(self.attributes, attr)
             if modifier > 0 and modifier < 1:
-                setattr(self.attributes, attr, receiver.getAttribute(attr)
+                setattr(self.attributes, attr, receiver.get_attribute(attr)
                         * modifier)
     
     def tick(self):
