@@ -75,6 +75,7 @@ class Actor(observer.Observer):
         self.disposition = Disposition.STANDING
         self.proficiencies = dict()
         self.attacks = ['reg']
+        self.set_experience_per_level()
         
         self.equipped = dict((position, None) for position in ['light',
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
@@ -173,7 +174,7 @@ class Actor(observer.Observer):
         self.curhp += self.get_attribute('hp') * modifier
         self.curmana += self.get_attribute('mana') * modifier
         self.curmovement += self.get_attribute('movement') * modifier
-        self._normalizestats()
+        self._normalize_stats()
     
     def pulse(self):
         """Called during regular heartbeats by the server, initiates battle
@@ -278,32 +279,6 @@ class Actor(observer.Observer):
         else:
             self.notify("You are too tired to move.")
     
-    def die(self):
-        """What happens when the user is killed (regardless of the method of
-        death). Does basic things such as creating the corpse and dispatching
-        a disposition change event.
-        
-        """
-
-        if self.target:
-            self.target.reward_kill(self)
-        self.end_battle()
-        self.disposition = Disposition.LAYING
-        self.curhp = 1
-        corpse = item.Corpse()
-        corpse.name = "the corpse of "+str(self)
-        corpse.description = "The corpse of "+str(self)+" lies here."
-        corpse.weight = self.race.size * 20
-        corpse.material = "flesh"
-        for i in self.inventory.items:
-            self.inventory.remove(i)
-            corpse.inventory.append(i)
-        self.room.inventory.append(corpse)
-        self.room.dispatch(
-                "disposition_changed", 
-                actor=self, 
-                changed=str(self).title()+" dies.")
-    
     def reward_kill(self, victim):
         """Applies kill experience from the victim to the killer and checks
         for a level up.
@@ -311,7 +286,7 @@ class Actor(observer.Observer):
         """
 
         self.experience += victim.get_kill_experience(self)
-        diff = self.experience / self.get_experience_per_level()
+        diff = self.experience / self.experience_per_level
         if diff > self.level:
             gain = 0
             while gain < diff:
@@ -335,11 +310,6 @@ class Actor(observer.Observer):
         experience = random.uniform(experience * 0.8, experience * 1.2)
         return experience if experience > 0 else 0
 
-    def get_experience_per_level(self):
-        """The experience the actor needs to level up."""
-
-        return self.experience_per_level
-    
     def set_experience_per_level(self):
         """Based on the current configuration of proficiencies, calculate how
         much experience the actor needs to obtain to get a level.
@@ -348,18 +318,7 @@ class Actor(observer.Observer):
         
         """
 
-        return self.experience_per_level + 1000
-    
-    def end_battle(self):
-        """Ensure the actor is removed from battle, unless multiple actors are
-        targeting this actor.
-
-        """
-
-        if self.target:
-            if self.target.target is self:
-                self.target.target = None
-            self.target = None
+        self.experience_per_level = 1000
     
     def get_alignment(self):
         """A string representation of the actor's alignment. Alignment is
@@ -408,6 +367,22 @@ class Actor(observer.Observer):
         """
 
         pass
+
+    def set_target(self, target = None):
+        """Sets up a new target for the actor."""
+
+        if not target:
+            self.target.detach('attack_resolution', self._normalize_stats)
+            self.target = None
+            return True
+
+        if self.target:
+            self.notify(__ACTOR_CONFIG__.messages['target_already_acquired'])
+            return False
+        
+        self.target = target
+        self.target.attach('attack_resolution', self._normalize_stats)
+        return True
     
     def _set_equipment_by_position(self, position, equipment):
         """Sets a piece of equipment by a specific position."""
@@ -418,7 +393,7 @@ class Actor(observer.Observer):
                 return True
         return False
     
-    def _normalizestats(self):
+    def _normalize_stats(self, args = None):
         """Ensures hp, mana, and movement do not exceed their maxes during a
         tick.
 
@@ -448,7 +423,7 @@ class Actor(observer.Observer):
 
         if self.target:
             if not self.target.target:
-                self.target.target = self
+                self.target.set_target(self)
                 server.__instance__.heartbeat.attach('pulse', self.target.pulse)
 
             if self.disposition != Disposition.INCAPACITATED:
@@ -469,6 +444,43 @@ class Actor(observer.Observer):
         """Increase the actor's level."""
 
         self.level += 1
+    
+    def _end_battle(self):
+        """Ensure the actor is removed from battle, unless multiple actors are
+        targeting this actor.
+
+        """
+
+        if self.target:
+            if self.target.target is self:
+                self.target.target = None
+            self.target = None
+    
+    def _die(self):
+        """What happens when the user is killed (regardless of the method of
+        death). Does basic things such as creating the corpse and dispatching
+        a disposition change event.
+        
+        """
+
+        if self.target:
+            self.target.reward_kill(self)
+        self._end_battle()
+        self.disposition = Disposition.LAYING
+        self.curhp = 1
+        corpse = item.Corpse()
+        corpse.name = "the corpse of "+str(self)
+        corpse.description = "The corpse of "+str(self)+" lies here."
+        corpse.weight = self.race.size * 20
+        corpse.material = "flesh"
+        for i in self.inventory.items:
+            self.inventory.remove(i)
+            corpse.inventory.append(i)
+        self.room.inventory.append(corpse)
+        self.room.dispatch(
+                "disposition_changed", 
+                actor=self, 
+                changed=str(self).title()+" dies.")
 
     def command_north(self, args):
         """Attempt to move the actor in the north direction."""
@@ -557,14 +569,13 @@ class Actor(observer.Observer):
         """Attempt to kill another actor within the same room."""
 
         target = utility.match_partial(args[1], self.room.actors)
-        if target:
-            self.target = target
+        if target and self.set_target(target):
             server.__instance__.heartbeat.attach('pulse', self.pulse)
             self.room.announce({
                 self: 'You scream and attack!',
                 '*': str(self)+' screams and attacks '+str(target)+'!'
             })
-        else:
+        elif not target:
             self.notify("They aren't here.")
 
     def command_flee(self, args):
@@ -574,7 +585,7 @@ class Actor(observer.Observer):
         """
 
         if self.target:
-            self.end_battle()
+            self._end_battle()
             self.room.announce({
                 self: "You run scared!",
                 "*": str(self).title()+" runs scared!"
@@ -634,9 +645,9 @@ class Mob(Actor):
     def tick(self):
         super(Mob, self).tick()
         if self.movement:
-            self.decrement_movement_timer()
+            self._decrement_movement_timer()
     
-    def decrement_movement_timer(self):
+    def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from
         their current room to a new one. They cannot move to new areas however.
 
@@ -650,13 +661,13 @@ class Mob(Actor):
             self.move(direction)
             self.movement_timer = self.movement
     
-    def _normalizestats(self):
+    def _normalize_stats(self, args = None):
         if self.curhp < 0:
-            self.die()
-        super(Mob, self)._normalizestats()
+            self._die()
+        super(Mob, self)._normalize_stats()
     
-    def die(self):
-        super(Mob, self).die()
+    def _die(self):
+        super(Mob, self)._die()
         self.room.actor_leave(self)
         self.room = room.__ROOMS__[room.__PURGATORY__]
         self.room.actor_arrive(self)
@@ -671,8 +682,6 @@ class User(Actor):
         self.trains = 5
         self.practices = 5
         self.client = None
-        server.__instance__.heartbeat.attach('stat', self.stat)
-        server.__instance__.heartbeat.attach('cycle', self.update_delay)
     
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -698,25 +707,26 @@ class User(Actor):
         if self.target:
             self.notify(self.target.status()+"\n\n"+self.prompt())
     
-    def _normalizestats(self):
+    def _normalize_stats(self, args = None):
         if self.curhp < -9:
-            self.die()
+            self._die()
         elif self.curhp <= 0:
             self.disposition = Disposition.INCAPACITATED
             self.notify("You are incapacitated and will slowly die if not aided.\n")
         elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
             self.disposition = Disposition.LAYING
             self.notify("You suddenly feel a bit better.\n")
-        super(User, self)._normalizestats()
+        super(User, self)._normalize_stats()
     
-    def die(self):
-        super(User, self).die()
+    def _die(self):
+        super(User, self)._die()
         self.room.actor_leave(self)
         self.room = room.__ROOMS__[room.__START_ROOM__]
         self.room.actor_arrive(self)
         self.notify("You feel a rejuvinating rush as you pass through this mortal plane.")
+        self.notify("\n\n"+self.prompt())
     
-    def update_delay(self):
+    def _update_delay(self):
         """Removes the client from polling for input if the user has a delay
         applied to it.
 
@@ -746,6 +756,10 @@ class User(Actor):
         exciting.
 
         """
+
+        # attach server events
+        server.__instance__.heartbeat.attach('stat', self.stat)
+        server.__instance__.heartbeat.attach('cycle', self._update_delay)
 
         # set the room
         if self.room_id:
@@ -965,7 +979,7 @@ class User(Actor):
             self.get_attribute('cha'), self._get_unmodified_attribute('cha'),
             self.inventory.get_weight(), self.get_max_weight(),
             self.trains, self.practices, self.level, self.experience,
-            self.experience % self.get_experience_per_level(),
+            self.experience % self.experience_per_level,
             self.get_alignment()))
 
     def command_inventory(self, args):
@@ -1098,7 +1112,7 @@ class Attack:
         if roll > 0: 
             aggressor.target.curhp -= dam_roll
 
-        aggressor.dispatch('attackresolution', attack=self)
+        aggressor.dispatch('attack_resolution', attack=self)
 
 class Ability(observer.Observer, room.Reporter):
     """Represents something cool an actor can do. Invoked when the hook is
@@ -1204,3 +1218,11 @@ class Race:
 
     def __str__(self):
         return self.name
+
+class Config:
+    """Configuration container for the actor module."""
+
+    def __init__(self):
+        self.messages = {}
+
+__ACTOR_CONFIG__ = factory.new(Config(), "main")

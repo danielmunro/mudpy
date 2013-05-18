@@ -14,6 +14,15 @@
                 "user_module":"elkhead.user"
             }
         }
+    },{
+        "mudpy.actor.Config":{
+            "properties":{
+                "name":"main",
+                "messages":{
+                    "target_already_acquired":"Whoa there sparky! Don't you think one is enough?"
+                }
+            }
+        }
     }]
 },{
     "mudpy.room.Area":{
