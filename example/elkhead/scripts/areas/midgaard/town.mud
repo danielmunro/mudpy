@@ -1,29 +1,4 @@
 room
-Market Street
-A cobblestone path travels in a east-west direction with shops lining both sides.~
-id 4, e 3, w 6, n 10, s 11
-
-room
-Blue Moon Bakery
-You enter a small but brightly lit room. All along the walls are shelves lined with baked goods.~
-id 10, s 4
-
-mob
-Anyan the baker is here kneeding dough
-An old and wirey elf is here kneeding dough and running between ovens.~
-race elf, level 5, name anyan the baker, role shopkeeper
-
-food
-a baked apple pie
-A delicious apple pie is here.~
-nourishment 1, value 5
-
-food
-a big chicken pot pie
-A big chicken pot pie with a brown flaky crust is here.~
-nourishment 2, value 8
-
-room
 Midgaard Armory
 A hallway is lined with implements of destruction on one side, and pieces of various types of armor on the other.~
 id 11, n 4

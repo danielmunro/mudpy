@@ -138,12 +138,12 @@
                 "north":2,
                 "south":18,
                 "east":7,
-                "west":2,
+                "west":4,
                 "down":75
             }
         },
-        "items":[{
-            "Door":{
+        "inventory":[{
+            "mudpy.item.Door":{
                 "properties":{
                     "id":2,
                     "name":"a dust-covered wooden trap door",
@@ -156,7 +156,7 @@
             }
         }],
         "mobs":[{
-            "Mob":{
+            "mudpy.actor.Mob":{
                 "properties":{
                     "name": "Midgaard city guard",
                     "long":"a Midgaard city guard is here, patrolling the streets",
@@ -166,6 +166,64 @@
                     "movement":3
                 },
                 "abilities": ["bash", "kick"]
+            }
+        }]
+    }
+},{
+    "mudpy.room.Room":{
+        "properties":{
+            "id":4,
+            "name":"Market Street",
+            "description":"A cobblestone path travels in a east-west direction with shops lining both sides.",
+            "directions":{
+                "north":10,
+                "south":11,
+                "east":3,
+                "west":6
+            }
+        }
+    }
+},{
+    "mudpy.room.Room":{
+        "properties":{
+            "id":10,
+            "name":"Blue Moon Bakery",
+            "description":"You enter a small but brightly lit room. All along the walls are shelves lined with baked goods.",
+            "directions":{
+                "south":4
+            }
+        },
+        "mobs":[{
+            "mudpy.actor.Mob":{
+                "properties":{
+                    "name":"Anyan",
+                    "long":"Anyan the baker is hard at work kneeding dough",
+                    "description":"An old and spritely elf is here kneeding dough and running between ovens.",
+                    "race":"elf",
+                    "level":5,
+                    "role":"shopkeeper"
+                },
+                "inventory":[{
+                    "mudpy.item.Food":{
+                        "properties":{
+                            "name":"a baked apple pie",
+                            "long":"a delicious looking apple pie lies here.",
+                            "description":"You see a fresh apple pie on the ground. It looks tasty.",
+                            "nourishment":1,
+                            "value":5
+                        }
+                    }
+                },{
+                    "mudpy.item.Food":{
+                        "properties":{
+                            "name":"a big chicken pot pie",
+                            "long":"a savory chicken pot pie lies here.",
+                            "description":"You see a fresh chicken pot pie on the ground.",
+                            "nourishment":2,
+                            "value":8
+                        }
+                    }
+                }]
             }
         }]
     }

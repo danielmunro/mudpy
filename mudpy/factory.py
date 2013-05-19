@@ -195,14 +195,17 @@ def build(instance, properties, parent = None):
             value = str(value)
         try:
             globals()[func](instance, properties[descriptor])
-        except KeyError:
-            pass
+        except KeyError as e:
+            debug.log(e, "notice")
     func = 'done_'+instance.__class__.__name__.lower()
     try:
         globals()[func](parent, instance)
     except KeyError:
         pass
     return instance
+
+def desc_priority(_none, _priority):
+    pass
 
 def desc_wireframes(none, wires):
     """Wireframe descriptor method, for adding wireframe definitions to the
