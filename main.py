@@ -4,7 +4,7 @@ listening on the configured port.
 
 """
 
-from mudpy import factory, server, client, debug
+from mudpy import factory, server, client, debug, actor
 import sys
 
 # set some global variables from arguments passed to the script
@@ -30,6 +30,10 @@ except IOError:
     debug.log("invalid scripts directory passed in as first argument. This "+ \
                 "is the location of the scripts that define game objects for"+ \
                 "mud.py", "error")
+
+# assign an actor configuration. This contains messages that get displayed
+# to users among other things
+actor.__ACTOR_CONFIG__ = factory.new(actor.Config(), "main")
 
 # assign a configuration to the server instance, parsed from the
 # __scripts_directory__. Start the configured server, and have it use the

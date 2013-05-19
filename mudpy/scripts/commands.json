@@ -68,25 +68,48 @@
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"practice"
+                "name":"practice",
+                "messages":{
+                    "success_self":"You get better at %s!",
+                    "success_room":"%s gets better at %s.",
+                    "not_proficiency":"You cannot practice that.",
+                    "no_acolyte":"No one is here to help you practice."
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"train"
+                "name":"train",
+                "messages":{
+                    "no_trains":"You don't have any trains.",
+                    "no_trainers":"There are no trainers here.",
+                    "success_self":"Your %s increases!",
+                    "success_room":"%s's %s increases.",
+                    "maxed_stat":"You cannot train %s any further.",
+                    "not_trainable":"You cannot train that."
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"wear"
+                "name":"wear",
+                "messages":{
+                    "success":"You wear %s",
+                    "not_qualified":"You are not qualified enough to equip %s",
+                    "no_item":"You have nothing like that."
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"remove"
+                "name":"remove",
+                "messages":{
+                    "success":"You remove %s and place it in your inventory.",
+                    "no_item":"You are not wearing that."
+                }
             }
         }
     },{
@@ -135,28 +158,50 @@
         "mudpy.command.Command":{
             "properties":{
                 "name":"kill",
-                "required_dispositions":["standing"]
+                "required_dispositions":["standing"],
+                "messages":{
+                    "target_not_found":"They aren't here.",
+                    "success_self":"You scream and attack!",
+                    "success_room":"%s screams and attacks %s!"
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
                 "name":"flee",
-                "required_dispositions":["standing"]
+                "required_dispositions":["standing"],
+                "messages":{
+                    "success_self":"You run scared!",
+                    "success_room":"%s runs in fear!",
+                    "no_target":"You're not fighting anyone!"
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
                 "name":"get",
-                "required_dispositions":["standing"]
+                "required_dispositions":["standing"],
+                "messages":{
+                    "success_self":"You pick up %s off the floor.",
+                    "success_room":"%s pick up %s off the floor.",
+                    "cannot_own":"You cannot pick up %s.",
+                    "no_item":"Nothing is there."
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
                 "name":"drop",
-                "required_dispositions":["standing"]
+                "required_dispositions":["standing"],
+                "messages":{
+                    "success_self":"You drop %s.",
+                    "success_room":"%s drops %s.",
+                    "cannot_drop":"You cannot drop %s.",
+                    "no_item":"Nothing is there."
+                }
             }
         }
     }]

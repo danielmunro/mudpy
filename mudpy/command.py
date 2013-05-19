@@ -5,6 +5,7 @@ class Command(object):
     def __init__(self):
         self.name = ""
         self.required_dispositions = []
+        self.messages = {}
 
     def try_perform(self, performer, args = []):
         from . import actor
@@ -15,7 +16,7 @@ class Command(object):
                 else "You need to be "+(" or ".join(self.required_dispositions))+" to do that.")
         else:
             try:
-                getattr(performer, "command_"+self.name)(args)
+                getattr(performer, "command_"+self.name)(self, args)
             except AttributeError as e:
                 debug.log(e, "notice")
     
