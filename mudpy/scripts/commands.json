@@ -50,19 +50,31 @@
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"sit"
+                "name":"sit",
+                "messages":{
+                    "sit_self":"You sit down and rest.",
+                    "sit_room":"%s sits down and rests."
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"sleep"
+                "name":"sleep",
+                "messages":{
+                    "sleep_self":"You go to sleep.",
+                    "sleep_room":"%s goes to sleep."
+                }
             }
         }
     },{
         "mudpy.command.Command":{
             "properties":{
-                "name":"wake"
+                "name":"wake",
+                "messages":{
+                    "wake_self":"You stand up.",
+                    "wake_room":"%s stands up."
+                }
             }
         }
     },{
