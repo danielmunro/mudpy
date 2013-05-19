@@ -251,8 +251,10 @@ class Actor(observer.Observer):
 
         return str(self).title()+' '+description+'.'
     
-    def move(self, direction):
+    def move(self, direction = None):
         """Try to move the actor in the given direction."""
+        direction = direction or random.choice([direction for direction, _room 
+            in self.room.directions.iteritems() if _room])
 
         if self.target:
             self.notify(__ACTOR_CONFIG__.messages['move_failed_fighting'])
@@ -392,7 +394,7 @@ class Actor(observer.Observer):
                 return True
         return False
     
-    def _normalize_stats(self, args = None):
+    def _normalize_stats(self, _args = None):
         """Ensures hp, mana, and movement do not exceed their maxes during a
         tick.
 
@@ -505,7 +507,7 @@ class Actor(observer.Observer):
         """Attempt to move the actor in the down direction."""
         self.move("down")
 
-    def command_sit(self, invoked_command, args):
+    def command_sit(self, invoked_command, _args):
         """Change the actor's disposition to sitting."""
 
         self.disposition = Disposition.SITTING
@@ -514,7 +516,7 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=invoked_command.messages['sit_room'] % (str(self).title()))
 
-    def command_wake(self, invoked_command, args):
+    def command_wake(self, invoked_command, _args):
         """Change the actor's disposition to standing."""
 
         self.disposition = Disposition.STANDING
@@ -523,7 +525,7 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=invoked_command.messages['wake_room'] % (str(self).title()))
 
-    def command_sleep(self, invoked_command, args):
+    def command_sleep(self, invoked_command, _args):
         """Change the actor's disposition to sleeping."""
 
         self.disposition = Disposition.SLEEPING
@@ -532,15 +534,9 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=invoked_command.messages['sleep_room'] % (str(self).title()))
 
-    def command_wear(self, invoked_command, args):
+    def command_wear(self, _invoked_command, _args):
         """Attempt to wear a piece of equipment or a weapon from the inventory.
         
-        """
-
-        self.notify("This is disabled for reworking")
-        return
-
-        """
         equipment = utility.match_partial(args[1], self.inventory.items)
         if equipment:
             current_eq = self.get_equipment_by_position(equipment.position)
@@ -554,6 +550,8 @@ class Actor(observer.Observer):
         else:
             self.notify(invoked_command.messages['no_item'])
         """
+        self.notify("This is disabled for reworking")
+        return
     
     def command_remove(self, invoked_command, args):
         """Attempt to remove a worn piece of equipment or weapon."""
@@ -580,7 +578,7 @@ class Actor(observer.Observer):
         elif not target:
             self.notify(invoked_command.messages['target_not_found'])
 
-    def command_flee(self, invoked_command, args):
+    def command_flee(self, invoked_command, _args):
         """Attempt to flee from a battle. This will cause the actor to flee
         to another room in a random direction.
 
@@ -669,7 +667,7 @@ class Mob(Actor):
             self.move(direction)
             self.movement_timer = self.movement
     
-    def _normalize_stats(self, args = None):
+    def _normalize_stats(self, _args = None):
         if self.curhp < 0:
             self._die()
         super(Mob, self)._normalize_stats()
@@ -715,7 +713,7 @@ class User(Actor):
         if self.target:
             self.notify(self.target.status()+"\n\n"+self.prompt())
     
-    def _normalize_stats(self, args = None):
+    def _normalize_stats(self, _args = None):
         if self.curhp < -9:
             self._die()
         elif self.curhp <= 0:
@@ -877,7 +875,7 @@ class User(Actor):
         name_len = len(name)
         return name.isalpha() and name_len > 2 and name_len < 12
 
-    def command_look(self, invoked_command = None, args = None):
+    def command_look(self, _invoked_command = None, args = None):
         """Describes the room and its inhabitants to the user, including
         actors, items on the ground, and the exits.
 
@@ -908,7 +906,7 @@ class User(Actor):
                 msg = __ACTOR_CONFIG__.messages['look_at_nothing']
         self.notify(msg+"\n")
 
-    def command_affects(self, invoked_command, args):
+    def command_affects(self, _invoked_command, _args):
         """Describes the affects currently active on the user."""
 
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
@@ -950,35 +948,35 @@ class User(Actor):
         else:
             self.notify(invoked_command.messages['no_acolyte'])
 
-    def command_quit(self, invoked_command, args):
+    def command_quit(self, _invoked_command, _args):
         """Saves and disconnects the user."""
 
         self.save()
         self.client.disconnect()
 
-    def command_equipped(self, invoked_command, args):
+    def command_equipped(self, _invoked_command, _args):
         """Tells the user what they have equipped."""
 
         msg = ""
         for position, equipment in self.equipped.iteritems():
-            msg += re.sub("\d+", "", position)+": "+str(equipment)+"\n"
+            msg += re.sub(r"\d+", "", position)+": "+str(equipment)+"\n"
         self.notify("You are wearing: "+msg)
 
-    def command_score(self, invoked_command, args):
+    def command_score(self, _invoked_command, _args):
         """Provides a more detailed score card of the user's status, including
         name, race, attributes, carrying weight, trains, practices, and
         experience.
 
         """
 
-        self.notify("You are %s, a %s\n"+\
+        self.notify(("You are %s, a %s\n"+\
             "%i/%i hp %i/%i mana %i/%i mv\n"+\
             "str (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i),"+\
             "cha(%i/%i)\nYou are carrying %g/%i lbs\n"+\
             "You have %i trains, %i practices\n"+\
             "You are level %i with %i experience, %i to next level\n"+\
-            "Your alignment is: %s" % ( \
-            self, self.race, self.curhp, self.get_attribute('hp'), self.curmana,
+            "Your alignment is: %s") % (self, self.race, self.curhp, 
+            self.get_attribute('hp'), self.curmana,
             self.get_attribute('mana'), self.curmovement,
             self.get_attribute('movement'),
             self.get_attribute('str'), self._get_unmodified_attribute('str'),
@@ -992,7 +990,7 @@ class User(Actor):
             (self.experience % self.experience_per_level),
             self.get_alignment()))
 
-    def command_inventory(self, invoked_command, args):
+    def command_inventory(self, _invoked_command, _args):
         """Relays the user's inventory of items back to them."""
 
         self.notify("Your inventory:\n"+str(self.inventory))
