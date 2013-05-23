@@ -22,6 +22,7 @@ class Instance(observer.Observer):
         self.day_of_month = 1
         self.month = 1
         self.year = 0
+        self.daylight = True
 
     def tick(self):
         """Tick event listener function, increments the hour and checks for
@@ -35,18 +36,20 @@ class Instance(observer.Observer):
             self.dispatch('sunrise', 
                     calendar=self, 
                     changed="The sun begins to rise.")
+            self.daylight = True
         elif self.hour == self.config.months[self.month]['sunset']:
             self.dispatch('sunset', 
                     calendar=self, 
                     changed="The sun begins to set.")
+            self.daylight = False
         if self.hour == self.config.hours_in_day:
             self.hour = 0
             self.day_of_month += 1
             if self.day_of_month > self.config.months[self.month]['days_in_month']:
-                self.day_of_month = 0
+                self.day_of_month = 1
                 self.month += 1
                 if self.month > len(self.config.months)-1:
-                    self.month = 0
+                    self.month = 1
                     self.year += 1
         self.save()
 
