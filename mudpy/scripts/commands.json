@@ -216,5 +216,19 @@
                 }
             }
         }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"date",
+                "required_dispositions":[]
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"time",
+                "required_dispositions":[]
+            }
+        }
     }]
 }]

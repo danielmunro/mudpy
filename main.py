@@ -4,7 +4,7 @@ listening on the configured port.
 
 """
 
-from mudpy import factory, server, client, debug, actor
+from mudpy import factory, server, client, debug, actor, calendar
 import sys
 
 # set some global variables from arguments passed to the script
@@ -40,4 +40,6 @@ actor.__ACTOR_CONFIG__ = factory.new(actor.Config(), "main")
 # ClientFactory to handle new connections
 
 server.__instance__.config = factory.new(server.Config(), __mud__name__)
+calendar.__instance__.config = factory.new(calendar.Config(), "main")
+server.__instance__.heartbeat.attach('tick', calendar.__instance__.tick)
 server.__instance__.start_listening(client.ClientFactory())

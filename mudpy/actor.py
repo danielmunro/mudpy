@@ -4,8 +4,8 @@ how they interact with the world.
 """
 
 from __future__ import division
-from . import debug, room, utility, server, factory, proficiency, \
-                item, attributes, observer, command, affect
+from . import debug, room, utility, server, factory, proficiency, item, \
+                attributes, observer, command, affect, calendar
 import time, random, os, pickle, re
 
 __SAVE_DIR__ = 'users'
@@ -774,11 +774,14 @@ class User(Actor):
         self.room = room.__ROOMS__[new_room_id]
         self.room.actor_arrive(self, "sky")
 
-        # attach a listener to client input
+        # listener for client input
         self.client.attach('input', self.check_input)
 
-        # attach a listener to the server tick
+        # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self.tick)
+
+        # listeners for calendar events (sunrise, sunset) 
+        calendar.__instance__.setup_listeners_for(self.calendar_changed)
 
         # attach listeners to client input for abilities
         for ability in self.get_abilities():
@@ -800,6 +803,14 @@ class User(Actor):
         self.notify("\n"+self.prompt())
 
         debug.log('client logged in as '+str(self))
+
+    def calendar_changed(self, args):
+        """Notifies the user when a calendar event happens, such as the sun
+        rises.
+
+        """
+
+        self.notify(args['changed'])
 
     def check_input(self, args):
         """Takes input from the user and tries to find a match against known
@@ -1042,6 +1053,12 @@ class User(Actor):
                 self.notify(invoked_command.messages['maxed_stat'] % (stat))
         else:
             self.notify(invoked_command.messages['not_trainable'])
+
+    def command_date(self, _command, _args):
+        self.notify(calendar.__instance__)
+
+    def command_time(self, _command, _args):
+        self.notify(calendar.__instance__)
 
     def __str__(self):
         return self.name.title()
