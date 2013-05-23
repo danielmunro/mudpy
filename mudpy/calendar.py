@@ -1,17 +1,22 @@
-from mudpy import debug, observer
-import time, os, pickle
+"""Game calendar. Doesn't do much at this point except keep track of time."""
+
+from . import debug, observer
+import os, pickle
 
 __CALENDAR_DATA__ = os.path.join(os.getcwd(), 'servertime.pk')
 
 def suffix(dec):
-    return 'th' if 11<=dec<=13 else {1:'st',2:'nd',3:'rd'}.get(dec%10, 'th')
+    """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
+
+    return 'th' if 11 <= dec <= 13 else {
+            1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
 class Instance(observer.Observer):
+    """Calendar instance, keeps track of the date in the game."""
 
-    HOURS_IN_DAY = 24
-    
     def __init__(self):
         super(Instance, self).__init__()
+        self.config = None
         self.elapsed_time = 0
         self.hour = 0
         self.day_of_month = 1
@@ -19,12 +24,21 @@ class Instance(observer.Observer):
         self.year = 0
 
     def tick(self):
+        """Tick event listener function, increments the hour and checks for
+        changes in the date.
+
+        """
+
         self.elapsed_time += 1
         self.hour += 1
         if self.hour == self.config.months[self.month]['sunrise']:
-            self.dispatch('sunrise', calendar=self, changed="The sun begins to rise.")
+            self.dispatch('sunrise', 
+                    calendar=self, 
+                    changed="The sun begins to rise.")
         elif self.hour == self.config.months[self.month]['sunset']:
-            self.dispatch('sunset', calendar=self, changed="The sun begins to set.")
+            self.dispatch('sunset', 
+                    calendar=self, 
+                    changed="The sun begins to set.")
         if self.hour == self.config.hours_in_day:
             self.hour = 0
             self.day_of_month += 1
@@ -37,6 +51,8 @@ class Instance(observer.Observer):
         self.save()
 
     def save(self):
+        """Save the current calendar (the date).."""
+
         observers = self.observers
         self.observers = None
         with open(__CALENDAR_DATA__, 'wb') as fp:
@@ -51,18 +67,23 @@ class Instance(observer.Observer):
             hour = self.hour-12
             time = 'pm'
 
-        return "It is %i o'clock %s, the %i%s day of %s" % (hour, time, self.day_of_month, suffix(self.day_of_month), self.config.months[self.month]["name"])
+        return "It is %i o'clock %s, the %i%s day of %s, year %i" % (
+                hour, time, self.day_of_month, suffix(self.day_of_month), 
+                self.config.months[self.month]["name"], self.year)
 
     def setup_listeners_for(self, func):
+        """Binds function to calendar related events."""
         self.attach('sunrise', func)
         self.attach('sunset', func)
 
     def teardown_listeners_for(self, func):
+        """Removes function from calendar related events."""
         self.detach('sunrise', func)
         self.detach('sunset', func)
                
 
 class Config:
+    """Configuration container for the calendar object."""
 
     def __init__(self):
         self.days = []
