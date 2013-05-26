@@ -819,12 +819,12 @@ class User(Actor):
         """
 
         args = args['args']
-        try:
-            com = factory.new(command.Command(), factory.match(args[0], 'mudpy.command.Command')['wireframe'])
-            com.try_perform(self, args)
+        com = factory.match(args[0], 'mudpy.command.Command')
+        handled = False
+        if com:
+            factory.new(command.Command(), com['wireframe']).\
+                    try_perform(self, args)
             handled = True
-        except factory.FactoryException:
-            handled = False
         return handled
 
     def leaving(self, args):
