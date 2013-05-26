@@ -31,7 +31,9 @@
                     "look_at_nothing":"Nothing is there.",
                     "apply_cost_fail":"You do not have enough energy to do that.",
                     "actor_leaves_room":"%s left heading %s.",
-                    "actor_enters_room":"%s arrived from the %s."
+                    "actor_enters_room":"%s arrived from the %s.",
+                    "cannot_see_too_dark":"It's too dark to see anything!",
+                    "cannot_see_actors_in_room":"You see glowing eyes in the distance."
                 }
             }
         }

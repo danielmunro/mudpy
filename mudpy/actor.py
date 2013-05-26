@@ -384,6 +384,25 @@ class Actor(observer.Observer):
         self.target = target
         self.target.attach('attack_resolution', self._normalize_stats)
         return True
+
+    def can_see(self):
+        """Can the user see?"""
+
+        if utility.match_partial("glow", self.get_affects()):
+            return True
+
+        if self.room.area.location == room.__LOCATION_OUTSIDE__ and \
+                calendar.__instance__.daylight:
+            return True
+
+        return False
+
+    def get_affects(self):
+        affects = []
+        for _pos, equipment in self.equipped.iteritems():
+            if equipment:
+                affects += equipment.affects
+        return self.affects + affects
     
     def _set_equipment_by_position(self, position, equipment):
         """Sets a piece of equipment by a specific position."""
@@ -830,12 +849,20 @@ class User(Actor):
     def leaving(self, args):
         super(User, self).leaving(args)
         if not args['actor'] == self and args['direction']:
-            self.notify(__ACTOR_CONFIG__.messages['actor_leaves_room'] % (args['actor'], args['direction']))
+            if self.can_see():
+                actor_seen = args['actor']
+            else:
+                actor_seen = "Someone"
+            self.notify(__ACTOR_CONFIG__.messages['actor_leaves_room'] % (actor_seen, args['direction']))
 
     def arriving(self, args):
         super(User, self).arriving(args)
         if args['direction']:
-            self.notify(__ACTOR_CONFIG__.messages['actor_enters_room'] % (args['actor'], args['direction']))
+            if self.can_see():
+                actor_seen = args['actor']
+            else:
+                actor_seen = "Someone"
+            self.notify(__ACTOR_CONFIG__.messages['actor_enters_room'] % (actor_seen, args['direction']))
 
     def _moved(self, args):
         super(User, self)._moved(args)
@@ -895,16 +922,24 @@ class User(Actor):
         args = args or []
         if len(args) <= 1:
             # room and exits
-            msg = "%s\n%s\n\n[Exits %s]\n" % (
-                    self.room.name, 
-                    self.room.description, 
+            can_see = self.can_see()
+            if can_see:
+                msg = "%s\n%s\n" % (self.room.name, self.room.description)
+            else:
+                msg = __ACTOR_CONFIG__.messages["cannot_see_too_dark"]
+            msg += "\n[Exits %s]\n" % (
                     "".join(direction[:1] for direction, room in 
                         self.room.directions.iteritems() if room))
             # items
             msg += self.room.inventory.inspection(' is here.')
             # actors
-            msg += "\n".join(_actor.looked_at().capitalize() for _actor in 
-                                self.room.actors if _actor is not self)+"\n"
+            if self.room.actors:
+                if can_see:
+                    msg += "\n".join(_actor.looked_at().capitalize() for _actor
+                                in self.room.actors if _actor is not self)+"\n"
+                else:
+                    msg += \
+                    __ACTOR_CONFIG__.messages["cannot_see_actors_in_room"]+"\n"
         else:
             looking_at = utility.match_partial(
                     args[0], 

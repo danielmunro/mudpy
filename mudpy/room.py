@@ -11,6 +11,8 @@ __START_ROOM__ = None
 __PURGATORY__ = None
 __ROOMS__ = {}
 
+__LOCATION_OUTSIDE__ = "outside"
+
 class Room(observer.Observer):
     """Basic space representation, initialized by the factory.parser functions
     on game start, based on json game configuration files. Has a name (title),
