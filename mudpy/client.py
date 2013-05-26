@@ -111,9 +111,11 @@ class Login:
 
             from . import actor
 
-            try:
-                self.newuser.race = factory.new(actor.Race(), data)
-            except factory.FactoryException:
+            race = factory.match(data, 'mudpy.actor.Race')
+
+            if race:
+                self.newuser.race = factory.new(actor.Race(), race['wireframe'])
+            else:
                 raise LoginException("That is not a valid race. What is "+ \
                                      "your race? ")
             self.client.write("What alignment are you (good/neutral/evil)? ")
