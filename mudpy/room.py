@@ -30,6 +30,7 @@ class Room(observer.Observer):
         self.inventory = item.Inventory()
         self.directions = {}
         self.area = None
+        self.lit = True
     
     def announce(self, messages):
         """Will take a message and convey it to the various actors in the

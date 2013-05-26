@@ -395,14 +395,14 @@ class Actor(observer.Observer):
                 calendar.__instance__.daylight:
             return True
 
-        return False
+        return self.room.lit
 
     def get_affects(self):
-        affects = []
+        affects = list(self.affects)
         for _pos, equipment in self.equipped.iteritems():
             if equipment:
                 affects += equipment.affects
-        return self.affects + affects
+        return affects
     
     def _set_equipment_by_position(self, position, equipment):
         """Sets a piece of equipment by a specific position."""
