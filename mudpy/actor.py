@@ -714,14 +714,14 @@ class User(Actor):
 
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
     
-    def notify(self, message):
+    def notify(self, message=""):
         super(User, self).notify(message)
         if self.client.user:
-            self.client.write(message)
+            self.client.write(message+"\n"+self.prompt())
     
     def tick(self):
         super(User, self).tick()
-        self.notify("\n"+self.prompt())
+        self.notify()
     
     def stat(self):
         """Notifies the user of the target's status (if any) and supplies a
@@ -730,17 +730,17 @@ class User(Actor):
         """
 
         if self.target:
-            self.notify(self.target.status()+"\n\n"+self.prompt())
+            self.notify(self.target.status()+"\n")
     
     def _normalize_stats(self, _args = None):
         if self.curhp < -9:
             self._die()
         elif self.curhp <= 0:
             self.disposition = Disposition.INCAPACITATED
-            self.notify(__ACTOR_CONFIG__.messages['incapacitated']+"\n")
+            self.notify(__ACTOR_CONFIG__.messages['incapacitated'])
         elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
             self.disposition = Disposition.LAYING
-            self.notify(__ACTOR_CONFIG__.messages['recover_from_incapacitation']+"\n")
+            self.notify(__ACTOR_CONFIG__.messages['recover_from_incapacitation'])
         super(User, self)._normalize_stats()
     
     def _die(self):
@@ -748,7 +748,7 @@ class User(Actor):
         self.room.actor_leave(self)
         self.room = room.__ROOMS__[room.__START_ROOM__]
         self.room.actor_arrive(self)
-        self.notify(__ACTOR_CONFIG__.messages['died']+"\n\n"+self.prompt())
+        self.notify(__ACTOR_CONFIG__.messages['died'])
     
     def _update_delay(self):
         """Removes the client from polling for input if the user has a delay
@@ -774,7 +774,7 @@ class User(Actor):
     def perform_ability(self, ability):
         """Applies delay to the user when performing an ability."""
         self.delay_counter += ability.delay+1
-    
+
     def loggedin(self):
         """Miscellaneous setup tasks for when a user logs in. Nothing too
         exciting.
@@ -819,7 +819,7 @@ class User(Actor):
 
         # look and prompt
         self.command_look()
-        self.notify("\n"+self.prompt())
+        self.notify("")
 
         debug.log('client logged in as '+str(self))
 
