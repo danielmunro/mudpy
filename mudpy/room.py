@@ -79,6 +79,7 @@ class Room(observer.Observer):
         self.detach('leaving', actor.leaving)
         self.detach('arriving', actor.arriving)
         self.detach('disposition_changed', actor.disposition_changed)
+        self.detach('affect_changed', actor.affect_changed)
     
     def actor_arrive(self, actor, direction=""):
         self.actors.append(actor)
@@ -86,6 +87,7 @@ class Room(observer.Observer):
         self.attach('leaving', actor.leaving)
         self.attach('arriving', actor.arriving)
         self.attach('disposition_changed', actor.disposition_changed)
+        self.attach('affect_changed', actor.affect_changed)
     
     def __str__(self):
         return self.name
@@ -212,7 +214,7 @@ class Area:
 
 class Reporter:
 
-    def getMessages(self, messagePart, invoker, receiver = None):
+    def get_messages(self, messagePart, invoker, receiver = None):
         messages = self.messages[messagePart]
         try:
             messages[invoker] = messages.pop('invoker')

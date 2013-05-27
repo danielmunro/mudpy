@@ -281,29 +281,46 @@ class Actor(observer.Observer):
 
         return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
 
-    def start_affect(self, args):
-        """Called when an affect is started on an actor."""
+    def add_affect(self, aff):
+        """Apply an affect to the actor."""
 
-        self.room.announce(args['affect'].getMessages('success', self))
-        self.affects.append(args['affect'])
-    
-    def end_affect(self, args):
-        """Called when an affect timer runs out on an actor."""
+        def __timeout():
+            """Count down the affect timer."""
 
-        self.room.announce(args['affect'].getMessages('end', self))
-        self.affects.remove(args['affect'])
+            aff.timeout -= 1
+            if aff.timeout < 0:
+                server.__instance__.heartbeat.detach('tick', __timeout)
+                self.affects.remove(aff)
+                self.room.dispatch('affect_changed', 
+                        affect=aff, actor=self, action='end')
 
-    def leaving(self, actor):
+        self.room.dispatch('affect_changed', 
+                affect=aff, actor=self, action='success')
+        self.affects.append(aff)
+        aff.set_attributes_from_receiver(self)
+
+        if aff.timeout > -1:
+            server.__instance__.heartbeat.attach('tick', __timeout)
+
+    def affect_changed(self, args):
+        """Called when an affect changes for an actor in the same room as this
+        actor.
+
+        """
+
+        pass
+
+    def leaving(self, _args):
         """Called when an actor leaves a room."""
 
         pass
 
-    def arriving(self, actor):
+    def arriving(self, _args):
         """Called when an actor enters a new room."""
 
         pass
 
-    def disposition_changed(self, args):
+    def disposition_changed(self, _args):
         """Called when an actor gets assigned a new disposition from the
         Disposition class.
 
@@ -812,8 +829,8 @@ class User(Actor):
 
                     """
 
-                    if ability.name.startswith(args[1]):
-                        ability.try_perform(self, args[2:])
+                    if ability.name.startswith(args['args'][0]):
+                        ability.try_perform(self, args['args'][:2])
                         return True
                 self.client.attach('input', check_input)
 
@@ -845,6 +862,18 @@ class User(Actor):
                     try_perform(self, args)
             handled = True
         return handled
+
+    def affect_changed(self, args):
+        super(User, self).affect_changed(args)
+        if args['actor'] == self:
+            receiver = 'invoker'
+        else:
+            receiver = '*'
+        try:
+            message = args['affect'].messages[args['action']][receiver] % args['actor']
+        except TypeError:
+            message = args['affect'].messages[args['action']][receiver]
+        self.notify(message)
 
     def leaving(self, args):
         super(User, self).leaving(args)
@@ -1210,9 +1239,12 @@ class Ability(observer.Observer, room.Reporter):
 
         """
 
+        args = args[0]
         try:
             receiver = utility.match_partial(args[-1], invoker.room.actors)
         except IndexError:
+            receiver = invoker
+        if not receiver:
             receiver = invoker
         if self.apply_cost(invoker):
             invoker.delay_counter += self.delay + 1
@@ -1220,7 +1252,7 @@ class Ability(observer.Observer, room.Reporter):
             if success:
                 self.perform(receiver)
             else:
-                receiver.room.announce(self.getMessages('fail', invoker, receiver))
+                receiver.room.announce(self.get_messages('fail', invoker, receiver))
         else:
             invoker.notify(__ACTOR_CONFIG__.messages['apply_cost_fail'])
 
@@ -1228,8 +1260,7 @@ class Ability(observer.Observer, room.Reporter):
         """Initialize all the affects associated with this ability."""
 
         for affectname in self.affects:
-            
-            factory.new(affect.Affect(), affectname).start(receiver)
+            receiver.add_affect(factory.new(affect.Affect(), affectname))
     
     def apply_cost(self, invoker):
         """Iterates over the cost property, checks that all requirements are

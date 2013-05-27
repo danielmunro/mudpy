@@ -15,20 +15,6 @@ class Affect(observer.Observer, room.Reporter):
         self.messages = {}
         super(Affect, self).__init__()
     
-    def start(self, receiver):
-        """Apply the affect to a receiver."""
-
-        try:
-            self.attach("start", receiver.start_affect)
-            self.attach("end", receiver.end_affect)
-        except AttributeError:
-            debug.log(str(receiver)+
-                " does not have start_affect() and/or end_affect() defined",
-                "error")
-        server.__instance__.heartbeat.attach("tick", self.tick)
-        self.set_attributes_from_receiver(receiver)
-        self.dispatch("start", affect=self)
-    
     def set_attributes_from_receiver(self, receiver):
         """Calculate modifiers that are percentages of an attribute of the
         receiver.
@@ -42,14 +28,6 @@ class Affect(observer.Observer, room.Reporter):
             if modifier > 0 and modifier < 1:
                 setattr(self.attributes, attr, receiver.get_attribute(attr)
                         * modifier)
-    
-    def tick(self):
-        """Tick listener, count down and remove affect."""
-
-        self.timeout -= 1
-        if self.timeout < 0:
-            server.__instance__.heartbeat.detach("tick", self.tick)
-            self.dispatch("end", affect=self)
 
     def __str__(self):
         return self.name
