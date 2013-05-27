@@ -297,7 +297,6 @@ def done_mob(parent, mob):
     parent.actor_arrive(mob)
     mob.room = parent
     mob.race = new(actor.Race(), mob.race)
-    server.__instance__.heartbeat.attach('tick', mob.tick)
 
 def done_room(parent, _room):
     """Last steps to finalize parsing a room."""

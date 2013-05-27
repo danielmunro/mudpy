@@ -82,16 +82,9 @@ class Actor(observer.Observer):
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
             'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
             'wield0', 'wield1', 'float'])
-    
-    def get_proficiencies(self):
-        """Returns all actor's proficiencies, including known ones and ones
-        granted from racial bonuses.
 
-        """
-
-        all_proficiencies = dict(self.proficiencies)
-        all_proficiencies.update(self.race.proficiencies)
-        return all_proficiencies
+        # listener for the server tick
+        server.__instance__.heartbeat.attach('tick', self._tick)
 
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
@@ -99,7 +92,7 @@ class Actor(observer.Observer):
 
         """
 
-        for prof in self.get_proficiencies():
+        for prof in self._get_proficiencies():
             if(prof.name == _proficiency):
                 return prof
     
@@ -130,27 +123,6 @@ class Actor(observer.Observer):
 
         return self._set_equipment_by_position(equipment.position, equipment)
     
-    def get_movement_cost(self):
-        """Returns the movement cost of moving an actor from one room to
-        an adjacent room.
-
-        """
-
-        if self.is_encumbered():
-            return self.race.movement_cost + 1
-        else:
-            return self.race. movement_cost
-    
-    def get_max_weight(self):
-        """Returns the maximum weight that an actor can carry."""
-
-        return 100+(self.level*100)
-    
-    def is_encumbered(self):
-        """If an actor is encumbered, certain tasks become more difficult."""
-
-        return self.inventory.get_weight() > self.get_max_weight() * 0.95
-    
     def notify(self, message):
         """Called to tell the actor a generic message. Only utilized by the 
         user class for transporting messages to the client.
@@ -158,32 +130,6 @@ class Actor(observer.Observer):
         """
 
         pass
-    
-    def tick(self):
-        """Called on the actor by the server, part of a series of "heartbeats".
-        Responsible for regening the actor's hp, mana, and movement.
-        
-        """
-
-        modifier = random.uniform(0.05, 0.125)
-        if self.disposition == Disposition.INCAPACITATED:
-            modifier = -modifier
-        elif self.disposition == Disposition.LAYING:
-            modifier += random.uniform(0.01, 0.05)
-        elif self.disposition == Disposition.SLEEPING:
-            modifier += random.uniform(0.05, 0.1)
-        self.curhp += self.get_attribute('hp') * modifier
-        self.curmana += self.get_attribute('mana') * modifier
-        self.curmovement += self.get_attribute('movement') * modifier
-        self._normalize_stats()
-    
-    def pulse(self):
-        """Called during regular heartbeats by the server, initiates battle
-        rounds between aggressors.
-
-        """
-
-        self._do_regular_attacks()
 
     def get_attribute(self, attribute_name):
         """Calculates the value of the attribute_name passed in, based on a
@@ -269,7 +215,7 @@ class Actor(observer.Observer):
             self.notify(__ACTOR_CONFIG__.messages['move_failed_no_room'])
             return
 
-        cost = self.get_movement_cost()
+        cost = self._get_movement_cost()
         if(self.attributes.movement >= cost):
             # actor is leaving, subtract movement cost
             self.attributes.movement -= cost
@@ -286,30 +232,26 @@ class Actor(observer.Observer):
 
         """
 
-        self.experience += victim.get_kill_experience(self)
+        # calculate the kill experience
+        leveldiff = victim.level - self.level
+        experience = 200 + 30 * leveldiff
+        if leveldiff > 5:
+            experience *= 1 + random.randint(0, leveldiff*2) / 100
+        aligndiff = abs(victim.alignment - self.alignment) / 2000
+        if aligndiff > 0.5:
+            mod = random.randint(15, 35) / 100
+            experience *= 1 + aligndiff - mod
+        experience = random.uniform(experience * 0.8, experience * 1.2)
+        experience = experience if experience > 0 else 0
+
+        # award experience and check for level change
+        self.experience += experience
         diff = self.experience / self.experience_per_level
         if diff > self.level:
             gain = 0
             while gain < diff:
                 self._level_up()
                 gain += 1
-    
-    def get_kill_experience(self, killer):
-        """The experience the killer gets for killing this actor, based on many
-        factors including level difference.
-
-        """
-
-        leveldiff = self.level - killer.level
-        experience = 200 + 30 * leveldiff
-        if leveldiff > 5:
-            experience *= 1 + random.randint(0, leveldiff*2) / 100
-        aligndiff = abs(self.alignment - killer.alignment) / 2000
-        if aligndiff > 0.5:
-            mod = random.randint(15, 35) / 100
-            experience *= 1 + aligndiff - mod
-        experience = random.uniform(experience * 0.8, experience * 1.2)
-        return experience if experience > 0 else 0
 
     def set_experience_per_level(self):
         """Based on the current configuration of proficiencies, calculate how
@@ -381,8 +323,14 @@ class Actor(observer.Observer):
             self.notify(__ACTOR_CONFIG__.messages['target_already_acquired'])
             return False
         
+        # target acquired
         self.target = target
+
+        # handles above 100% hp/mana/mv and below 0% hp/mana/mv
         self.target.attach('attack_resolution', self._normalize_stats)
+
+        # calls attack rounds until target is removed
+        server.__instance__.heartbeat.attach('pulse', self._do_regular_attacks)
         return True
 
     def can_see(self):
@@ -398,11 +346,65 @@ class Actor(observer.Observer):
         return self.room.lit
 
     def get_affects(self):
+        """Returns all affects currently applied to the actor, including base
+        affects and affects from equipment.
+
+        """
+
         affects = list(self.affects)
         for _pos, equipment in self.equipped.iteritems():
             if equipment:
                 affects += equipment.affects
         return affects
+    
+    def _tick(self):
+        """Called on the actor by the server, part of a series of "heartbeats".
+        Responsible for regening the actor's hp, mana, and movement.
+        
+        """
+
+        modifier = random.uniform(0.05, 0.125)
+        if self.disposition == Disposition.INCAPACITATED:
+            modifier = -modifier
+        elif self.disposition == Disposition.LAYING:
+            modifier += random.uniform(0.01, 0.05)
+        elif self.disposition == Disposition.SLEEPING:
+            modifier += random.uniform(0.05, 0.1)
+        self.curhp += self.get_attribute('hp') * modifier
+        self.curmana += self.get_attribute('mana') * modifier
+        self.curmovement += self.get_attribute('movement') * modifier
+        self._normalize_stats()
+    
+    def _get_proficiencies(self):
+        """Returns all actor's proficiencies, including known ones and ones
+        granted from racial bonuses.
+
+        """
+
+        all_proficiencies = dict(self.proficiencies)
+        all_proficiencies.update(self.race.proficiencies)
+        return all_proficiencies
+    
+    def _get_max_weight(self):
+        """Returns the maximum weight that an actor can carry."""
+
+        return 100+(self.level*100)
+    
+    def _is_encumbered(self):
+        """If an actor is encumbered, certain tasks become more difficult."""
+
+        return self.inventory.get_weight() > self._get_max_weight() * 0.95
+    
+    def _get_movement_cost(self):
+        """Returns the movement cost of moving an actor from one room to
+        an adjacent room.
+
+        """
+
+        if self._is_encumbered():
+            return self.race.movement_cost + 1
+        else:
+            return self.race. movement_cost
     
     def _set_equipment_by_position(self, position, equipment):
         """Sets a piece of equipment by a specific position."""
@@ -444,7 +446,6 @@ class Actor(observer.Observer):
         if self.target:
             if not self.target.target:
                 self.target.set_target(self)
-                server.__instance__.heartbeat.attach('pulse', self.target.pulse)
 
             if self.disposition != Disposition.INCAPACITATED:
                 try:
@@ -453,7 +454,7 @@ class Actor(observer.Observer):
                 except IndexError:
                     pass
         else:
-            server.__instance__.heartbeat.detach('pulse', self)
+            server.__instance__.heartbeat.detach('pulse', self._do_regular_attacks)
 
     def _moved(self, args):
         """Called when an actor moves."""
@@ -589,7 +590,6 @@ class Actor(observer.Observer):
 
         target = utility.match_partial(args[1], self.room.actors)
         if target and self.set_target(target):
-            server.__instance__.heartbeat.attach('pulse', self.pulse)
             self.room.announce({
                 self: invoked_command.messages['success_self'],
                 '*': invoked_command.messages['success_room'] % (self, target)
@@ -667,11 +667,6 @@ class Mob(Actor):
         self.role = ''
         super(Mob, self).__init__()
     
-    def tick(self):
-        super(Mob, self).tick()
-        if self.movement:
-            self._decrement_movement_timer()
-    
     def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from
         their current room to a new one. They cannot move to new areas however.
@@ -685,6 +680,11 @@ class Mob(Actor):
                 _room.area == self.room.area])
             self.move(direction)
             self.movement_timer = self.movement
+    
+    def _tick(self):
+        super(Mob, self)._tick()
+        if self.movement:
+            self._decrement_movement_timer()
     
     def _normalize_stats(self, _args = None):
         if self.curhp < 0:
@@ -719,10 +719,6 @@ class User(Actor):
         if self.client.user:
             self.client.write(message+"\n"+self.prompt())
     
-    def tick(self):
-        super(User, self).tick()
-        self.notify()
-    
     def stat(self):
         """Notifies the user of the target's status (if any) and supplies a
         fresh prompt.
@@ -731,6 +727,10 @@ class User(Actor):
 
         if self.target:
             self.notify(self.target.status()+"\n")
+    
+    def _tick(self):
+        super(User, self)._tick()
+        self.notify()
     
     def _normalize_stats(self, _args = None):
         if self.curhp < -9:
@@ -797,7 +797,7 @@ class User(Actor):
         self.client.attach('input', self.check_input)
 
         # listener for the server tick
-        server.__instance__.heartbeat.attach('tick', self.tick)
+        server.__instance__.heartbeat.attach('tick', self._tick)
 
         # listeners for calendar events (sunrise, sunset) 
         calendar.__instance__.setup_listeners_for(self.calendar_changed)
@@ -980,15 +980,19 @@ class User(Actor):
             self.notify("Your proficiencies:\n" + \
                     "\n".join(name+": "+str(proficiency.level) \
                     for name, proficiency in 
-                        self.get_proficiencies().iteritems()))
+                        self._get_proficiencies().iteritems()))
         elif any(mob.role == Mob.ROLE_ACOLYTE for mob in self.room.mobs()):
-            for prof in self.get_proficiencies():
-                if prof.find(args[1]) == 0:
-                    self.get_proficiency(prof).level += 1
-                    self.room.announce({
-                        self: invoked_command.messages['success_self'] % (prof),
-                        '*': invoked_command.messages['success_room'] % (str(self).title(), prof)
-                    })
+            for prof_name, prof in self._get_proficiencies().iteritems():
+                if prof_name.find(args[1]) == 0:
+                    if self.practices:
+                        self.practices -= 1
+                        prof.level += 1
+                        self.room.announce({
+                            self: invoked_command.messages['success_self'] % (prof_name),
+                            '*': invoked_command.messages['success_room'] % (str(self).title(), prof_name)
+                        })
+                    else:
+                        self.notify(invoked_command.messages['no_practices'])
                     return
                 self.notify(invoked_command.messages['not_proficiency'])
         else:
@@ -1031,7 +1035,7 @@ class User(Actor):
             self.get_attribute('dex'), self._get_unmodified_attribute('dex'),
             self.get_attribute('con'), self._get_unmodified_attribute('con'),
             self.get_attribute('cha'), self._get_unmodified_attribute('cha'),
-            self.inventory.get_weight(), self.get_max_weight(),
+            self.inventory.get_weight(), self._get_max_weight(),
             self.trains, self.practices, self.level, self.experience,
             (self.experience % self.experience_per_level),
             self.get_alignment()))
@@ -1090,9 +1094,13 @@ class User(Actor):
             self.notify(invoked_command.messages['not_trainable'])
 
     def command_date(self, _command, _args):
+        """Notifies the user of the in-game date and time."""
+
         self.notify(calendar.__instance__)
 
     def command_time(self, _command, _args):
+        """Notifies the user of the in-game date and time."""
+
         self.notify(calendar.__instance__)
 
     def __str__(self):
@@ -1220,6 +1228,7 @@ class Ability(observer.Observer, room.Reporter):
         """Initialize all the affects associated with this ability."""
 
         for affectname in self.affects:
+            
             factory.new(affect.Affect(), affectname).start(receiver)
     
     def apply_cost(self, invoker):

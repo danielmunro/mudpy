@@ -85,7 +85,8 @@
                     "success_self":"You get better at %s!",
                     "success_room":"%s gets better at %s.",
                     "not_proficiency":"You cannot practice that.",
-                    "no_acolyte":"No one is here to help you practice."
+                    "no_acolyte":"No one is here to help you practice.",
+                    "no_practices":"You don't have enough practices for that."
                 }
             }
         }
