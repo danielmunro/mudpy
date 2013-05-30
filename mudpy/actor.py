@@ -287,7 +287,14 @@ class Actor(observer.Observer):
         self.room.dispatch('affect_changed', 
                 affect=aff, actor=self, action='success')
         self.affects.append(aff)
-        aff.set_attributes_from_receiver(self)
+
+        # for any modifiers that are percents, we need to 
+        # get the percent of the actor's attribute
+        for attr in vars(aff.attributes):
+            modifier = getattr(aff.attributes, attr)
+            if modifier > 0 and modifier < 1:
+                setattr(aff.attributes, attr, self.get_attribute(attr)
+                        * modifier)
 
         if aff.timeout > -1:
             def __end_affect(_args):
