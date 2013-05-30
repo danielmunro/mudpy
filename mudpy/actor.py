@@ -284,23 +284,20 @@ class Actor(observer.Observer):
     def add_affect(self, aff):
         """Apply an affect to the actor."""
 
-        def __timeout():
-            """Count down the affect timer."""
-
-            aff.timeout -= 1
-            if aff.timeout < 0:
-                server.__instance__.heartbeat.detach('tick', __timeout)
-                self.affects.remove(aff)
-                self.room.dispatch('affect_changed', 
-                        affect=aff, actor=self, action='end')
-
         self.room.dispatch('affect_changed', 
                 affect=aff, actor=self, action='success')
         self.affects.append(aff)
         aff.set_attributes_from_receiver(self)
 
         if aff.timeout > -1:
-            server.__instance__.heartbeat.attach('tick', __timeout)
+            def __end_affect(_args):
+                server.__instance__.heartbeat.detach('tick',
+                                        aff.countdown_timeout)
+                self.affects.remove(aff)
+                self.room.dispatch('affect_changed', 
+                        affect=aff, actor=self, action='end')
+            server.__instance__.heartbeat.attach('tick', aff.countdown_timeout)
+            aff.attach('end', __end_affect)
 
     def affect_changed(self, args):
         """Called when an affect changes for an actor in the same room as this

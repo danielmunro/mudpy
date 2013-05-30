@@ -29,5 +29,13 @@ class Affect(observer.Observer, room.Reporter):
                 setattr(self.attributes, attr, receiver.get_attribute(attr)
                         * modifier)
 
+    def countdown_timeout(self):
+        """Count down the affect timer."""
+
+        self.timeout -= 1
+        if self.timeout < 0:
+            server.__instance__.heartbeat.detach('tick', self.countdown_timeout)
+            self.dispatch('end')
+
     def __str__(self):
         return self.name
