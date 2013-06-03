@@ -526,31 +526,31 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=str(self).title()+" dies.")
 
-    def command_north(self, _invoked_command, _args):
+    def _command_north(self, _invoked_command, _args):
         """Attempt to move the actor in the north direction."""
         self.move("north")
 
-    def command_south(self, _invoked_command, _args):
+    def _command_south(self, _invoked_command, _args):
         """Attempt to move the actor in the south direction."""
         self.move("south")
 
-    def command_east(self, _invoked_command, _args):
+    def _command_east(self, _invoked_command, _args):
         """Attempt to move the actor in the east direction."""
         self.move("east")
 
-    def command_west(self, _invoked_command, _args):
+    def _command_west(self, _invoked_command, _args):
         """Attempt to move the actor in the west direction."""
         self.move("west")
 
-    def command_up(self, _invoked_command, _args):
+    def _command_up(self, _invoked_command, _args):
         """Attempt to move the actor in the up direction."""
         self.move("up")
 
-    def command_down(self, _invoked_command, _args):
+    def _command_down(self, _invoked_command, _args):
         """Attempt to move the actor in the down direction."""
         self.move("down")
 
-    def command_sit(self, invoked_command, _args):
+    def _command_sit(self, invoked_command, _args):
         """Change the actor's disposition to sitting."""
 
         self.disposition = Disposition.SITTING
@@ -559,7 +559,7 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=invoked_command.messages['sit_room'] % (str(self).title()))
 
-    def command_wake(self, invoked_command, _args):
+    def _command_wake(self, invoked_command, _args):
         """Change the actor's disposition to standing."""
 
         self.disposition = Disposition.STANDING
@@ -568,7 +568,7 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=invoked_command.messages['wake_room'] % (str(self).title()))
 
-    def command_sleep(self, invoked_command, _args):
+    def _command_sleep(self, invoked_command, _args):
         """Change the actor's disposition to sleeping."""
 
         self.disposition = Disposition.SLEEPING
@@ -577,14 +577,14 @@ class Actor(observer.Observer):
                 actor=self, 
                 changed=invoked_command.messages['sleep_room'] % (str(self).title()))
 
-    def command_wear(self, _invoked_command, _args):
+    def _command_wear(self, _invoked_command, _args):
         """Attempt to wear a piece of equipment or a weapon from the inventory.
         
         equipment = utility.match_partial(args[1], self.inventory.items)
         if equipment:
             current_eq = self.get_equipment_by_position(equipment.position)
             if current_eq:
-                self.command_remove(['remove', current_eq.name])
+                self._command_remove(['remove', current_eq.name])
             if self.set_equipment(equipment):
                 self.notify(invoked_command.messages['success'] % (equipment))
                 self.inventory.remove(equipment)
@@ -596,7 +596,7 @@ class Actor(observer.Observer):
         self.notify("This is disabled for reworking")
         return
     
-    def command_remove(self, invoked_command, args):
+    def _command_remove(self, invoked_command, args):
         """Attempt to remove a worn piece of equipment or weapon."""
 
         equipment = utility.match_partial(args[1], 
@@ -608,7 +608,7 @@ class Actor(observer.Observer):
         else:
             self.notify(invoked_command.messages['no_item'])
 
-    def command_kill(self, invoked_command, args):
+    def _command_kill(self, invoked_command, args):
         """Attempt to kill another actor within the same room."""
 
         target = utility.match_partial(args[1], self.room.actors)
@@ -620,7 +620,7 @@ class Actor(observer.Observer):
         elif not target:
             self.notify(invoked_command.messages['target_not_found'])
 
-    def command_flee(self, invoked_command, _args):
+    def _command_flee(self, invoked_command, _args):
         """Attempt to flee from a battle. This will cause the actor to flee
         to another room in a random direction.
 
@@ -636,7 +636,7 @@ class Actor(observer.Observer):
         else:
             self.notify(invoked_command.messages['no_target'])
 
-    def command_get(self, invoked_command, args):
+    def _command_get(self, invoked_command, args):
         """Locates and transfers an item from an accessible inventory into
         the actor's inventory. An accessible inventory is the room's inventory
         or the inventory of a container in the room or in the actor's
@@ -658,7 +658,7 @@ class Actor(observer.Observer):
             else:
                 self.notify(invoked_command.messages['no_item'])
 
-    def command_drop(self, invoked_command, args):
+    def _command_drop(self, invoked_command, args):
         """Removes an item from the actor's inventory and adds it to the room
         inventory.
 
@@ -868,8 +868,17 @@ class User(Actor):
         com = factory.match(args[0], 'mudpy.command.Command')
         handled = False
         if com:
-            factory.new(command.Command(), com['wireframe']).\
-                    try_perform(self, args)
+            com = factory.new(command.Command(), com['wireframe'])
+            if com.required_dispositions and self.disposition not in \
+                    com.required_dispositions:
+                self.notify("You are incapacitated and cannot do that." \
+                    if self.disposition == Disposition.INCAPACITATED \
+                    else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
+            else:
+                try:
+                    getattr(self, "_command_"+com.name)(com, args)
+                except AttributeError as e:
+                    debug.log(e, "notice")
             handled = True
         return handled
 
@@ -897,7 +906,7 @@ class User(Actor):
 
     def _post_move(self, direction):
         super(User, self)._post_move(direction)
-        self.command_look()
+        self._command_look()
         self.room.attach('update', self._room_update)
 
     def _room_update(self, args):
@@ -946,7 +955,7 @@ class User(Actor):
         name_len = len(name)
         return name.isalpha() and name_len > 2 and name_len < 12
 
-    def command_look(self, _invoked_command = None, args = None):
+    def _command_look(self, _invoked_command = None, args = None):
         """Describes the room and its inhabitants to the user, including
         actors, items on the ground, and the exits.
 
@@ -985,25 +994,25 @@ class User(Actor):
                 msg = __ACTOR_CONFIG__.messages['look_at_nothing']
         self.notify(msg+"\n")
 
-    def command_affects(self, _invoked_command, _args):
+    def _command_affects(self, _invoked_command, _args):
         """Describes the affects currently active on the user."""
 
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
                     " ticks" for x in self.affects))
 
-    def command_sit(self, invoked_command, args):
-        super(User, self).command_sit(invoked_command, args)
+    def _command_sit(self, invoked_command, args):
+        super(User, self)._command_sit(invoked_command, args)
         self.notify(invoked_command.messages['sit_self'])
 
-    def command_wake(self, invoked_command, args):
-        super(User, self).command_wake(invoked_command, args)
+    def _command_wake(self, invoked_command, args):
+        super(User, self)._command_wake(invoked_command, args)
         self.notify(invoked_command.messages['wake_self'])
 
-    def command_sleep(self, invoked_command, args):
-        super(User, self).command_sleep(invoked_command, args)
+    def _command_sleep(self, invoked_command, args):
+        super(User, self)._command_sleep(invoked_command, args)
         self.notify(invoked_command.messages['sleep_self'])
 
-    def command_practice(self, invoked_command, args):
+    def _command_practice(self, invoked_command, args):
         """Describes proficiency information to the user and if an acolyte is
         present, allows the user to get better at those proficiencies.
 
@@ -1031,13 +1040,13 @@ class User(Actor):
         else:
             self.notify(invoked_command.messages['no_acolyte'])
 
-    def command_quit(self, _invoked_command, _args):
+    def _command_quit(self, _invoked_command, _args):
         """Saves and disconnects the user."""
 
         self.save()
         self.client.disconnect()
 
-    def command_equipped(self, _invoked_command, _args):
+    def _command_equipped(self, _invoked_command, _args):
         """Tells the user what they have equipped."""
 
         msg = ""
@@ -1045,7 +1054,7 @@ class User(Actor):
             msg += re.sub(r"\d+", "", position)+": "+str(equipment)+"\n"
         self.notify("You are wearing: "+msg)
 
-    def command_score(self, _invoked_command, _args):
+    def _command_score(self, _invoked_command, _args):
         """Provides a more detailed score card of the user's status, including
         name, race, attributes, carrying weight, trains, practices, and
         experience.
@@ -1073,12 +1082,12 @@ class User(Actor):
             (self.experience % self.experience_per_level),
             self.get_alignment()))
 
-    def command_inventory(self, _invoked_command, _args):
+    def _command_inventory(self, _invoked_command, _args):
         """Relays the user's inventory of items back to them."""
 
         self.notify("Your inventory:\n"+str(self.inventory))
 
-    def command_who(self, invoked_command, args):
+    def _command_who(self, invoked_command, args):
         """
         wholist = ''
         for i in self.client.factory.clients:
@@ -1089,7 +1098,7 @@ class User(Actor):
         """
         pass
 
-    def command_train(self, invoked_command, args):
+    def _command_train(self, invoked_command, args):
         """Handles training the user and displaying information about what
         attributes may still be trained. Requires a trainer in the room.
 
@@ -1126,12 +1135,12 @@ class User(Actor):
         else:
             self.notify(invoked_command.messages['not_trainable'])
 
-    def command_date(self, _command, _args):
+    def _command_date(self, _command, _args):
         """Notifies the user of the in-game date and time."""
 
         self.notify(calendar.__instance__)
 
-    def command_time(self, _command, _args):
+    def _command_time(self, _command, _args):
         """Notifies the user of the in-game date and time."""
 
         self.notify(calendar.__instance__)
