@@ -132,7 +132,7 @@ class Actor(observer.Observer):
 
         return self._set_equipment_by_position(equipment.position, equipment)
     
-    def notify(self, message):
+    def notify(self, message = "", add_prompt = True):
         """Called to tell the actor a generic message. Only utilized by the 
         user class for transporting messages to the client.
 
@@ -746,10 +746,11 @@ class User(Actor):
 
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
     
-    def notify(self, message=""):
-        super(User, self).notify(message)
+    def notify(self, message = "", add_prompt = True):
+        super(User, self).notify(message, add_prompt)
         if self.client.user:
-            self.client.write(str(message)+"\n"+self.prompt())
+            self.client.write(str(message)+"\n"+(self.prompt() if add_prompt \
+                    else ""))
     
     def stat(self):
         """Notifies the user of the target's status (if any) and supplies a
@@ -1228,7 +1229,7 @@ class Attack:
             aggressor: "("+attackname+") Your "+verb+" attack "+is_hit+" "+tarname+".",
             aggressor.target: ucname+"'s "+verb+" attack "+is_hit+" you.",
             "*": ucname+"'s "+verb+" attack "+is_hit+" "+tarname+"."
-        })
+        }, add_prompt = False)
 
         #need to do this check again here, can't have the actor dead before the hit message
         if roll > 0: 

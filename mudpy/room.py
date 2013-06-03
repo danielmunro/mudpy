@@ -32,7 +32,7 @@ class Room(observer.Observer):
         self.area = None
         self.lit = True
     
-    def announce(self, messages):
+    def announce(self, messages, add_prompt = True):
         """Will take a message and convey it to the various actors in the
         room. Any updates at the room level will be broadcasted through
         here.
@@ -46,11 +46,11 @@ class Room(observer.Observer):
                 generalMessage = message
             else:
                 if message:
-                    actor.notify(message+"\n")
+                    actor.notify(message = message, add_prompt = add_prompt)
                 announcedActors.append(actor)
         if generalMessage:
             for actor in list(set(self.actors) - set(announcedActors)):
-                actor.notify(generalMessage+"\n")
+                actor.notify(generalMessage, add_prompt)
     
     def mobs(self):
         from actor import Mob
