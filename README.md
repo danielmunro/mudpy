@@ -16,4 +16,6 @@ python main.py example/elkhead elkhead
 
 In a new tab:
 
+```
 telnet localhost 9000
+```
