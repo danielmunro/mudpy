@@ -725,9 +725,9 @@ class Mob(Actor):
     
     def _die(self):
         super(Mob, self)._die()
-        self.room.actor_leave(self)
+        self._pre_move("sky")
         self.room = room.__ROOMS__[room.__PURGATORY__]
-        self.room.actor_arrive(self)
+        self._post_move("sky")
     
 class User(Actor):
     """The actor controlled by a client connected by the server."""
