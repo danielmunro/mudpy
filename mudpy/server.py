@@ -5,8 +5,24 @@ user defined scripts.
 
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
-import random, time
-from . import debug, observer
+import random, time, __main__
+from . import debug, observer, factory
+
+__config__ = None
+__instance__ = None
+
+def _initialize(_args):
+    global __config__
+
+    __config__ = factory.new(Config(), __main__.__mud_name__)
+
+def _preload(_args):
+    global __instance__
+
+    __instance__ = Instance()
+
+__main__.__mudpy__.attach('preload', _preload)
+__main__.__mudpy__.attach('initialize', _initialize)
 
 class Instance:
     """Information about the implementation of this mud.py server."""
@@ -18,9 +34,6 @@ class Instance:
         # listening to the network
         self.heartbeat = Heartbeat()
 
-        # object to encapsulate configuration values
-        self.config = Config()
-
     def start_listening(self, client_factory):
         """Takes a client_factory (twisted Factory implementation), and set it
         for a tcp endpoint for the twisted reactor. Set the method for reactor
@@ -28,6 +41,7 @@ class Instance:
         method will start the main game loop.
 
         """
+
         def set_client_poll(args):
             """Called when the client_factory reports that a client is
             created.
@@ -52,18 +66,18 @@ class Instance:
 
         # define an endpoint for the reactor in mud.py's ClientFactory, an
         # implementation of twisted's Factory
-        TCP4ServerEndpoint(reactor, self.config.port).listen(client_factory)
+        TCP4ServerEndpoint(reactor, __config__.port).listen(client_factory)
 
         # start running the game thread
         reactor.callInThread(self.heartbeat.start)
 
-        debug.log(str(self)+" ready to accept clients on port "+str(self.config.port))
+        debug.log(str(self)+" ready to accept clients on port "+str(__config__.port))
 
         # start the twisted client listener thread
         reactor.run()
     
     def __str__(self):
-        return self.config.name
+        return __config__.name
 
 class Config:
     """Maintains configuration specific to the mud mudp is running."""
@@ -151,5 +165,3 @@ class Stopwatch:
     
     def __str__(self):
         return str(time.time()-self.starttime)
-
-__instance__ = Instance()

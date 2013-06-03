@@ -6,10 +6,17 @@ how they interact with the world.
 from __future__ import division
 from . import debug, room, utility, server, factory, proficiency, item, \
                 attributes, observer, command, affect, calendar
-import time, random, os, pickle, re
+import time, random, os, pickle, re, __main__
 
 __SAVE_DIR__ = 'data'
-__ACTOR_CONFIG__ = None
+__config__ = None
+
+def _initialize(_args):
+    global __config__
+
+    __config__ = factory.new(Config(), __main__.__mud_name__)
+
+__main__.__mudpy__.attach("initialize", _initialize)
     
 def get_damage_verb(dam_roll):
     """A string representation of the severity of damage dam_roll will cause.
@@ -203,16 +210,16 @@ class Actor(observer.Observer):
             in self.room.directions.iteritems() if _room])
 
         if self.target:
-            self.notify(__ACTOR_CONFIG__.messages['move_failed_fighting'])
+            self.notify(__config__.messages['move_failed_fighting'])
             return
 
         if self.disposition == Disposition.INCAPACITATED:
-            self.notify(__ACTOR_CONFIG__.messages['move_failed_incapacitated'])
+            self.notify(__config__.messages['move_failed_incapacitated'])
             return
 
         new_room = self.room.directions[direction]
         if not new_room:
-            self.notify(__ACTOR_CONFIG__.messages['move_failed_no_room'])
+            self.notify(__config__.messages['move_failed_no_room'])
             return
 
         cost = self._get_movement_cost()
@@ -223,7 +230,7 @@ class Actor(observer.Observer):
             self.room = new_room
             self._post_move(room.Direction.get_reverse(direction))
         else:
-            self.notify(__ACTOR_CONFIG__.messages['move_failed_too_tired'])
+            self.notify(__config__.messages['move_failed_too_tired'])
     
     def reward_kill(self, victim):
         """Applies kill experience from the victim to the killer and checks
@@ -323,7 +330,7 @@ class Actor(observer.Observer):
             return True
 
         if self.target:
-            self.notify(__ACTOR_CONFIG__.messages['target_already_acquired'])
+            self.notify(__config__.messages['target_already_acquired'])
             return False
         
         # target acquired
@@ -768,10 +775,10 @@ class User(Actor):
             self._die()
         elif self.curhp <= 0:
             self.disposition = Disposition.INCAPACITATED
-            self.notify(__ACTOR_CONFIG__.messages['incapacitated'])
+            self.notify(__config__.messages['incapacitated'])
         elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
             self.disposition = Disposition.LAYING
-            self.notify(__ACTOR_CONFIG__.messages['recover_from_incapacitation'])
+            self.notify(__config__.messages['recover_from_incapacitation'])
         super(User, self)._normalize_stats()
     
     def _die(self):
@@ -779,7 +786,7 @@ class User(Actor):
         self.room.actor_leave(self)
         self.room = room.__ROOMS__[room.__START_ROOM__]
         self.room.actor_arrive(self)
-        self.notify(__ACTOR_CONFIG__.messages['died'])
+        self.notify(__config__.messages['died'])
     
     def _update_delay(self):
         """Removes the client from polling for input if the user has a delay
@@ -800,7 +807,7 @@ class User(Actor):
     
     def _level_up(self):
         super(User, self)._level_up()
-        self.notify(__ACTOR_CONFIG__.messages['level_up'])
+        self.notify(__config__.messages['level_up'])
 
     def perform_ability(self, ability):
         """Applies delay to the user when performing an ability."""
@@ -889,7 +896,7 @@ class User(Actor):
                 actor_seen = args['actor']
             else:
                 actor_seen = "Someone"
-            self.notify(__ACTOR_CONFIG__.messages['actor_leaves_room'] % (actor_seen, args['direction']))
+            self.notify(__config__.messages['actor_leaves_room'] % (actor_seen, args['direction']))
 
     def arriving(self, args):
         super(User, self).arriving(args)
@@ -898,7 +905,7 @@ class User(Actor):
                 actor_seen = args['actor']
             else:
                 actor_seen = "Someone"
-            self.notify(__ACTOR_CONFIG__.messages['actor_enters_room'] % (actor_seen, args['direction']))
+            self.notify(__config__.messages['actor_enters_room'] % (actor_seen, args['direction']))
 
     def _pre_move(self, direction):
         super(User, self)._pre_move(direction)
@@ -968,7 +975,7 @@ class User(Actor):
             if can_see:
                 msg = "%s\n%s\n" % (self.room.name, self.room.description)
             else:
-                msg = __ACTOR_CONFIG__.messages["cannot_see_too_dark"]
+                msg = __config__.messages["cannot_see_too_dark"]
             msg += "\n[Exits %s]\n" % (
                     "".join(direction[:1] for direction, room in 
                         self.room.directions.iteritems() if room))
@@ -981,7 +988,7 @@ class User(Actor):
                                 in self.room.actors if _actor is not self)+"\n"
                 else:
                     msg += \
-                    __ACTOR_CONFIG__.messages["cannot_see_actors_in_room"]+"\n"
+                    __config__.messages["cannot_see_actors_in_room"]+"\n"
         else:
             looking_at = utility.match_partial(
                     args[0], 
@@ -991,7 +998,7 @@ class User(Actor):
             if looking_at:
                 msg = looking_at.description.capitalize()
             else:
-                msg = __ACTOR_CONFIG__.messages['look_at_nothing']
+                msg = __config__.messages['look_at_nothing']
         self.notify(msg+"\n")
 
     def _command_affects(self, _invoked_command, _args):
@@ -1267,7 +1274,7 @@ class Ability(observer.Observer, room.Reporter):
             else:
                 receiver.room.announce(self.get_messages('fail', invoker, receiver))
         else:
-            invoker.notify(__ACTOR_CONFIG__.messages['apply_cost_fail'])
+            invoker.notify(__config__.messages['apply_cost_fail'])
 
     def perform(self, receiver):
         """Initialize all the affects associated with this ability."""

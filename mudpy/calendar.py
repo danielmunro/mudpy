@@ -1,10 +1,11 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
-from . import debug, observer
-import os, pickle
+from . import debug, observer, factory, server
+import os, pickle, __main__
 
 __CALENDAR_DATA__ = os.path.join(os.getcwd(), "data", "servertime.pk")
 __instance__ = None
+__config__ = None
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
@@ -12,10 +13,10 @@ def suffix(dec):
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
-def initialize():
+def _initialize(_args):
     """Initialize the global calendar object."""
 
-    global __instance__
+    global __instance__, __config__
 
     try:
         with open(__CALENDAR_DATA__, 'rb') as fp:
@@ -26,12 +27,16 @@ def initialize():
         __instance__ = Instance()
         debug.log("starting new calendar")
 
+    __config__ = factory.new(Config(), __main__.__mud_name__)
+    server.__instance__.heartbeat.attach("tick", __instance__.tick)
+
+__main__.__mudpy__.attach('initialize', _initialize)
+
 class Instance(observer.Observer):
     """Calendar instance, keeps track of the date in the game."""
 
     def __init__(self):
         super(Instance, self).__init__()
-        self.config = None
         self.elapsed_time = 0
         self.hour = 0
         self.day_of_month = 1
@@ -47,23 +52,23 @@ class Instance(observer.Observer):
 
         self.elapsed_time += 1
         self.hour += 1
-        if self.hour == self.config.months[self.month]['sunrise']:
+        if self.hour == __config__.months[self.month]['sunrise']:
             self.dispatch('sunrise', 
                     calendar=self, 
                     changed="The sun begins to rise.")
             self.daylight = True
-        elif self.hour == self.config.months[self.month]['sunset']:
+        elif self.hour == __config__.months[self.month]['sunset']:
             self.dispatch('sunset', 
                     calendar=self, 
                     changed="The sun begins to set.")
             self.daylight = False
-        if self.hour == self.config.hours_in_day:
+        if self.hour == __config__.hours_in_day:
             self.hour = 0
             self.day_of_month += 1
-            if self.day_of_month > self.config.months[self.month]['days_in_month']:
+            if self.day_of_month > __config__.months[self.month]['days_in_month']:
                 self.day_of_month = 1
                 self.month += 1
-                if self.month > len(self.config.months)-1:
+                if self.month > len(__config__.months)-1:
                     self.month = 1
                     self.year += 1
         self.save()
@@ -87,7 +92,7 @@ class Instance(observer.Observer):
 
         return "It is %i o'clock %s, the %i%s day of %s, year %i" % (
                 hour, time, self.day_of_month, suffix(self.day_of_month), 
-                self.config.months[self.month]["name"], self.year)
+                __config__.months[self.month]["name"], self.year)
 
     def setup_listeners_for(self, func):
         """Binds function to calendar related events."""

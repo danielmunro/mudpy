@@ -6,6 +6,17 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, factory, observer
 
+import __main__
+
+__config__ = None
+
+def _initialize(_args):
+    global __config__
+
+    __config__ = factory.new(Config(), __main__.__mud_name__)
+
+__main__.__mudpy__.attach("initialize", _initialize)
+
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
 
@@ -37,7 +48,7 @@ class Client(observer.Observer, Protocol):
     def get_new_user(self):
         """Returns a user of the type defined in the configs."""
 
-        user_module = __import__(self.client_factory.config.user_module, None, None, 'User')
+        user_module = __import__(__config__.user_module, None, None, 'User')
         return user_module.User()
     
     def poll(self):
@@ -153,8 +164,7 @@ class ClientFactory(tFactory, observer.Observer):
 
     protocol = Client
 
-    def __init__(self, mud_name):
-        self.config = factory.new(Config(), mud_name)
+    def __init__(self):
         super(ClientFactory, self).__init__()
 
     def buildProtocol(self, addr):

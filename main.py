@@ -4,7 +4,22 @@ listening on the configured port.
 
 """
 
-from mudpy import factory, server, client, debug, actor, calendar
+from mudpy import observer
+
+class Mudpy(observer.Observer):
+    """Anchor object for attaching initialization functions to. Dispatches
+    an initialization event after all script parsing is complete.
+
+    """
+
+    def __init__(self):
+        super(Mudpy, self).__init__()
+
+__mudpy__ = Mudpy()
+
+from mudpy import factory, server, client, debug
+
+__mudpy__.dispatch("preload")
 
 import sys, os
 
@@ -39,7 +54,12 @@ sys.path.append(os.path.join(os.getcwd(), __python_path__))
 # parse the scripts directories, sets up all of the initial state for the game,
 # as well as wireframes for building more game objects during the run
 
-factory.parse('mudpy/scripts')
+try:
+    factory.parse("mudpy/scripts")
+except IOError:
+    debug.log("internal mudpy scripts directory appears to be missing",
+            "error")
+    raise
 
 try:
     factory.parse(__scripts_directory__)
@@ -49,18 +69,8 @@ except IOError:
                 "mud.py", "error")
     raise
 
-# initialize the calendar
-calendar.initialize()
+# run initialization
+__mudpy__.dispatch("initialize")
 
-# assign an actor configuration. This contains messages that get displayed
-# to users among other things
-actor.__ACTOR_CONFIG__ = factory.new(actor.Config(), __mud_name__)
-
-# assign a configuration to the server instance, parsed from the
-# __scripts_directory__. Start the configured server, and have it use the
-# ClientFactory to handle new connections
-
-server.__instance__.config = factory.new(server.Config(), __mud_name__)
-calendar.__instance__.config = factory.new(calendar.Config(), __mud_name__)
-server.__instance__.heartbeat.attach("tick", calendar.__instance__.tick)
-server.__instance__.start_listening(client.ClientFactory(__mud_name__))
+# start listening
+server.__instance__.start_listening(client.ClientFactory())
