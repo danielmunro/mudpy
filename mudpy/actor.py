@@ -12,6 +12,8 @@ __SAVE_DIR__ = 'data'
 __config__ = None
 
 def _initialize(_args):
+    """Initialization function for actor module. Sets up config object."""
+
     global __config__
 
     __config__ = factory.new(Config(), __main__.__mud_name__)

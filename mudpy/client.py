@@ -11,6 +11,11 @@ import __main__
 __config__ = None
 
 def _initialize(_args):
+    """Initialization listener function for client, will set up the config
+    object for use later.
+
+    """
+
     global __config__
 
     __config__ = factory.new(Config(), __main__.__mud_name__)
