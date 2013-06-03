@@ -1,0 +1,11 @@
+[{
+    "wireframes":[{
+        "mudpy.server.Config":{
+            "properties":{
+                "port":9000,
+                "name":"elkhead",
+                "display_name":"My Great Mud"
+            }
+        }
+    }]
+}]

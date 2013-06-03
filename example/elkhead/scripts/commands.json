@@ -1,3 +1,72 @@
 [{
-    "wireframes":[]
+    "wireframes":[{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"practice",
+                "messages":{
+                    "success_self":"You get better at %s!",
+                    "success_room":"%s gets better at %s.",
+                    "not_proficiency":"You cannot practice that.",
+                    "no_acolyte":"No one is here to help you practice.",
+                    "no_practices":"You don't have enough practices for that."
+                }
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"train",
+                "messages":{
+                    "no_trains":"You don't have any trains.",
+                    "no_trainers":"There are no trainers here.",
+                    "success_self":"Your %s increases!",
+                    "success_room":"%s's %s increases.",
+                    "maxed_stat":"You cannot train %s any further.",
+                    "not_trainable":"You cannot train that."
+                }
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"equipped"
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"inventory"
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"score"
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"look"
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"quit"
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"who"
+            }
+        }
+    },{
+        "mudpy.command.Command":{
+            "properties":{
+                "name":"affects"
+            }
+        }
+    }]
 }]

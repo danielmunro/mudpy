@@ -1,0 +1,10 @@
+[{
+    "wireframes":[{
+        "mudpy.client.Config":{
+            "properties":{
+                "name":"elkhead",
+                "user_module":"elkhead.user"
+            }
+        }
+    }]
+}]
