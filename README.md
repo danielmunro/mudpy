@@ -8,7 +8,8 @@ how to run
 
 To run the example included in the framework:
 
-```git clone git://github.com/danielmunro/mudpy.git && \
+```
+git clone git://github.com/danielmunro/mudpy.git && \
 cd mudpy && \
 python main.py example/elkhead elkhead
 ```
