@@ -87,7 +87,7 @@ def parse(path):
             _parse(fullpath)
         endlen = len(__loaded__)
         if startlen == endlen:
-            debug.log("dependencies cannot be met", "error")
+            raise DependencyException
 
     #build out the room tree
     random_halls = []
@@ -155,6 +155,7 @@ def parse_json(script):
         data = json.load(fp)
     except ValueError:
         debug.log("script file is not properly formatted: "+script, "error")
+        raise
     path, filename = os.path.split(script)
     try:
         _parse_json(data)
