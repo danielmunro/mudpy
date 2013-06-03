@@ -11,7 +11,7 @@ import sys
 
 try:
     __scripts_directory__ = sys.argv[1]
-    __mud__name__ = sys.argv[2]
+    __mud_name__ = sys.argv[2]
 except IndexError:
     debug.log("invalid set of arguments passed to mud.py. expecting two "+ \
                 "arguments: the location of the scripts directory and the "+ \
@@ -38,13 +38,13 @@ calendar.initialize()
 
 # assign an actor configuration. This contains messages that get displayed
 # to users among other things
-actor.__ACTOR_CONFIG__ = factory.new(actor.Config(), "main")
+actor.__ACTOR_CONFIG__ = factory.new(actor.Config(), __mud_name__)
 
 # assign a configuration to the server instance, parsed from the
 # __scripts_directory__. Start the configured server, and have it use the
 # ClientFactory to handle new connections
 
-server.__instance__.config = factory.new(server.Config(), __mud__name__)
-calendar.__instance__.config = factory.new(calendar.Config(), "main")
+server.__instance__.config = factory.new(server.Config(), __mud_name__)
+calendar.__instance__.config = factory.new(calendar.Config(), __mud_name__)
 server.__instance__.heartbeat.attach("tick", calendar.__instance__.tick)
-server.__instance__.start_listening(client.ClientFactory())
+server.__instance__.start_listening(client.ClientFactory(__mud_name__))

@@ -155,8 +155,8 @@ class ClientFactory(tFactory, observer.Observer):
 
     protocol = Client
 
-    def __init__(self):
-        self.config = factory.new(Config(), "main")
+    def __init__(self, mud_name):
+        self.config = factory.new(Config(), mud_name)
         super(ClientFactory, self).__init__()
 
     def buildProtocol(self, addr):
