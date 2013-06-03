@@ -26,9 +26,7 @@ def log(message, status = "info"):
     fp.flush()
 
     # better error visibility and testing
-    if status == 'error':
-        raise DebugException(message)
-    elif status == 'notice':
+    if status == 'error' or status == 'notice':
         print message
 
 class DebugException(Exception):
