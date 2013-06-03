@@ -216,9 +216,9 @@ class Actor(observer.Observer):
             return
 
         cost = self._get_movement_cost()
-        if(self.attributes.movement >= cost):
+        if(self.curmovement >= cost):
             # actor is leaving, subtract movement cost
-            self.attributes.movement -= cost
+            self.curmovement -= cost
             self._pre_move(direction)
             self.room = new_room
             self._post_move(room.Direction.get_reverse(direction))
