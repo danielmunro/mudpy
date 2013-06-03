@@ -8,6 +8,16 @@ from mudpy import factory, server, client, debug, actor, calendar
 
 import sys, os
 
+# set the data directory for storing users and calendar time
+
+if not os.path.isdir("data"):
+    try:
+        os.mkdir("data")
+    except IOError:
+        debug.log("create a writable \"data\" directory for mudpy to use",
+                "error")
+        raise
+
 # set some global variables from arguments passed to the script
 
 try:
