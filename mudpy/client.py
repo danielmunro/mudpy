@@ -60,8 +60,6 @@ class Client(observer.Observer, Protocol):
             handled = self.dispatch('input', user=self.user, args=args)
             if not handled:
                 self.user.notify("What was that?")
-
-        self.write("\n"+self.user.prompt())
     
     def write(self, message):
         """Send a message from the game to the client."""
