@@ -5,13 +5,15 @@ listening on the configured port.
 """
 
 from mudpy import factory, server, client, debug, actor, calendar
-import sys
+
+import sys, os
 
 # set some global variables from arguments passed to the script
 
 try:
-    __scripts_directory__ = sys.argv[1]
+    __python_path__ = sys.argv[1]
     __mud_name__ = sys.argv[2]
+    __scripts_directory__ = os.path.join(__python_path__, "scripts")
 except IndexError:
     debug.log("invalid set of arguments passed to mud.py. expecting two "+ \
                 "arguments: the location of the scripts directory and the "+ \
@@ -19,6 +21,10 @@ except IndexError:
                 "base init.json configuration, ie:\n\n python main.py "+ \
                 "mudpy/scripts mud\n", "error")
     raise
+
+# set the path for the mud that is being run
+
+sys.path.append(os.path.join(os.getcwd(), __python_path__))
 
 # parse the scripts directories, sets up all of the initial state for the game,
 # as well as wireframes for building more game objects during the run
