@@ -1,4 +1,4 @@
 *.pyc
 debug.log
 users
-servertime.pk
+data

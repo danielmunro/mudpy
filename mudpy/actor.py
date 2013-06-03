@@ -8,7 +8,7 @@ from . import debug, room, utility, server, factory, proficiency, item, \
                 attributes, observer, command, affect, calendar
 import time, random, os, pickle, re
 
-__SAVE_DIR__ = 'users'
+__SAVE_DIR__ = 'data'
 __ACTOR_CONFIG__ = None
     
 def get_damage_verb(dam_roll):

@@ -3,7 +3,7 @@
 from . import debug, observer
 import os, pickle
 
-__CALENDAR_DATA__ = os.path.join(os.getcwd(), 'servertime.pk')
+__CALENDAR_DATA__ = os.path.join(os.getcwd(), "data", "servertime.pk")
 __instance__ = None
 
 def suffix(dec):
