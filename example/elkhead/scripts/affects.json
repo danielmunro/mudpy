@@ -5,10 +5,10 @@
                 "name":"sneak",
                 "messages":{
                     "success":{
-                        "invoker":"You silently fade into the shadows."
+                        "self":"You silently fade into the shadows."
                     },
                     "end":{
-                        "invoker":"You no longer move silently.",
+                        "self":"You no longer move silently.",
                         "*":"%s appears from the shadows."
                     }
                 }
@@ -20,11 +20,11 @@
                 "name":"berserk",
                 "messages":{
                     "success":{
-                        "invoker":"Your pulse speeds up as you are consumed by rage!",
+                        "self":"Your pulse speeds up as you are consumed by rage!",
                         "*":"%s goes into a rage!"
                     },
                     "end":{
-                        "invoker":"You calm down.",
+                        "self":"You calm down.",
                         "*":"%s calms down."
                     }
                 }

@@ -21,7 +21,7 @@ class Affect(observer.Observer, room.Reporter):
         self.timeout -= 1
         if self.timeout < 0:
             server.__instance__.heartbeat.detach('tick', self.countdown_timeout)
-            self.dispatch('end')
+            self.dispatch('end', affect=self)
 
     def __str__(self):
         return self.name

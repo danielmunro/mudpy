@@ -219,10 +219,9 @@ class Actor(observer.Observer):
         if(self.attributes.movement >= cost):
             # actor is leaving, subtract movement cost
             self.attributes.movement -= cost
-            self.room.actor_leave(self, direction)
+            self._pre_move(direction)
             self.room = new_room
-            self.room.actor_arrive(self, room.Direction.get_reverse(direction))
-            self._moved(direction)
+            self._post_move(room.Direction.get_reverse(direction))
         else:
             self.notify(__ACTOR_CONFIG__.messages['move_failed_too_tired'])
     
@@ -284,8 +283,13 @@ class Actor(observer.Observer):
     def add_affect(self, aff):
         """Apply an affect to the actor."""
 
-        self.room.dispatch('affect_changed', 
-                affect=aff, actor=self, action='success')
+        try:
+            self.dispatch('changed', 
+                    affect=aff, actor=self,
+                    changed=aff.messages['success']['*'] % self)
+        except KeyError as e:
+            pass
+
         self.affects.append(aff)
 
         # for any modifiers that are percents, we need to 
@@ -297,22 +301,8 @@ class Actor(observer.Observer):
                         * modifier)
 
         if aff.timeout > -1:
-            def __end_affect(_args):
-                server.__instance__.heartbeat.detach('tick',
-                                        aff.countdown_timeout)
-                self.affects.remove(aff)
-                self.room.dispatch('affect_changed', 
-                        affect=aff, actor=self, action='end')
             server.__instance__.heartbeat.attach('tick', aff.countdown_timeout)
-            aff.attach('end', __end_affect)
-
-    def affect_changed(self, args):
-        """Called when an affect changes for an actor in the same room as this
-        actor.
-
-        """
-
-        pass
+            aff.attach('end', self._end_affect)
 
     def leaving(self, _args):
         """Called when an actor leaves a room."""
@@ -321,14 +311,6 @@ class Actor(observer.Observer):
 
     def arriving(self, _args):
         """Called when an actor enters a new room."""
-
-        pass
-
-    def disposition_changed(self, _args):
-        """Called when an actor gets assigned a new disposition from the
-        Disposition class.
-
-        """
 
         pass
 
@@ -377,6 +359,19 @@ class Actor(observer.Observer):
             if equipment:
                 affects += equipment.affects
         return affects
+
+    def _end_affect(self, args):
+        """Called when an affect ends."""
+
+        server.__instance__.heartbeat.detach('tick',
+                                args['affect'].countdown_timeout)
+        self.affects.remove(args['affect'])
+        try:
+            self.dispatch('changed', 
+                    affect=args['affect'], actor=self,
+                    changed=args['affect'].messages['end']['*'] % self)
+        except KeyError:
+            pass
     
     def _tick(self):
         """Called on the actor by the server, part of a series of "heartbeats".
@@ -477,10 +472,17 @@ class Actor(observer.Observer):
         else:
             server.__instance__.heartbeat.detach('pulse', self._do_regular_attacks)
 
-    def _moved(self, args):
-        """Called when an actor moves."""
+    def _pre_move(self, direction):
+        """Called before an actor moves."""
 
-        pass
+        self.detach('changed', self.room.actor_changed)
+        self.room.actor_leave(self, direction)
+
+    def _post_move(self, direction):
+        """Called after an actor moves."""
+
+        self.attach('changed', self.room.actor_changed)
+        self.room.actor_arrive(self, direction)
 
     def _level_up(self):
         """Increase the actor's level."""
@@ -519,8 +521,8 @@ class Actor(observer.Observer):
             self.inventory.remove(i)
             corpse.inventory.append(i)
         self.room.inventory.append(corpse)
-        self.room.dispatch(
-                "disposition_changed", 
+        self.dispatch(
+                "changed", 
                 actor=self, 
                 changed=str(self).title()+" dies.")
 
@@ -552,8 +554,8 @@ class Actor(observer.Observer):
         """Change the actor's disposition to sitting."""
 
         self.disposition = Disposition.SITTING
-        self.room.dispatch(
-                "disposition_changed", 
+        self.dispatch(
+                "changed", 
                 actor=self, 
                 changed=invoked_command.messages['sit_room'] % (str(self).title()))
 
@@ -561,8 +563,8 @@ class Actor(observer.Observer):
         """Change the actor's disposition to standing."""
 
         self.disposition = Disposition.STANDING
-        self.room.dispatch(
-                "disposition_changed", 
+        self.dispatch(
+                "changed", 
                 actor=self, 
                 changed=invoked_command.messages['wake_room'] % (str(self).title()))
 
@@ -570,8 +572,8 @@ class Actor(observer.Observer):
         """Change the actor's disposition to sleeping."""
 
         self.disposition = Disposition.SLEEPING
-        self.room.dispatch(
-                "disposition_changed", 
+        self.dispatch(
+                "changed", 
                 actor=self, 
                 changed=invoked_command.messages['sleep_room'] % (str(self).title()))
 
@@ -738,7 +740,7 @@ class User(Actor):
     def notify(self, message=""):
         super(User, self).notify(message)
         if self.client.user:
-            self.client.write(message+"\n"+self.prompt())
+            self.client.write(str(message)+"\n"+self.prompt())
     
     def stat(self):
         """Notifies the user of the target's status (if any) and supplies a
@@ -748,6 +750,14 @@ class User(Actor):
 
         if self.target:
             self.notify(self.target.status()+"\n")
+
+    def add_affect(self, aff):
+        super(User, self).add_affect(aff)
+        self.notify(aff.messages['success']['self'])
+
+    def _end_affect(self, args):
+        super(User, self)._end_affect(args)
+        self.notify(args['affect'].messages['end']['self'])
     
     def _tick(self):
         super(User, self)._tick()
@@ -812,7 +822,7 @@ class User(Actor):
         else:
             new_room_id = room.__START_ROOM__
         self.room = room.__ROOMS__[new_room_id]
-        self.room.actor_arrive(self, "sky")
+        self._post_move("sky")
 
         # listener for client input
         self.client.attach('input', self.check_input)
@@ -837,10 +847,6 @@ class User(Actor):
                         ability.try_perform(self, args['args'][:2])
                         return True
                 self.client.attach('input', check_input)
-
-        # look and prompt
-        self.command_look()
-        self.notify("")
 
         debug.log('client logged in as '+str(self))
 
@@ -867,18 +873,6 @@ class User(Actor):
             handled = True
         return handled
 
-    def affect_changed(self, args):
-        super(User, self).affect_changed(args)
-        if args['actor'] == self:
-            receiver = 'invoker'
-        else:
-            receiver = '*'
-        try:
-            message = args['affect'].messages[args['action']][receiver] % args['actor']
-        except TypeError:
-            message = args['affect'].messages[args['action']][receiver]
-        self.notify(message)
-
     def leaving(self, args):
         super(User, self).leaving(args)
         if not args['actor'] == self and args['direction']:
@@ -897,14 +891,18 @@ class User(Actor):
                 actor_seen = "Someone"
             self.notify(__ACTOR_CONFIG__.messages['actor_enters_room'] % (actor_seen, args['direction']))
 
-    def _moved(self, args):
-        super(User, self)._moved(args)
-        self.command_look()
+    def _pre_move(self, direction):
+        super(User, self)._pre_move(direction)
+        self.room.detach('update', self._room_update)
 
-    def disposition_changed(self, args):
-        super(User, self).disposition_changed(args)
+    def _post_move(self, direction):
+        super(User, self)._post_move(direction)
+        self.command_look()
+        self.room.attach('update', self._room_update)
+
+    def _room_update(self, args):
         if args['actor'] != self:
-            self.notify(args['changed']+"\n")
+            self.notify(args['changed'])
 
     def save(self):
         """Persists the user as a pickle dump."""

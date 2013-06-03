@@ -78,16 +78,16 @@ class Room(observer.Observer):
         self.actors.remove(actor)
         self.detach('leaving', actor.leaving)
         self.detach('arriving', actor.arriving)
-        self.detach('disposition_changed', actor.disposition_changed)
-        self.detach('affect_changed', actor.affect_changed)
     
     def actor_arrive(self, actor, direction=""):
         self.actors.append(actor)
         self.dispatch('arriving', actor=actor, direction=direction)
         self.attach('leaving', actor.leaving)
         self.attach('arriving', actor.arriving)
-        self.attach('disposition_changed', actor.disposition_changed)
-        self.attach('affect_changed', actor.affect_changed)
+
+    def actor_changed(self, args):
+        self.dispatch('update', actor=args['actor'],
+                                    changed=args['changed'])
     
     def __str__(self):
         return self.name

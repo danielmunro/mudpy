@@ -4,12 +4,27 @@ from . import debug, observer
 import os, pickle
 
 __CALENDAR_DATA__ = os.path.join(os.getcwd(), 'servertime.pk')
+__instance__ = None
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
 
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
+
+def initialize():
+    """Initialize the global calendar object."""
+
+    global __instance__
+
+    try:
+        with open(__CALENDAR_DATA__, 'rb') as fp:
+            __instance__ = pickle.load(fp)
+            __instance__.observers = {}
+        debug.log("resuming calendar")
+    except (IOError, EOFError):
+        __instance__ = Instance()
+        debug.log("starting new calendar")
 
 class Instance(observer.Observer):
     """Calendar instance, keeps track of the date in the game."""
@@ -94,12 +109,3 @@ class Config:
         self.hours_in_day = 0
         self.sunrise = 0
         self.sunset = 0
-
-try:
-    with open(__CALENDAR_DATA__, 'rb') as fp:
-        __instance__ = pickle.load(fp)
-        __instance__.observers = {}
-    debug.log("resuming calendar")
-except (IOError, EOFError):
-    __instance__ = Instance()
-    debug.log("starting new calendar")

@@ -18,6 +18,7 @@ except IndexError:
                 "name of the mud instance to initialize (from the scripts "+ \
                 "base init.json configuration, ie:\n\n python main.py "+ \
                 "mudpy/scripts mud\n", "error")
+    raise
 
 # parse the scripts directories, sets up all of the initial state for the game,
 # as well as wireframes for building more game objects during the run
@@ -30,6 +31,10 @@ except IOError:
     debug.log("invalid scripts directory passed in as first argument. This "+ \
                 "is the location of the scripts that define game objects for"+ \
                 "mud.py", "error")
+    raise
+
+# initialize the calendar
+calendar.initialize()
 
 # assign an actor configuration. This contains messages that get displayed
 # to users among other things
