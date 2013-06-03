@@ -287,7 +287,7 @@ class Actor(observer.Observer):
             self.dispatch('changed', 
                     affect=aff, actor=self,
                     changed=aff.messages['success']['*'] % self)
-        except KeyError as e:
+        except KeyError:
             pass
 
         self.affects.append(aff)
@@ -901,6 +901,8 @@ class User(Actor):
         self.room.attach('update', self._room_update)
 
     def _room_update(self, args):
+        """Event listener for when the room update fires."""
+
         if args['actor'] != self:
             self.notify(args['changed'])
 
