@@ -28,17 +28,17 @@ class Client(observer.Observer, Protocol):
         super(Client, self).__init__()
 
     def connectionMade(self):
-        self.write("By what name do you wish to be known? ")
-        debug.log('new client connected')
+        self.write(__config__.messages["connection_made"])
+        debug.log("new client connected")
     
     def connectionLost(self, reason):
-        self.write("Good bye!")
-        debug.log('client disconnected')
+        self.write(__config__.messages["connection_lost"])
+        debug.log("client disconnected")
     
     def disconnect(self):
         """Called when a client loses their connection."""
 
-        self.client_factory.dispatch('destroyed', client=self)
+        self.client_factory.dispatch("destroyed", client=self)
         self.user.room.actors.remove(self.user)
         self.transport.loseConnection()
     
@@ -48,7 +48,7 @@ class Client(observer.Observer, Protocol):
     def get_new_user(self):
         """Returns a user of the type defined in the configs."""
 
-        user_module = __import__(__config__.user_module, None, None, 'User')
+        user_module = __import__(__config__.user_module, None, None, "User")
         return user_module.User()
     
     def poll(self):
@@ -68,9 +68,9 @@ class Client(observer.Observer, Protocol):
             return self.login.step(data)
         elif data:
             args = data.split(" ")
-            handled = self.dispatch('input', user=self.user, args=args)
+            handled = self.dispatch("input", user=self.user, args=args)
             if not handled:
-                self.user.notify("What was that?")
+                self.user.notify(__config__.messages["input_not_handled"])
     
     def write(self, message):
         """Send a message from the game to the client."""
@@ -81,7 +81,7 @@ class Login:
     """Login class, encapsulates relatively procedural login steps."""
 
     def __init__(self, client):
-        self.todo = ['login', 'race', 'alignment']
+        self.todo = ["login", "race", "alignment"]
         self.done = []
         self.client = client
         self.newuser = None
@@ -101,8 +101,7 @@ class Login:
             from . import actor
 
             if not actor.User.is_valid_name(data):
-                raise LoginException("That name does not appear to be valid, "+\
-                                     "try again. ")
+                raise LoginException(__config__.messages["creation_name_not_valid"])
 
             user = actor.User.load(data)
             if user:
@@ -113,21 +112,20 @@ class Login:
             self.newuser = self.client.get_new_user()
             self.newuser.client = self.client
             self.newuser.name = data
-            self.client.write("What is your race? ")
+            self.client.write(__config__.messages["creation_race_query"])
 
         def race(data):
             """If a new alt, have them select a race."""
 
             from . import actor
 
-            race = factory.match(data, 'mudpy.actor.Race')
+            race = factory.match(data, "mudpy.actor.Race")
 
             if race:
-                self.newuser.race = factory.new(actor.Race(), race['wireframe'])
+                self.newuser.race = factory.new(actor.Race(), race["wireframe"])
             else:
-                raise LoginException("That is not a valid race. What is "+ \
-                                     "your race? ")
-            self.client.write("What alignment are you (good/neutral/evil)? ")
+                raise LoginException(__config__.messages["creation_race_not_valid"])
+            self.client.write(__config__.messages["creation_alignment_query"])
         
         def alignment(data):
             """New alts need an alignment."""
@@ -139,13 +137,12 @@ class Login:
             elif "evil".find(data) == 0:
                 self.newuser.alignment = -1000
             else:
-                raise LoginException("That is not a valid alignment. What "+ \
-                                     "is your alignment? ")
+                raise LoginException(__config__.messages["creation_alignment_not_valid"])
             self.client.user = self.newuser
             self.newuser.set_experience_per_level()
             self.newuser.loggedin()
             self.newuser.save()
-            debug.log('client created new user as '+str(self.newuser))
+            debug.log("client created new user as "+str(self.newuser))
 
         step = self.todo.pop(0)
 
@@ -175,7 +172,7 @@ class ClientFactory(tFactory, observer.Observer):
 
         client = Client()
         client.client_factory = self
-        self.dispatch('created', client=client)
+        self.dispatch("created", client=client)
         return client
 
 class Config:
