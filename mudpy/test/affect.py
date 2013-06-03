@@ -4,10 +4,10 @@ from mudpy.mudpy.debug import DebugException
 
 class TestAffect(unittest.TestCase):
 
-	def setUp(self):
-		self.affect = Affect()
+    def setUp(self):
+        self.affect = Affect()
 
-	def testStartOnReceiverWithFunctionsDefined(self):
-		def test():
-			self.affect.start(None)
-		self.assertRaises(DebugException, test)
+    def testCountdownTimeount(self):
+        self.affect.timeout = 100
+        self.affect.countdown_timeout()
+        self.assertEquals(self.affect.timeout, 99)
