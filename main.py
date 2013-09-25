@@ -12,9 +12,6 @@ class Mudpy(observer.Observer):
 
     """
 
-    def __init__(self):
-        super(Mudpy, self).__init__()
-
 __mudpy__ = Mudpy()
 
 from mudpy import factory, server, client, debug
