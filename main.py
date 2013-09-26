@@ -6,13 +6,7 @@ listening on the configured port.
 
 from mudpy import observer
 
-class Mudpy(observer.Observer):
-    """Anchor object for attaching initialization functions to. Dispatches
-    an initialization event after all script parsing is complete.
-
-    """
-
-__mudpy__ = Mudpy()
+__mudpy__ = observer.Observer()
 
 from mudpy import factory, server, client, debug
 
