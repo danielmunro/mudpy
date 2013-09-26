@@ -10,15 +10,6 @@ import time, random, os, pickle, re, __main__
 
 __SAVE_DIR__ = 'data'
 __config__ = None
-
-def _initialize(_args):
-    """Initialization function for actor module. Sets up config object."""
-
-    global __config__
-
-    __config__ = factory.new(Config(), __main__.__mud_name__)
-
-__main__.__mudpy__.attach("initialize", _initialize)
     
 def get_damage_verb(dam_roll):
     """A string representation of the severity of damage dam_roll will cause.

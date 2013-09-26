@@ -11,25 +11,6 @@ from . import debug, observer, factory
 __config__ = None
 __instance__ = None
 
-def _initialize(_args):
-    """Initialization event listener for server, sets up server config object.
-
-    """
-
-    global __config__
-
-    __config__ = factory.new(Config(), __main__.__mud_name__)
-
-def _preload(_args):
-    """Preload event listener for server, initializes server instance."""
-
-    global __instance__
-
-    __instance__ = Instance()
-
-__main__.__mudpy__.attach('preload', _preload)
-__main__.__mudpy__.attach('initialize', _initialize)
-
 class Instance:
     """Information about the implementation of this mud.py server."""
     

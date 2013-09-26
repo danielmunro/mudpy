@@ -4,32 +4,12 @@ listening on the configured port.
 
 """
 
-from mudpy import observer
-
-__mudpy__ = observer.Observer()
-
-from mudpy import factory, server, client, debug
-
-__mudpy__.dispatch("preload")
-
+from mudpy import factory, server, debug, client, calendar, actor
 import sys, os
-
-# set the data directory for storing users and calendar time
-
-if not os.path.isdir("data"):
-    try:
-        os.mkdir("data")
-    except IOError:
-        debug.log("create a writable \"data\" directory for mudpy to use",
-                "error")
-        raise
-
-# set some global variables from arguments passed to the script
 
 try:
     __python_path__ = sys.argv[1]
     __mud_name__ = sys.argv[2]
-    __scripts_directory__ = os.path.join(__python_path__, "scripts")
 except IndexError:
     debug.log("invalid set of arguments passed to mud.py. expecting two "+ \
                 "arguments: the location of the scripts directory and the "+ \
@@ -38,19 +18,28 @@ except IndexError:
                 "mudpy/scripts mud\n", "error")
     raise
 
-# set the path for the mud that is being run
-
-sys.path.append(os.path.join(os.getcwd(), __python_path__))
-
-# parse the scripts directories, sets up all of the initial state for the game,
-# as well as wireframes for building more game objects during the run
-
+# data directory is for storing users and in-game time
 try:
-    factory.parse("mudpy/scripts")
-except IOError:
-    debug.log("internal mudpy scripts directory appears to be missing",
+    os.mkdir("data")
+except IOError: # permissions error creating dir
+    debug.log("create a writable \"data\" directory for mudpy to use",
             "error")
     raise
+except OSError: # already exists
+    pass
+
+# set the path for the mud that is being run
+sys.path.append(os.path.join(os.getcwd(), __python_path__))
+
+# server instance -- needed by dependencies in factory
+server.__instance__ = server.Instance()
+
+# load in-game calendar details
+calendar.load_calendar()
+
+# parse the scripts directory, sets up all of the initial state for the game,
+# as well as wireframes for building more game objects during the run
+__scripts_directory__ = os.path.join(__python_path__, "scripts")
 
 try:
     factory.parse(__scripts_directory__)
@@ -60,8 +49,11 @@ except IOError:
                 "mud.py", "error")
     raise
 
-# run initialization
-__mudpy__.dispatch("initialize")
+# configuration values
+calendar.__config__ = factory.new(calendar.Config(), __mud_name__)
+actor.__config__ = factory.new(actor.Config(), __mud_name__)
+client.__config__ = factory.new(client.Config(), __mud_name__)
+server.__config__ = factory.new(server.Config(), __mud_name__)
 
-# start listening
+# have the server start listening for connections
 server.__instance__.start_listening(client.ClientFactory())

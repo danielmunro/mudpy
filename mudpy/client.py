@@ -6,21 +6,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, factory, observer
 
-import __main__
-
 __config__ = None
-
-def _initialize(_args):
-    """Initialization listener function for client, will set up the config
-    object for use later.
-
-    """
-
-    global __config__
-
-    __config__ = factory.new(Config(), __main__.__mud_name__)
-
-__main__.__mudpy__.attach("initialize", _initialize)
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""

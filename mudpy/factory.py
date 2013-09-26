@@ -294,7 +294,7 @@ def done_area(parent, area):
 def done_mob(parent, mob):
     """Finish initializing a mob."""
 
-    from . import actor, server
+    from . import actor
     parent.actor_arrive(mob)
     mob.room = parent
     mob.race = new(actor.Race(), mob.race)

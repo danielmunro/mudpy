@@ -13,10 +13,10 @@ def suffix(dec):
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
-def _initialize(_args):
+def load_calendar():
     """Initialize the global calendar object."""
 
-    global __instance__, __config__
+    global __instance__
 
     try:
         with open(__CALENDAR_DATA__, 'rb') as fp:
@@ -27,10 +27,7 @@ def _initialize(_args):
         __instance__ = Instance()
         debug.log("starting new calendar")
 
-    __config__ = factory.new(Config(), __main__.__mud_name__)
     server.__instance__.heartbeat.attach("tick", __instance__.tick)
-
-__main__.__mudpy__.attach('initialize', _initialize)
 
 class Instance(observer.Observer):
     """Calendar instance, keeps track of the date in the game."""
