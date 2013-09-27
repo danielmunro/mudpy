@@ -17,6 +17,7 @@ def parse_dir(path):
 
 def parse_yaml(path):
     """Load a yaml config file and add the wireframes."""
+
     with open(path, "r") as fp:
         data = yaml.load(fp)
         for _class in data:
@@ -28,17 +29,17 @@ def parse_yaml(path):
                 }
 
 def new(name):
-    """Takes the given instance and assigns values to it from the internal 
-    named lookup.
+    """Creates an object from a name, a unique identifier for a wireframe.
 
     Eg:
 
-    ab = new(Ability(), "bash") # returns an Ability object with the assigned
-                                # properties for bash
+    ab = new("gnome") # returns a new gnome race to assign to an actor
     
     """
 
     def do_import(name):
+        """Dynamically import a class from a package name."""
+
         components = name.split('.')
         mod = __import__(".".join(components[:-1]), fromlist=[components[-1]])
         return getattr(mod, components[-1])
