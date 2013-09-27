@@ -13,7 +13,7 @@ def parse_dir(path):
     elif os.path.isdir(path):
         for infile in os.listdir(path):
             fullpath = path+'/'+infile
-            parse(fullpath)
+            parse_dir(fullpath)
 
 def parse_yaml(path):
     """Load a yaml config file and add the wireframes."""
@@ -48,7 +48,9 @@ def new(name):
     except KeyError:
         debug.log("wireframe does not exist for "+name, "error")
         raise
+
     __class__ = found['class']
+
     return do_import(__class__)(found['data'])
 
 class Blueprint(object):
