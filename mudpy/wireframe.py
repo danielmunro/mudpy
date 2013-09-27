@@ -22,10 +22,10 @@ def parse_yaml(path):
         data = yaml.load(fp)
         for _class in data:
             for key in data[_class]:
-                name = data[_class][key]['name']
+                name = key['name']
                 __wireframes__[name] = {
                     'class': _class,
-                    'data': data[_class][key]
+                    'data': key
                 }
 
 def new(name):
