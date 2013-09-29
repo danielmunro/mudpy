@@ -1,0 +1,88 @@
+mudpy.server.Config:
+    - name: server
+      port: 9000
+      display_name: My Great Mud
+
+mudpy.client.Config:
+    - name: client
+      messages:
+          connection_made: By what name do you wish to be known?
+          connection_lost: Good bye!
+          input_not_handled: What was that?
+          creation_name_not_valid: That name does not appear to be valid, try again. 
+          creation_race_query: What is your race?
+          creation_race_not_valid: That is not a valid race. What is your race?
+          creation_alignment_query: What alignment are you (good/neutral/evil)?
+          creation_alignment_not_valid: That is not a valid alignment. What is your alignment?
+
+mudpy.actor.Config:
+    - name: actor
+      messages:
+          target_already_acquired: Whoa there sparky! Don't you think one is enough?
+          move_failed_fighting: You are fighting!
+          move_failed_incapacitated: You are incapacitated and will die soon if not aided.
+          move_failed_no_room: Alas, nothing is there.
+          move_failed_too_tired: You are too tired to move.
+          incapacitated: You are incapacitated and will slowly die if not aided.
+          recover_from_incapacitation: You suddenly feel a bit better.
+          died: You feel a rejuvinating rush as you pass through this mortal plane.
+          level_up: You leveled up!
+          look_at_nothing: Nothing is there.
+          apply_cost_fail: You do not have enough energy to do that.
+          actor_leaves_room: "%s left heading %s."
+          actor_enters_room: "%s arrived from the %s."
+          cannot_see_too_dark: It's too dark to see anything!
+          cannot_see_actors_in_room: You see glowing eyes in the distance.
+
+mudpy.calendar.Config:
+    - name: calendar
+      hours_in_day: 24
+      months:
+          - name: Narwain
+            days_in_month: 30
+            sunrise: 8
+            sunset: 17
+          - name: Ninui
+            days_in_month: 30
+            sunrise: 7
+            sunset: 18
+          - name: Gwaeron
+            days_in_month: 30
+            sunrise: 7
+            sunset: 19
+          - name: Gwirith
+            days_in_month: 30
+            sunrise: 6
+            sunset: 20
+          - name: Lothron
+            days_in_month: 30
+            sunrise: 6
+            sunset: 21
+          - name: Norui
+            days_in_month: 30
+            sunrise: 5
+            sunset: 22
+          - name: Cerveth
+            days_in_month: 30
+            sunrise: 6
+            sunset: 21
+          - name: Urui
+            days_in_month: 31
+            sunrise: 6
+            sunset: 20
+          - name: Ivanneth
+            days_in_month: 31
+            sunrise: 7
+            sunset: 19
+          - name: Narbeleth
+            days_in_month: 31
+            sunrise: 7
+            sunset: 18
+          - name: Hithui
+            days_in_month: 31
+            sunrise: 9
+            sunset: 17
+          - name: Girithron
+            days_in_month: 31
+            sunrise: 9
+            sunset: 16
