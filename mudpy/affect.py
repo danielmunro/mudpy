@@ -3,17 +3,17 @@ to be used to apply attribute changes to an actor or item.
 
 """
 
-from . import debug, server, room, attributes, observer
+from . import debug, server, room, attributes, observer, wireframe
 
-class Affect(observer.Observer, room.Reporter):
+class Affect(wireframe.Blueprint, room.Reporter):
     """Give an actor or item an affect."""
 
-    def __init__(self):
+    def __init__(self, properties):
         self.name = "an affect"
         self.attributes = attributes.Attributes()
         self.timeout = 0
         self.messages = {}
-        super(Affect, self).__init__()
+        super(Affect, self).__init__(**properties)
     
     def countdown_timeout(self):
         """Count down the affect timer."""

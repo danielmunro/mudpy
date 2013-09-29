@@ -4,7 +4,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import debug, factory, observer
+from . import debug, observer, wireframe, actor
 
 __config__ = None
 
@@ -39,8 +39,8 @@ class Client(observer.Observer, Protocol):
     def get_new_user(self):
         """Returns a user of the type defined in the configs."""
 
-        user_module = __import__(__config__.user_module, None, None, "User")
-        return user_module.User()
+        #user_module = __import__(__config__.user_module, None, None, "User")
+        return actor.User()
     
     def poll(self):
         """Listener for game cycle, checks the command buffer for new input.
@@ -66,7 +66,7 @@ class Client(observer.Observer, Protocol):
     def write(self, message):
         """Send a message from the game to the client."""
 
-        self.transport.write(str(message))
+        self.transport.write(str(message)+" ")
     
 class Login:
     """Login class, encapsulates relatively procedural login steps."""
@@ -108,14 +108,11 @@ class Login:
         def race(data):
             """If a new alt, have them select a race."""
 
-            from . import actor
-
-            race = factory.match(data, "mudpy.actor.Race")
-
-            if race:
-                self.newuser.race = factory.new(actor.Race(), race["wireframe"])
-            else:
+            try:
+                self.newuser.race = wireframe.new(data)
+            except KeyError:
                 raise LoginException(__config__.messages["creation_race_not_valid"])
+
             self.client.write(__config__.messages["creation_alignment_query"])
         
         def alignment(data):
@@ -166,11 +163,12 @@ class ClientFactory(tFactory, observer.Observer):
         self.dispatch("created", client=client)
         return client
 
-class Config:
+class Config(wireframe.Blueprint):
     """Maintains configurations specific to the mud mudpy is running."""
 
-    def __init__(self):
+    def __init__(self, properties):
         self.user_module = None
+        super(Config, self).__init__(**properties)
 
 class LoginException(Exception):
     """Raised when unexpected input in received during the login process."""

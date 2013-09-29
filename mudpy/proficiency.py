@@ -1,17 +1,16 @@
-class Proficiency(object):
-    def __init__(self, observer = None):
+from . import wireframe
+
+class Proficiency(wireframe.Blueprint):
+    def __init__(self, properties):
         self.name = ""
         self.hook = ""
         self.improvechance = 0.05
         self.level = 15
-
-        if observer:
-            self.observer = observer
-            observer.attach(self.hook, getattr(self, self.hook))
-        else:
-            self.observer = None
+        super(Proficiency, self).__init__(**properties)
     
     def checkimprove(self):
+        # @todo make this work
+        return
         from random import random
         if random() < self.improvechance:
             self.level += 1

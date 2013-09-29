@@ -1,0 +1,27 @@
+mudpy.affect.Affect:
+
+    - name: sneak
+      messages:
+          success:
+              self: "You silently fade into the shadows."
+          end:
+              self: "You no longer move silently."
+              "*": "%s appears from the shadows."
+
+    - name: berserk
+      messages:
+          success:
+              self: "Your pulse speeds up as you are consumed by rage!"
+              "*": "%s goes into a rage!"
+          end:
+              self: "You calm down."
+              "*": "%s calms down."
+      attributes:
+          hp: 0.1
+          hit: 0.1
+          dam: 0.1
+
+    - name: stun
+      attributes:
+          int: -1
+          dex: -1

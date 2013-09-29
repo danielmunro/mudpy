@@ -4,33 +4,51 @@ dungeons, and more.
 
 """
 
-from . import item, observer
+from . import item, observer, wireframe
 import random
 
 __START_ROOM__ = None
 __PURGATORY__ = None
 __ROOMS__ = {}
+__AREAS__ = {}
 
 __LOCATION_OUTSIDE__ = "outside"
 
-class Room(observer.Observer):
-    """Basic space representation, initialized by the factory.parser functions
-    on game start, based on json game configuration files. Has a name (title),
+def get(room_name):
+    try:
+        return __ROOMS__[room_name]
+    except KeyError:
+        __ROOMS__[room_name] = wireframe.new(room_name)
+        return __ROOMS__[room_name]
+
+def area(area_name):
+    try:
+        return __AREAS__[area_name]
+    except KeyError:
+        __AREAS__[area_name] = wireframe.new(area_name)
+        return __AREAS__[area_name]
+
+class Room(wireframe.Blueprint):
+    """Basic space representation game configuration files. Has a name (title),
     description, a list of actors in the room, an inventory of items, and a
     dictionary of possible directions to leave.
 
     """
 
-    def __init__(self):
-        super(Room, self).__init__()
+    def __init__(self, properties):
         self.id = 0
         self.name = ''
         self.description = ''
         self.actors = []
         self.inventory = item.Inventory()
         self.directions = {}
-        self.area = None
+        self.area = ''
+        self.area_instance = None
         self.lit = True
+        super(Room, self).__init__(**properties)
+
+    def get_area(self):
+        return area(self.area)
     
     def announce(self, messages, add_prompt = True):
         """Will take a message and convey it to the various actors in the
@@ -206,11 +224,12 @@ class Down(Direction):
     name = "down"
     reverse = "up"
 
-class Area:
-    def __init__(self):
+class Area(wireframe.Blueprint):
+    def __init__(self, properties):
         self.name = ""
         self.terrain = ""
         self.location = ""
+        super(Area, self).__init__(**properties)
 
 class Reporter:
 

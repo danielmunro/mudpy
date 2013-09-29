@@ -1,0 +1,32 @@
+mudpy.proficiency.Proficiency:
+
+    - name: parry
+      hook: attackstart
+
+    - name: dodge
+      hook: attackstart
+
+    - name: light armor
+      hook: attacked
+
+    - name: heavy armor
+      hook: attacked
+
+    - name: slash
+      hook: attackmodifier
+
+    - name: pierce
+      hook: attackmodifier
+
+    - name: bash
+      hook: attackmodifier
+
+    - name: melee
+      hook: attackmodifier
+      improvechance: 0.99
+
+    - name: sneak
+      hook: move
+
+    - name: haggle
+      hook: ['buy', 'sell']

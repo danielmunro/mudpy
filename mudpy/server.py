@@ -6,7 +6,7 @@ user defined scripts.
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time, __main__
-from . import debug, observer, factory
+from . import debug, observer, wireframe
 
 __config__ = None
 __instance__ = None
@@ -66,10 +66,10 @@ class Instance:
     def __str__(self):
         return __config__.name
 
-class Config:
+class Config(wireframe.Blueprint):
     """Maintains configuration specific to the mud mudp is running."""
 
-    def __init__(self):
+    def __init__(self, properties):
         # reference for a server Instance config. factory will use it as a 
         # a unique identifier
         self.name = ""
@@ -80,6 +80,7 @@ class Config:
         # display_name is the name of the particular mud being built using
         # mud.py framework.
         self.display_name = ""
+        super(Config, self).__init__(**properties)
 
 class Heartbeat(observer.Observer):
     """The timekeeper for mud.py. Fires off game cycles for each loop within

@@ -4,8 +4,8 @@ how they interact with the world.
 """
 
 from __future__ import division
-from . import debug, room, utility, server, factory, proficiency, item, \
-                attributes, observer, command, affect, calendar
+from . import debug, room, utility, server, proficiency, item, \
+                attributes, observer, command, affect, calendar, wireframe
 import time, random, os, pickle, re, __main__
 
 __SAVE_DIR__ = 'data'
@@ -103,9 +103,7 @@ class Actor(observer.Observer):
         try:
             self.proficiencies[_proficiency].level += level
         except KeyError:
-            self.proficiencies[_proficiency] = factory.new(
-                    proficiency.Proficiency(),
-                    _proficiency)
+            self.proficiencies[_proficiency] = wireframe.new(_proficiency)
             self.proficiencies[_proficiency].level = level
     
     def get_equipment_by_position(self, position):
@@ -151,7 +149,7 @@ class Actor(observer.Observer):
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
 
-        racial_attr = getattr(self.race.attributes, attribute_name)
+        racial_attr = self.race.attributes[attribute_name]
         return min(
                 getattr(self.attributes, attribute_name) + racial_attr + 4, 
                 racial_attr + 8)
@@ -342,7 +340,7 @@ class Actor(observer.Observer):
         if utility.match_partial("glow", self.get_affects()):
             return True
 
-        if self.room.area.location == room.__LOCATION_OUTSIDE__ and \
+        if self.room.get_area().location == room.__LOCATION_OUTSIDE__ and \
                 calendar.__instance__.daylight:
             return True
 
@@ -451,7 +449,7 @@ class Actor(observer.Observer):
 
         return getattr(self.attributes, attribute_name) + \
                 getattr(self.trained_attributes, attribute_name) + \
-                getattr(self.race.attributes, attribute_name)
+                self.race.attributes[attribute_name]
     
     def _do_regular_attacks(self, recursed_attack_index = 0):
         """Recurse through the attacks the user is able to make for a round of
@@ -821,8 +819,8 @@ class User(Actor):
         if self.room_id:
             new_room_id = self.room_id
         else:
-            new_room_id = room.__START_ROOM__
-        self.room = room.__ROOMS__[new_room_id]
+            new_room_id = 1#room.__START_ROOM__
+        self.room = room.get(new_room_id)
         self._post_move("sky")
 
         # listener for client input
@@ -869,7 +867,7 @@ class User(Actor):
         com = factory.match(args[0], 'mudpy.command.Command')
         handled = False
         if com:
-            com = factory.new(command.Command(), com['wireframe'])
+            #com = factory.new(command.Command(), com['wireframe'])
             if com.required_dispositions and self.disposition not in \
                     com.required_dispositions:
                 self.notify("You are incapacitated and cannot do that." \
@@ -967,7 +965,7 @@ class User(Actor):
             # room and exits
             can_see = self.can_see()
             if can_see:
-                msg = "%s\n%s\n" % (self.room.name, self.room.description)
+                msg = "%s\n%s\n" % (self.room.title, self.room.description)
             else:
                 msg = __config__.messages["cannot_see_too_dark"]
             msg += "\n[Exits %s]\n" % (
@@ -1274,7 +1272,7 @@ class Ability(observer.Observer, room.Reporter):
         """Initialize all the affects associated with this ability."""
 
         for affectname in self.affects:
-            receiver.add_affect(factory.new(affect.Affect(), affectname))
+            receiver.add_affect(wireframe.new(affectname))
     
     def apply_cost(self, invoker):
         """Iterates over the cost property, checks that all requirements are
@@ -1297,7 +1295,7 @@ class Ability(observer.Observer, room.Reporter):
     def __str__(self):
         return self.name
 
-class Race:
+class Race(wireframe.Blueprint):
     """Gives various properties to an actor that have far reaching affects
     throughout the game.
 
@@ -1309,7 +1307,7 @@ class Race:
     SIZE_LARGE = 4
     SIZE_GIGANTIC = 5
 
-    def __init__(self):
+    def __init__(self, properties):
         self.name = "critter"
         self.size = self.SIZE_NORMAL
         self.movement_cost = 1
@@ -1319,6 +1317,7 @@ class Race:
         self.attributes = attributes.Attributes()
         self.abilities = []
         self.affects = []
+        super(Race, self).__init__(**properties)
     
     def add_proficiency(self, prof, level):
         """Give a proficiency to this race. Actor's proficiencies are a
@@ -1330,14 +1329,15 @@ class Race:
         try:
             self.proficiencies[prof].level += level
         except KeyError:
-            self.proficiencies[prof] = factory.new(proficiency.Proficiency(), prof)
+            self.proficiencies[prof] = wireframe.new(prof)
             self.proficiencies[prof].level = level
 
     def __str__(self):
         return self.name
 
-class Config:
+class Config(wireframe.Blueprint):
     """Configuration container for the actor module."""
 
-    def __init__(self):
+    def __init__(self, properties):
         self.messages = {}
+        super(Config, self).__init__(**properties)
