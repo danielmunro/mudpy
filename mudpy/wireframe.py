@@ -5,15 +5,19 @@ import os, yaml
 
 __wireframes__ = {}
 
-def load(path, recursed = False):
-    """Recursively scans a directory for mud configuration files to load."""
+def repersist(path):
+    """Load wireframes from previous game save."""
 
     global __wireframes__
 
-    if not recursed and path.endswith('.yaml'):
-        with open(path, "r") as fp:
-            __wireframes__ = yaml.load(fp)
-        return
+    with open(path, "r") as fp:
+        __wireframes__ = yaml.load(fp)
+
+def load(path, recursed = False):
+    """Load wireframes from initialization script, with slightly different 
+    formatting than a persisted world.
+    
+    """
 
     if path.endswith('.yaml'):
         parse_yaml(path)
@@ -21,6 +25,8 @@ def load(path, recursed = False):
         for infile in os.listdir(path):
             fullpath = path+'/'+infile
             load(fullpath, True)
+    elif not recursed:
+        raise IOError(path+" not found")
 
 def parse_yaml(path):
     """Load a yaml config file and add the wireframes."""
@@ -30,17 +36,21 @@ def parse_yaml(path):
         data = yaml.load(fp)
         for _class in data:
             for key in data[_class]:
-                name = key['name']
-                del key['name']
-                add(name, _class, key)
+                add(_class, key)
 
-def add(name, _class, data):
-    __wireframes__[name] = {
+def add(_class, data):
+    """Add a wireframe definition to the internal dict."""
+
+    __wireframes__[data['name']] = {
         'class': _class,
         'data': data
     }
 
 def save(data_dir):
+    """Save all defined wireframes."""
+
+    print "saving game state"
+
     path = os.path.join(data_dir, "wireframes.yaml")
     with open(path, "w") as fp:
         yaml.dump(__wireframes__, fp)
@@ -65,7 +75,7 @@ def new(name):
     try:
         found = __wireframes__[name]
     except KeyError:
-        debug.log("wireframe does not exist for "+name, "error")
+        debug.log("wireframe does not exist for "+str(name), "error")
         raise
 
     __class__ = found['class']
@@ -82,3 +92,21 @@ class Blueprint(observer.Observer):
     def __init__(self, **properties):
         self.__dict__.update(properties)
         super(Blueprint, self).__init__()
+        try:
+            self.done_init()
+        except AttributeError:
+            pass
+
+    def update(self):
+
+        print "updating blueprint for "+str(self.name)
+
+        global __wireframes__
+
+        properties = self.__dict__.copy()
+        try:
+            properties.update(self.pre_update())
+        except AttributeError:
+            pass
+
+        __wireframes__[self.name]['data'] = properties

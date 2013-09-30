@@ -1,0 +1,2 @@
+mudpy.command.Command:
+    - name: look

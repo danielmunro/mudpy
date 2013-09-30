@@ -7,15 +7,10 @@ listening on the configured port.
 from mudpy import server, debug, client, calendar, actor, wireframe
 import sys, os
 
-try:
-    __python_path__ = sys.argv[1]
-    __wireframe_path__ = __python_path__
-except IndexError:
-    __python_path__ = "data"
-    __wireframe_path__ = os.path.join(__python_path__, "wireframes.yaml")
+# data directory is for storing users, wireframes, and game details
 
-# data directory is for storing users and in-game time
 __data__ = "data"
+
 try:
     os.mkdir(__data__)
 except IOError: # permissions error creating dir
@@ -25,26 +20,26 @@ except IOError: # permissions error creating dir
 except OSError: # already exists
     pass
 
-# set the path for the mud that is being run
-sys.path.append(os.path.join(os.getcwd(), __python_path__))
-
-# parse the scripts directory, sets up all of the initial state for the game,
-# as well as wireframes for building more game objects during the run
+# load the wireframes depending on args passed to mud
 
 try:
-    wireframe.load(__wireframe_path__)
+    wireframe.load(sys.argv[1])
+except IndexError:
+    path = os.path.join(__data__, "wireframes.yaml")
+    if os.path.exists(path):
+        wireframe.repersist(path)
+    else:
+        debug.log("need to specify an initialization path", "error")
+        raise
 except IOError:
-    debug.log("invalid scripts directory passed in as first argument. This "+ \
-                "is the location of the scripts that define game objects for"+ \
-                "mud.py", "error")
+    debug.log("specified path does not exist: "+sys.argv[1], "error")
     raise
 
-# setup admin command for this
-#wireframe.save(__data__)
+def update_wireframe():
+    wireframe.save(__data__)
 
 server.__instance__ = server.Instance()
-
-# load in-game calendar details
+server.__instance__.heartbeat.attach('tick', update_wireframe)
 calendar.load_calendar()
 
 # configuration values

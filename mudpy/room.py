@@ -38,14 +38,35 @@ class Room(wireframe.Blueprint):
     def __init__(self, properties):
         self.id = 0
         self.name = ''
+        self.title = ''
         self.description = ''
         self.actors = []
-        self.inventory = item.Inventory()
+        self.inventory = []
         self.directions = {}
         self.area = ''
-        self.area_instance = None
         self.lit = True
         super(Room, self).__init__(**properties)
+
+    def done_init(self):
+
+        # actors
+        actors = self.actors
+        self.actors = []
+        for i, actor in enumerate(actors):
+            self.actor_arrive(wireframe.new(actor))
+
+        # items
+        items = self.inventory
+        self.inventory = item.Inventory()
+        for i in items:
+            self.inventory.append(new(i))
+
+    def pre_update(self):
+        update = dict(
+            actors = [actor.name for actor in self.actors if actor.is_updateable()],
+            observers = {},
+            inventory = [item.name for item in self.inventory.items])
+        return update
 
     def get_area(self):
         return area(self.area)
@@ -81,9 +102,6 @@ class Room(wireframe.Blueprint):
         newRoom.initialize_directions()
         return newRoom
 
-    def get_full_id(self):
-        return self.area.name+":"+str(self.id)
-    
     def initialize_directions(self):
         for direction in Direction.__subclasses__():
             try:

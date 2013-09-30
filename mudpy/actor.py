@@ -45,13 +45,13 @@ def get_attr_mod(actor, attribute_name):
 
     return (actor.get_attribute(attribute_name) / Actor.MAX_STAT) * 4
 
-class Actor(observer.Observer):
+class Actor(wireframe.Blueprint):
     """Abstract 'person' in the game, base object for users and mobs."""
     MAX_STAT = 25
 
-    def __init__(self):
-        super(Actor, self).__init__()
-        self.name = "an actor"
+    def __init__(self, properties):
+        self.name = ""
+        self.title = "an actor"
         self.long = ""
         self.description = ""
         self.level = 0
@@ -85,6 +85,8 @@ class Actor(observer.Observer):
 
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
+
+        super(Actor, self).__init__(**properties)
 
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
@@ -149,7 +151,7 @@ class Actor(observer.Observer):
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
 
-        racial_attr = self.race.attributes[attribute_name]
+        racial_attr = self.race.get_attributes(attribute_name)
         return min(
                 getattr(self.attributes, attribute_name) + racial_attr + 4, 
                 racial_attr + 8)
@@ -163,7 +165,7 @@ class Actor(observer.Observer):
         return self.abilities + self.race.abilities
 
     def __str__(self):
-        return self.name
+        return self.title
     
     def get_wielded_weapons(self):
         """Helper function to return the weapons the actor has wielded."""
@@ -346,6 +348,9 @@ class Actor(observer.Observer):
 
         return self.room.lit
 
+    def is_updateable(self):
+        return True
+
     def get_affects(self):
         """Returns all affects currently applied to the actor, including base
         affects and affects from equipment.
@@ -449,7 +454,7 @@ class Actor(observer.Observer):
 
         return getattr(self.attributes, attribute_name) + \
                 getattr(self.trained_attributes, attribute_name) + \
-                self.race.attributes[attribute_name]
+                self.race.get_attribute(attribute_name)
     
     def _do_regular_attacks(self, recursed_attack_index = 0):
         """Recurse through the attacks the user is able to make for a round of
@@ -679,14 +684,17 @@ class Mob(Actor):
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
 
-    def __init__(self):
+    def __init__(self, properties):
         self.movement = 0
         self.movement_timer = self.movement
         self.respawn = 1
         self.auto_flee = False
         self.area = None
         self.role = ''
-        super(Mob, self).__init__()
+        super(Mob, self).__init__(properties)
+
+    def done_init(self):
+        self.race = wireframe.new(self.race)
     
     def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from
@@ -721,13 +729,17 @@ class Mob(Actor):
 class User(Actor):
     """The actor controlled by a client connected by the server."""
 
-    def __init__(self):
-        super(User, self).__init__()
+    def __init__(self, properties = {}):
         self.delay_counter = 0
         self.last_delay = 0
         self.trains = 5
         self.practices = 5
         self.client = None
+
+        super(User, self).__init__(properties)
+
+    def is_updateable(self):
+        return False
     
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -819,7 +831,7 @@ class User(Actor):
         if self.room_id:
             new_room_id = self.room_id
         else:
-            new_room_id = 1#room.__START_ROOM__
+            new_room_id = 'room.1'#room.__START_ROOM__
         self.room = room.get(new_room_id)
         self._post_move("sky")
 
@@ -833,19 +845,21 @@ class User(Actor):
         calendar.__instance__.setup_listeners_for(self.calendar_changed)
 
         # attach listeners to client input for abilities
+        """
         for ability in self.get_abilities():
             ability.attach('perform', self.perform_ability)
             if ability.hook == 'input':
                 def check_input(args):
-                    """Checks if the user is trying to perform an ability with
+                    ""Checks if the user is trying to perform an ability with
                     a given input.
 
-                    """
+                    ""
 
                     if ability.name.startswith(args['args'][0]):
                         ability.try_perform(self, args['args'][:2])
                         return True
                 self.client.attach('input', check_input)
+        """
 
         debug.log('client logged in as '+str(self))
 
@@ -864,10 +878,8 @@ class User(Actor):
         """
 
         args = args['args']
-        com = factory.match(args[0], 'mudpy.command.Command')
-        handled = False
+        com = wireframe.new(args[0])
         if com:
-            #com = factory.new(command.Command(), com['wireframe'])
             if com.required_dispositions and self.disposition not in \
                     com.required_dispositions:
                 self.notify("You are incapacitated and cannot do that." \
@@ -879,6 +891,8 @@ class User(Actor):
                 except AttributeError as e:
                     debug.log(e, "notice")
             handled = True
+        else:
+            handled = False
         return handled
 
     def leaving(self, args):
@@ -921,7 +935,6 @@ class User(Actor):
         _room = self.room
         self.client = None
         self.room = None
-        self.room_id = _room.get_full_id()
         with open(User.get_save_file(self.name), 'wb') as fp:
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
         self.client = client
@@ -1318,6 +1331,12 @@ class Race(wireframe.Blueprint):
         self.abilities = []
         self.affects = []
         super(Race, self).__init__(**properties)
+
+    def get_attribute(self, attribute):
+        try:
+            return self.attributes[attribute]
+        except KeyError:
+            return 0
     
     def add_proficiency(self, prof, level):
         """Give a proficiency to this race. Actor's proficiencies are a

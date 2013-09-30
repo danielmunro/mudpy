@@ -3,17 +3,22 @@ mudpy.room.Area:
       terrain: urban
       location: outside
 
+mudpy.actor.Mob:
+    - name: mob.1
+      title: hassan
+      race: giant
+
 mudpy.room.Room:
-    - name: 1
+    - name: room.1
       area: midgaard
       title: Temple of Midgaard
       description: A large temple surrounds you, with sculptures of gods adorning the walls.
       directions:
-          #south: 2
-          north: 82
-    - name: 82
+          north: room.82
+      actors: ['mob.1']
+    - name: room.82
       area: midgaard
       title: The temple altar
       description: A sacrificial pit sits in the middle of a large altar room, with acolytes of the temple performing ceremonial duties.
       directions:
-          south: 1
+          south: room.1
