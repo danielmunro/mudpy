@@ -1,3 +1,1 @@
-server:
-    port: 9000
-    display_name: My Great Mud
+server: {display_name: My Great Mud, port: 9000}

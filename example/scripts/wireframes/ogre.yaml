@@ -1,3 +1,1 @@
-ogre:
-    is_playable: true
-    size: 4
+ogre: {is_playable: true, size: 4}

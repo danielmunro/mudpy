@@ -1,12 +1,4 @@
 volare:
-    is_playable: true
-    attributes:
-        str: 11
-        int: 16
-        wis: 18
-        dex: 15
-        con: 13
-        cha: 18
-    proficiencies:
-        curative: 10
-        healing: 10
+  attributes: {cha: 18, con: 13, dex: 15, int: 16, str: 11, wis: 18}
+  is_playable: true
+  proficiencies: {curative: 10, healing: 10}

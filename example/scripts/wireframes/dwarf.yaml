@@ -1,16 +1,6 @@
 dwarf:
-    is_playable: true
-    size: 2
-    attributes:
-        str: 18
-        int: 14
-        wis: 16
-        dex: 13
-        con: 18
-        cha: 12
-    proficiencies:
-        melee: 10
-        slash: 5
-        heavy armor: 5
-    abilities:
-      - berserk
+  abilities: [berserk]
+  attributes: {cha: 12, con: 18, dex: 13, int: 14, str: 18, wis: 16}
+  is_playable: true
+  proficiencies: {heavy armor: 5, melee: 10, slash: 5}
+  size: 2

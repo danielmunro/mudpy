@@ -1,2 +1,1 @@
-human:
-    is_playable: true
+human: {is_playable: true}

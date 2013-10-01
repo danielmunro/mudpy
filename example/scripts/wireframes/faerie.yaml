@@ -1,14 +1,5 @@
 faerie:
-    size: 1
-    is_playable: true
-    attributes:
-        str: 15
-        int: 17
-        wis: 17
-        dex: 17
-        con: 12
-        cha: 15
-    proficiencies:
-        dodge: 5
-        maladictions: 10
-        sorcery: 10
+  attributes: {cha: 15, con: 12, dex: 17, int: 17, str: 15, wis: 17}
+  is_playable: true
+  proficiencies: {dodge: 5, maladictions: 10, sorcery: 10}
+  size: 1

@@ -1,18 +1,5 @@
 kobold:
-    size: 2
-    attributes:
-        str: 12
-        int: 17
-        wis: 16
-        dex: 18
-        con: 12
-        cha: 15
-    proficiencies:
-        light armor: 5
-        pierce: 5
-        sorcery: 5
-        sneak: 5
-        dodge: 5
-    abilities:
-      - sneak
-      - infravision
+  abilities: [sneak, infravision]
+  attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 16}
+  proficiencies: {dodge: 5, light armor: 5, pierce: 5, sneak: 5, sorcery: 5}
+  size: 2
