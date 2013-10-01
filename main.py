@@ -33,7 +33,6 @@ except IOError:
     raise
 
 server.__instance__ = server.Instance()
-#server.__instance__.heartbeat.attach('tick', update_wireframe)
 calendar.load_calendar()
 
 class Config:

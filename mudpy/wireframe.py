@@ -52,15 +52,22 @@ def add(name, data):
 
     __wireframes__[name] = data
 
-def save(data_dir):
+def save(data_dir, wireframe = None):
     """Save all defined wireframes."""
 
-    print "saving game state"
+    global __wireframes__
 
-    path = os.path.join(data_dir, "wireframes.yaml")
-    with open(path, "w") as fp:
-        yaml.dump(__wireframes__, fp)
-
+    if wireframe:
+        record = {wireframe: __wireframes__[wireframe]}
+        file_name = os.path.join(data_dir, wireframe+".yaml")
+        with open(file_name, "w") as fp:
+            yaml.dump(record, fp)
+    else:
+        for i, wireframe in __wireframes__.iteritems():
+            record = {i: wireframe}
+            file_name = os.path.join(data_dir, i+".yaml")
+            with open(file_name, "w") as fp:
+                yaml.dump(record, fp)
 
 def apply(_object, name):
     """Creates an object from a name, a unique identifier for a wireframe.
