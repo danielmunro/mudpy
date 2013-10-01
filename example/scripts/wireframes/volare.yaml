@@ -1,0 +1,12 @@
+volare:
+    is_playable: true
+    attributes:
+        str: 11
+        int: 16
+        wis: 18
+        dex: 15
+        con: 13
+        cha: 18
+    proficiencies:
+        curative: 10
+        healing: 10

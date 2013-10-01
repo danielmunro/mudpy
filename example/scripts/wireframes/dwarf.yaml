@@ -1,0 +1,16 @@
+dwarf:
+    is_playable: true
+    size: 2
+    attributes:
+        str: 18
+        int: 14
+        wis: 16
+        dex: 13
+        con: 18
+        cha: 12
+    proficiencies:
+        melee: 10
+        slash: 5
+        heavy armor: 5
+    abilities:
+      - berserk

@@ -1,0 +1,14 @@
+faerie:
+    size: 1
+    is_playable: true
+    attributes:
+        str: 15
+        int: 17
+        wis: 17
+        dex: 17
+        con: 12
+        cha: 15
+    proficiencies:
+        dodge: 5
+        maladictions: 10
+        sorcery: 10

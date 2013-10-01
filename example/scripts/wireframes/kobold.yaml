@@ -1,0 +1,18 @@
+kobold:
+    size: 2
+    attributes:
+        str: 12
+        int: 17
+        wis: 16
+        dex: 18
+        con: 12
+        cha: 15
+    proficiencies:
+        light armor: 5
+        pierce: 5
+        sorcery: 5
+        sneak: 5
+        dodge: 5
+    abilities:
+      - sneak
+      - infravision

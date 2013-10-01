@@ -1,0 +1,3 @@
+server:
+    port: 9000
+    display_name: My Great Mud

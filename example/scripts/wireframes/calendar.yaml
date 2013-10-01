@@ -1,0 +1,51 @@
+calendar:
+    hours_in_day: 24
+    months:
+      - name: Narwain
+        days_in_month: 30
+        sunrise: 8
+        sunset: 17
+      - name: Ninui
+        days_in_month: 30
+        sunrise: 7
+        sunset: 18
+      - name: Gwaeron
+        days_in_month: 30
+        sunrise: 7
+        sunset: 19
+      - name: Gwirith
+        days_in_month: 30
+        sunrise: 6
+        sunset: 20
+      - name: Lothron
+        days_in_month: 30
+        sunrise: 6
+        sunset: 21
+      - name: Norui
+        days_in_month: 30
+        sunrise: 5
+        sunset: 22
+      - name: Cerveth
+        days_in_month: 30
+        sunrise: 6
+        sunset: 21
+      - name: Urui
+        days_in_month: 31
+        sunrise: 6
+        sunset: 20
+      - name: Ivanneth
+        days_in_month: 31
+        sunrise: 7
+        sunset: 19
+      - name: Narbeleth
+        days_in_month: 31
+        sunrise: 7
+        sunset: 18
+      - name: Hithui
+        days_in_month: 31
+        sunrise: 9
+        sunset: 17
+      - name: Girithron
+        days_in_month: 31
+        sunrise: 9
+        sunset: 16

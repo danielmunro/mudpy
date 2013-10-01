@@ -1,0 +1,17 @@
+giant:
+    is_playable: true
+    size: 5
+    attributes:
+        str: 19
+        int: 12
+        wis: 13
+        dex: 14
+        con: 18
+        cha: 11
+    proficiencies:
+        bash: 5
+        melee: 5
+        alchemy: 5
+        elemental: 5
+    abilities:
+      - hand to hand

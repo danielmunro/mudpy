@@ -1,0 +1,76 @@
+actor:
+  messages: {actor_enters_room: '%s arrived from the %s.', actor_leaves_room: '%s
+      left heading %s.', apply_cost_fail: You do not have enough energy to do that.,
+    cannot_see_actors_in_room: You see glowing eyes in the distance., cannot_see_too_dark: It's
+      too dark to see anything!, died: You feel a rejuvinating rush as you pass through
+      this mortal plane., incapacitated: You are incapacitated and will slowly die
+      if not aided., level_up: You leveled up!, look_at_nothing: Nothing is there.,
+    move_failed_fighting: You are fighting!, move_failed_incapacitated: You are incapacitated
+      and will die soon if not aided., move_failed_no_room: 'Alas, nothing is there.',
+    move_failed_too_tired: You are too tired to move., recover_from_incapacitation: You
+      suddenly feel a bit better., target_already_acquired: 'Whoa there sparky! Don''t
+      you think one is enough?'}
+calendar:
+  hours_in_day: 24
+  months:
+  - {days_in_month: 30, name: Narwain, sunrise: 8, sunset: 17}
+  - {days_in_month: 30, name: Ninui, sunrise: 7, sunset: 18}
+  - {days_in_month: 30, name: Gwaeron, sunrise: 7, sunset: 19}
+  - {days_in_month: 30, name: Gwirith, sunrise: 6, sunset: 20}
+  - {days_in_month: 30, name: Lothron, sunrise: 6, sunset: 21}
+  - {days_in_month: 30, name: Norui, sunrise: 5, sunset: 22}
+  - {days_in_month: 30, name: Cerveth, sunrise: 6, sunset: 21}
+  - {days_in_month: 31, name: Urui, sunrise: 6, sunset: 20}
+  - {days_in_month: 31, name: Ivanneth, sunrise: 7, sunset: 19}
+  - {days_in_month: 31, name: Narbeleth, sunrise: 7, sunset: 18}
+  - {days_in_month: 31, name: Hithui, sunrise: 9, sunset: 17}
+  - {days_in_month: 31, name: Girithron, sunrise: 9, sunset: 16}
+client:
+  messages: {connection_lost: Good bye!, connection_made: 'By what name do you wish
+      to be known?', creation_alignment_not_valid: 'That is not a valid alignment.
+      What is your alignment?', creation_alignment_query: 'What alignment are you
+      (good/neutral/evil)?', creation_name_not_valid: 'That name does not appear to
+      be valid, try again.', creation_race_not_valid: 'That is not a valid race. What
+      is your race?', creation_race_query: 'What is your race?', input_not_handled: 'What
+      was that?'}
+dwarf:
+  abilities: [berserk]
+  attributes: {cha: 12, con: 18, dex: 13, int: 14, str: 18, wis: 16}
+  is_playable: true
+  proficiencies: {heavy armor: 5, melee: 10, slash: 5}
+  size: 2
+elf:
+  abilities: [sneak]
+  attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 16}
+  is_playable: true
+  proficiencies: {dodge: 5, light armor: 5, pierce: 5, sneak: 5, sorcery: 5}
+  size: 2
+faerie:
+  attributes: {cha: 15, con: 12, dex: 17, int: 17, str: 15, wis: 17}
+  is_playable: true
+  proficiencies: {dodge: 5, maladictions: 10, sorcery: 10}
+  size: 1
+giant:
+  abilities: [hand to hand]
+  attributes: {cha: 11, con: 18, dex: 14, int: 12, str: 19, wis: 13}
+  is_playable: true
+  proficiencies: {alchemy: 5, bash: 5, elemental: 5, melee: 5}
+  size: 5
+gnome:
+  abilities: [sneak, dirt kick, infravision]
+  attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 14}
+  is_playable: true
+  proficiencies: {dodge: 10, maladictions: 5, sneak: 10, sorcery: 5}
+  size: 2
+human: {is_playable: true}
+kobold:
+  abilities: [sneak, infravision]
+  attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 16}
+  proficiencies: {dodge: 5, light armor: 5, pierce: 5, sneak: 5, sorcery: 5}
+  size: 2
+ogre: {is_playable: true, size: 4}
+server: {display_name: My Great Mud, port: 9000}
+volare:
+  attributes: {cha: 18, con: 13, dex: 15, int: 16, str: 11, wis: 18}
+  is_playable: true
+  proficiencies: {curative: 10, healing: 10}

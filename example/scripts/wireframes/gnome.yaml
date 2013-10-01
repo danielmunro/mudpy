@@ -1,0 +1,19 @@
+gnome:
+    is_playable: true
+    size: 2
+    attributes:
+        str: 12
+        int: 17
+        wis: 14
+        dex: 18
+        con: 12
+        cha: 15
+    proficiencies:
+        dodge: 10
+        sneak: 10
+        maladictions: 5
+        sorcery: 5
+    abilities:
+      - sneak
+      - dirt kick
+      - infravision
