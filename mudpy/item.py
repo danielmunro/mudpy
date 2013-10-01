@@ -4,8 +4,6 @@ different ways.
 
 """
 
-from . import attributes
-
 class Inventory:
     """A bucket of items."""
 
@@ -135,8 +133,14 @@ class Equipment(Item):
     def __init__(self):
         self.position = ''
         self.condition = 1
-        self.attributes = attributes.Attributes()
+        self.attributes = {}
         super(Equipment, self).__init__()
+
+    def get_attribute(self, attr):
+        try:
+            return self.attributes[attr]
+        except KeyError:
+            return 0
 
 class Armor(Equipment):
     """Items that can be equipped as armor."""

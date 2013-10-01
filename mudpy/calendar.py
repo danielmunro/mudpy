@@ -1,7 +1,7 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
 from . import debug, observer, server
-import os, pickle, __main__, wireframe
+import os, pickle, __main__
 
 __CALENDAR_DATA__ = os.path.join(os.getcwd(), "data", "servertime.pk")
 __instance__ = None
@@ -100,15 +100,3 @@ class Instance(observer.Observer):
         """Removes function from calendar related events."""
         self.detach('sunrise', func)
         self.detach('sunset', func)
-               
-
-class Config(wireframe.Blueprint):
-    """Configuration container for the calendar object."""
-
-    def __init__(self, properties):
-        self.days = []
-        self.months = []
-        self.hours_in_day = 0
-        self.sunrise = 0
-        self.sunset = 0
-        super(Config, self).__init__(**properties)

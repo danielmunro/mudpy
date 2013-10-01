@@ -6,7 +6,7 @@ how they interact with the world.
 from __future__ import division
 from . import debug, room, utility, server, proficiency, item, \
                 attributes, observer, command, affect, calendar, wireframe
-import time, random, os, pickle, re, __main__
+import time, random, os, pickle, re, yaml
 
 __SAVE_DIR__ = 'data'
 __config__ = None
@@ -28,16 +28,16 @@ def get_damage_verb(dam_roll):
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
 
-    attr = attributes.Attributes()
-    attr.hp = 20
-    attr.mana = 100
-    attr.movement = 100
-    attr.ac_bash = 100
-    attr.ac_pierce = 100
-    attr.ac_slash = 100
-    attr.ac_magic = 100
-    attr.hit = 1
-    attr.dam = 1
+    attr = {}
+    attr['hp'] = 20
+    attr['mana'] = 100
+    attr['movement'] = 100
+    attr['ac_bash'] = 100
+    attr['ac_pierce'] = 100
+    attr['ac_slash'] = 100
+    attr['ac_magic'] = 100
+    attr['hit'] = 1
+    attr['dam'] = 1
     return attr
 
 def get_attr_mod(actor, attribute_name):
@@ -45,11 +45,12 @@ def get_attr_mod(actor, attribute_name):
 
     return (actor.get_attribute(attribute_name) / Actor.MAX_STAT) * 4
 
-class Actor(wireframe.Blueprint):
+class Actor(observer.Observer, yaml.YAMLObject):
     """Abstract 'person' in the game, base object for users and mobs."""
     MAX_STAT = 25
+    stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
 
-    def __init__(self, properties):
+    def __init__(self):
         self.name = ""
         self.title = "an actor"
         self.long = ""
@@ -59,10 +60,10 @@ class Actor(wireframe.Blueprint):
         self.experience_per_level = 0
         self.alignment = 0
         self.attributes = get_default_attributes()
-        self.trained_attributes = attributes.Attributes()
-        self.curhp = self.attributes.hp
-        self.curmana = self.attributes.mana
-        self.curmovement = self.attributes.movement
+        self.trained_attributes = {}
+        self.curhp = self.attributes['hp']
+        self.curmana = self.attributes['mana']
+        self.curmovement = self.attributes['movement']
         self.sex = "neutral"
         self.room = None
         self.room_id = 0 # we only save the room id, not the room itself
@@ -86,7 +87,11 @@ class Actor(wireframe.Blueprint):
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
 
-        super(Actor, self).__init__(**properties)
+    def _attribute(self, attr):
+        try:
+            return self.attributes[attr]
+        except KeyError:
+            return 0
 
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
@@ -105,7 +110,7 @@ class Actor(wireframe.Blueprint):
         try:
             self.proficiencies[_proficiency].level += level
         except KeyError:
-            self.proficiencies[_proficiency] = wireframe.new(_proficiency)
+            self.proficiencies[_proficiency] = wireframe.apply(proficiency.Proficiency(), _proficiency)
             self.proficiencies[_proficiency].level = level
     
     def get_equipment_by_position(self, position):
@@ -144,14 +149,20 @@ class Actor(wireframe.Blueprint):
         for equipment in self.equipped.values():
             if equipment:
                 amount += getattr(equipment.attributes, attribute_name)
-        if attribute_name in attributes.Attributes.stats:
+        if attribute_name in Actor.stats:
             return min(amount, self.get_max_attribute(attribute_name))
         return amount
+
+    def get_trained_attribute(self, attribute):
+        try:
+            return self.trained_attributes[attribute]
+        except KeyError:
+            return 0
 
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
 
-        racial_attr = self.race.get_attributes(attribute_name)
+        racial_attr = self.race.get_attribute(attribute_name)
         return min(
                 getattr(self.attributes, attribute_name) + racial_attr + 4, 
                 racial_attr + 8)
@@ -452,8 +463,8 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        return getattr(self.attributes, attribute_name) + \
-                getattr(self.trained_attributes, attribute_name) + \
+        return self._attribute(attribute_name) + \
+                self.get_trained_attribute(attribute_name) + \
                 self.race.get_attribute(attribute_name)
     
     def _do_regular_attacks(self, recursed_attack_index = 0):
@@ -482,6 +493,7 @@ class Actor(wireframe.Blueprint):
         self.room.actor_leave(self, direction)
 
     def _post_move(self, direction):
+        print self.room
         """Called after an actor moves."""
 
         self.attach('changed', self.room.actor_changed)
@@ -684,17 +696,16 @@ class Mob(Actor):
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
 
-    def __init__(self, properties):
+    yaml_tag = "u!mob"
+
+    def __init__(self):
         self.movement = 0
         self.movement_timer = self.movement
         self.respawn = 1
         self.auto_flee = False
         self.area = None
         self.role = ''
-        super(Mob, self).__init__(properties)
-
-    def done_init(self):
-        self.race = wireframe.new(self.race)
+        super(Mob, self).__init__()
     
     def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from
@@ -729,14 +740,14 @@ class Mob(Actor):
 class User(Actor):
     """The actor controlled by a client connected by the server."""
 
-    def __init__(self, properties = {}):
+    def __init__(self):
         self.delay_counter = 0
         self.last_delay = 0
         self.trains = 5
         self.practices = 5
         self.client = None
-
-        super(User, self).__init__(properties)
+        self.observers = {}
+        super(User, self).__init__()
 
     def is_updateable(self):
         return False
@@ -833,6 +844,7 @@ class User(Actor):
         else:
             new_room_id = 'room.1'#room.__START_ROOM__
         self.room = room.get(new_room_id)
+        print self.room.title
         self._post_move("sky")
 
         # listener for client input
@@ -878,22 +890,23 @@ class User(Actor):
         """
 
         args = args['args']
-        com = wireframe.new(args[0])
-        if com:
-            if com.required_dispositions and self.disposition not in \
-                    com.required_dispositions:
-                self.notify("You are incapacitated and cannot do that." \
-                    if self.disposition == Disposition.INCAPACITATED \
-                    else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
-            else:
-                try:
-                    getattr(self, "_command_"+com.name)(com, args)
-                except AttributeError as e:
-                    debug.log(e, "notice")
-            handled = True
+
+        try:
+            com = wireframe.apply(command.Command(), args[0])
+        except KeyError:
+            return False
+
+        if com.required_dispositions and self.disposition not in \
+                com.required_dispositions:
+            self.notify("You are incapacitated and cannot do that." \
+                if self.disposition == Disposition.INCAPACITATED \
+                else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
         else:
-            handled = False
-        return handled
+            try:
+                getattr(self, "_command_"+com.name)(com, args)
+            except AttributeError as e:
+                debug.log(e, "notice")
+        return True
 
     def leaving(self, args):
         super(User, self).leaving(args)
@@ -918,6 +931,7 @@ class User(Actor):
         self.room.detach('update', self._room_update)
 
     def _post_move(self, direction):
+        print self.room
         super(User, self)._post_move(direction)
         self._command_look()
         self.room.attach('update', self._room_update)
@@ -985,7 +999,7 @@ class User(Actor):
                     "".join(direction[:1] for direction, room in 
                         self.room.directions.iteritems() if room))
             # items
-            msg += self.room.inventory.inspection(' is here.')
+            #msg += self.room.inventory.inspection(' is here.')
             # actors
             if self.room.actors:
                 if can_see:
@@ -1124,7 +1138,7 @@ class User(Actor):
             return
         if len(args) == 0:
             message = ""
-            for stat in attributes.Attributes.stats:
+            for stat in Actor.stats:
                 attr = self.get_attribute(stat)
                 mattr = self.get_max_attribute(stat)
                 if attr+1 <= mattr:
@@ -1132,7 +1146,7 @@ class User(Actor):
             self.notify("You can train: "+message)
             return
         stat = args[0]
-        if stat in attributes.Attributes.stats:
+        if stat in Actor.stats:
             attr = self.get_attribute(stat)
             mattr = self.get_max_attribute(stat)
             if attr+1 <= mattr:
@@ -1285,7 +1299,7 @@ class Ability(observer.Observer, room.Reporter):
         """Initialize all the affects associated with this ability."""
 
         for affectname in self.affects:
-            receiver.add_affect(wireframe.new(affectname))
+            receiver.add_affect(wireframe.apply(affect.Affect(), affectname))
     
     def apply_cost(self, invoker):
         """Iterates over the cost property, checks that all requirements are
@@ -1308,11 +1322,13 @@ class Ability(observer.Observer, room.Reporter):
     def __str__(self):
         return self.name
 
-class Race(wireframe.Blueprint):
+class Race(yaml.YAMLObject):
     """Gives various properties to an actor that have far reaching affects
     throughout the game.
 
     """
+
+    yaml_tag = "u!race"
 
     SIZE_TINY = 1
     SIZE_SMALL = 2
@@ -1320,17 +1336,16 @@ class Race(wireframe.Blueprint):
     SIZE_LARGE = 4
     SIZE_GIGANTIC = 5
 
-    def __init__(self, properties):
+    def __init__(self):
         self.name = "critter"
         self.size = self.SIZE_NORMAL
         self.movement_cost = 1
         self.is_playable = False
         self.dam_type = "bash"
         self.proficiencies = {}
-        self.attributes = attributes.Attributes()
+        self.attributes = {}
         self.abilities = []
         self.affects = []
-        super(Race, self).__init__(**properties)
 
     def get_attribute(self, attribute):
         try:
@@ -1348,15 +1363,8 @@ class Race(wireframe.Blueprint):
         try:
             self.proficiencies[prof].level += level
         except KeyError:
-            self.proficiencies[prof] = wireframe.new(prof)
+            self.proficiencies[prof] = wireframe.apply(proficiency.Proficiency(), prof)
             self.proficiencies[prof].level = level
 
     def __str__(self):
         return self.name
-
-class Config(wireframe.Blueprint):
-    """Configuration container for the actor module."""
-
-    def __init__(self, properties):
-        self.messages = {}
-        super(Config, self).__init__(**properties)

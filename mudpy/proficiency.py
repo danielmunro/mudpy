@@ -1,12 +1,9 @@
-from . import wireframe
-
-class Proficiency(wireframe.Blueprint):
-    def __init__(self, properties):
+class Proficiency:
+    def __init__(self):
         self.name = ""
         self.hook = ""
         self.improvechance = 0.05
         self.level = 15
-        super(Proficiency, self).__init__(**properties)
     
     def checkimprove(self):
         # @todo make this work

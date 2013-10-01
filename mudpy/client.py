@@ -4,7 +4,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import debug, observer, wireframe, actor
+from . import debug, observer, actor, wireframe
 
 __config__ = None
 
@@ -109,7 +109,7 @@ class Login:
             """If a new alt, have them select a race."""
 
             try:
-                self.newuser.race = wireframe.new(data)
+                self.newuser.race = wireframe.apply(actor.Race(), data)
             except KeyError:
                 raise LoginException(__config__.messages["creation_race_not_valid"])
 
@@ -150,6 +150,7 @@ class ClientFactory(tFactory, observer.Observer):
     protocol = Client
 
     def __init__(self):
+        self.observers = {}
         super(ClientFactory, self).__init__()
 
     def buildProtocol(self, addr):
@@ -162,13 +163,6 @@ class ClientFactory(tFactory, observer.Observer):
         client.client_factory = self
         self.dispatch("created", client=client)
         return client
-
-class Config(wireframe.Blueprint):
-    """Maintains configurations specific to the mud mudpy is running."""
-
-    def __init__(self, properties):
-        self.user_module = None
-        super(Config, self).__init__(**properties)
 
 class LoginException(Exception):
     """Raised when unexpected input in received during the login process."""

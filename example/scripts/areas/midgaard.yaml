@@ -1,0 +1,25 @@
+!<u!area>
+name: midgaard
+terrain: urban
+location: outside
+rooms:
+  - !<u!room>
+    name: room.1
+    title: Temple of Midgaard
+    description: A large temple surrounds you, with sculptures of gods adorning the walls.
+    lit: true
+    directions:
+        north: room.82
+    actors:
+      - !<u!mob>
+        name: mob.1
+        title: hassan
+        long: Hassan is standing here
+        race: giant
+  - !<u!room>
+    name: room.82
+    title: The Temple Altar
+    description: A temple altar is here.
+    lit: true
+    directions:
+        north: room.82

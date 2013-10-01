@@ -4,7 +4,7 @@ listening on the configured port.
 
 """
 
-from mudpy import server, debug, client, calendar, actor, wireframe
+from mudpy import server, debug, client, calendar, actor, wireframe, room
 import sys, os
 
 # data directory is for storing users, wireframes, and game details
@@ -23,30 +23,28 @@ except OSError: # already exists
 # load the wireframes depending on args passed to mud
 
 try:
-    wireframe.load(sys.argv[1])
+    wireframe.load(os.path.join(sys.argv[1], "wireframes"))
+    wireframe.execute(os.path.join(sys.argv[1], "areas"))
 except IndexError:
-    path = os.path.join(__data__, "wireframes.yaml")
-    if os.path.exists(path):
-        wireframe.repersist(path)
-    else:
-        debug.log("need to specify an initialization path", "error")
-        raise
+    debug.log("need to specify an initialization path", "error")
+    raise
 except IOError:
     debug.log("specified path does not exist: "+sys.argv[1], "error")
     raise
 
-def update_wireframe():
-    wireframe.save(__data__)
-
 server.__instance__ = server.Instance()
-server.__instance__.heartbeat.attach('tick', update_wireframe)
+#server.__instance__.heartbeat.attach('tick', update_wireframe)
 calendar.load_calendar()
 
+class Config:
+    """Maintains configurations specific to the mud mudpy is running."""
+    pass
+
 # configuration values
-server.__config__ = wireframe.new("server")
-client.__config__ = wireframe.new("client")
-calendar.__config__ = wireframe.new("calendar")
-actor.__config__ = wireframe.new("actor")
+server.__config__ = wireframe.apply(Config(), "server")
+client.__config__ = wireframe.apply(Config(), "client")
+calendar.__config__ = wireframe.apply(Config(), "calendar")
+actor.__config__ = wireframe.apply(Config(), "actor")
 
 # have the server start listening for connections
 server.__instance__.start_listening(client.ClientFactory())

@@ -5,37 +5,32 @@ dungeons, and more.
 """
 
 from . import item, observer, wireframe
-import random
+import random, yaml
 
 __START_ROOM__ = None
 __PURGATORY__ = None
 __ROOMS__ = {}
 __AREAS__ = {}
 
+__LAST_AREA__ = None
 __LOCATION_OUTSIDE__ = "outside"
 
 def get(room_name):
-    try:
-        return __ROOMS__[room_name]
-    except KeyError:
-        __ROOMS__[room_name] = wireframe.new(room_name)
-        return __ROOMS__[room_name]
+    return __ROOMS__[room_name]
 
 def area(area_name):
-    try:
-        return __AREAS__[area_name]
-    except KeyError:
-        __AREAS__[area_name] = wireframe.new(area_name)
-        return __AREAS__[area_name]
+    return __AREAS__[area_name]
 
-class Room(wireframe.Blueprint):
+class Room(observer.Observer, yaml.YAMLObject):
     """Basic space representation game configuration files. Has a name (title),
     description, a list of actors in the room, an inventory of items, and a
     dictionary of possible directions to leave.
 
     """
 
-    def __init__(self, properties):
+    yaml_tag = "u!room"
+
+    def __init__(self):
         self.id = 0
         self.name = ''
         self.title = ''
@@ -45,31 +40,10 @@ class Room(wireframe.Blueprint):
         self.directions = {}
         self.area = ''
         self.lit = True
-        super(Room, self).__init__(**properties)
-
-    def done_init(self):
-
-        # actors
-        actors = self.actors
-        self.actors = []
-        for i, actor in enumerate(actors):
-            self.actor_arrive(wireframe.new(actor))
-
-        # items
-        items = self.inventory
-        self.inventory = item.Inventory()
-        for i in items:
-            self.inventory.append(new(i))
-
-    def pre_update(self):
-        update = dict(
-            actors = [actor.name for actor in self.actors if actor.is_updateable()],
-            observers = {},
-            inventory = [item.name for item in self.inventory.items])
-        return update
+        self.observers = {}
 
     def get_area(self):
-        return area(self.area)
+        return self.area
     
     def announce(self, messages, add_prompt = True):
         """Will take a message and convey it to the various actors in the
@@ -242,12 +216,21 @@ class Down(Direction):
     name = "down"
     reverse = "up"
 
-class Area(wireframe.Blueprint):
-    def __init__(self, properties):
+class Area(yaml.YAMLObject):
+
+    yaml_tag = "u!area"
+
+    def __init__(self):
         self.name = ""
         self.terrain = ""
         self.location = ""
-        super(Area, self).__init__(**properties)
+        self.rooms = []
+
+    def done_init(self):
+        __AREAS__[self.name] = self
+        for room in self.rooms:
+            __ROOMS__[room.name] = room
+            room.area = self
 
 class Reporter:
 

@@ -1,50 +1,56 @@
 """Wireframes module."""
 
-from . import debug, observer
+from . import debug
 import os, yaml
 
 __wireframes__ = {}
 
-def repersist(path):
-    """Load wireframes from previous game save."""
+def execute(path):
+    recurse(run, path)
 
-    global __wireframes__
+def load(path):
+    recurse(add_wireframe_file, path)
 
-    with open(path, "r") as fp:
-        __wireframes__ = yaml.load(fp)
-
-def load(path, recursed = False):
+def recurse(method, path, onceLoaded = False):
     """Load wireframes from initialization script, with slightly different 
     formatting than a persisted world.
     
     """
 
     if path.endswith('.yaml'):
-        parse_yaml(path)
+        method(path)
+        onceLoaded = True
+        return
     elif os.path.isdir(path):
         for infile in os.listdir(path):
             fullpath = path+'/'+infile
-            load(fullpath, True)
-    elif not recursed:
-        raise IOError(path+" not found")
+            recurse(method, fullpath, onceLoaded)
+        return
+    
+    if not onceLoaded:
+        raise IOError(path+" not found or not valid")
 
-def parse_yaml(path):
+def add_wireframe_file(path):
     """Load a yaml config file and add the wireframes."""
 
-    debug.log("reading "+path)
+    debug.log("adding to wireframe: "+path)
     with open(path, "r") as fp:
-        data = yaml.load(fp)
-        for _class in data:
-            for key in data[_class]:
-                add(_class, key)
+        __wireframes__.update(yaml.load(fp))
 
-def add(_class, data):
+def run(path):
+
+    debug.log("running: "+path)
+    with open(path, "r") as fp:
+        _object = yaml.load(fp)
+        try:
+            _object.done_init()
+        except AttributeError:
+            pass
+
+def add(name, data):
     """Add a wireframe definition to the internal dict."""
 
-    __wireframes__[data['name']] = {
-        'class': _class,
-        'data': data
-    }
+    __wireframes__[name] = data
 
 def save(data_dir):
     """Save all defined wireframes."""
@@ -56,7 +62,7 @@ def save(data_dir):
         yaml.dump(__wireframes__, fp)
 
 
-def new(name):
+def apply(_object, name):
     """Creates an object from a name, a unique identifier for a wireframe.
 
     Eg:
@@ -65,48 +71,10 @@ def new(name):
     
     """
 
-    def do_import(name):
-        """Dynamically import a class from a package name."""
-
-        components = name.split('.')
-        mod = __import__(".".join(components[:-1]), fromlist=[components[-1]])
-        return getattr(mod, components[-1])
-
     try:
-        found = __wireframes__[name]
+        _object.__dict__.update(__wireframes__[name])
     except KeyError:
-        debug.log("wireframe does not exist for "+str(name), "error")
+        debug.log("wireframe not found: "+name, "error")
         raise
 
-    __class__ = found['class']
-
-    return do_import(__class__)(found['data'])
-
-class Blueprint(observer.Observer):
-    """A basic object that is created using a wireframe. A dict of properties
-    are passed to a blueprint, which are used to update the object's internal
-    dict.
-
-    """
-
-    def __init__(self, **properties):
-        self.__dict__.update(properties)
-        super(Blueprint, self).__init__()
-        try:
-            self.done_init()
-        except AttributeError:
-            pass
-
-    def update(self):
-
-        print "updating blueprint for "+str(self.name)
-
-        global __wireframes__
-
-        properties = self.__dict__.copy()
-        try:
-            properties.update(self.pre_update())
-        except AttributeError:
-            pass
-
-        __wireframes__[self.name]['data'] = properties
+    return _object
