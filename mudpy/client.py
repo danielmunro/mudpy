@@ -39,7 +39,6 @@ class Client(observer.Observer, Protocol):
     def get_new_user(self):
         """Returns a user of the type defined in the configs."""
 
-        #user_module = __import__(__config__.user_module, None, None, "User")
         return actor.User()
     
     def poll(self):
