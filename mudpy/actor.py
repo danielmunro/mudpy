@@ -110,7 +110,7 @@ class Actor(observer.Observer, yaml.YAMLObject):
         try:
             self.proficiencies[_proficiency].level += level
         except KeyError:
-            self.proficiencies[_proficiency] = wireframe.apply(proficiency.Proficiency(), _proficiency)
+            self.proficiencies[_proficiency] = wireframe.create(_proficiency)
             self.proficiencies[_proficiency].level = level
     
     def get_equipment_by_position(self, position):
@@ -493,7 +493,6 @@ class Actor(observer.Observer, yaml.YAMLObject):
         self.room.actor_leave(self, direction)
 
     def _post_move(self, direction):
-        print self.room
         """Called after an actor moves."""
 
         self.attach('changed', self.room.actor_changed)
@@ -844,7 +843,6 @@ class User(Actor):
         else:
             new_room_id = 'room.1'#room.__START_ROOM__
         self.room = room.get(new_room_id)
-        print self.room.title
         self._post_move("sky")
 
         # listener for client input
@@ -892,7 +890,7 @@ class User(Actor):
         args = args['args']
 
         try:
-            com = wireframe.apply(command.Command(), args[0])
+            com = wireframe.create(args[0])
         except KeyError:
             return False
 
@@ -931,7 +929,6 @@ class User(Actor):
         self.room.detach('update', self._room_update)
 
     def _post_move(self, direction):
-        print self.room
         super(User, self)._post_move(direction)
         self._command_look()
         self.room.attach('update', self._room_update)
@@ -1299,7 +1296,7 @@ class Ability(observer.Observer, room.Reporter):
         """Initialize all the affects associated with this ability."""
 
         for affectname in self.affects:
-            receiver.add_affect(wireframe.apply(affect.Affect(), affectname))
+            receiver.add_affect(wireframe.create(affectname))
     
     def apply_cost(self, invoker):
         """Iterates over the cost property, checks that all requirements are
@@ -1363,7 +1360,7 @@ class Race(yaml.YAMLObject):
         try:
             self.proficiencies[prof].level += level
         except KeyError:
-            self.proficiencies[prof] = wireframe.apply(proficiency.Proficiency(), prof)
+            self.proficiencies[prof] = wireframe.create(prof)
             self.proficiencies[prof].level = level
 
     def __str__(self):

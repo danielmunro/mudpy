@@ -226,6 +226,21 @@ class Area(yaml.YAMLObject):
         self.location = ""
         self.rooms = []
 
+    """
+    @classmethod
+    def from_yaml(self, loader, node):
+        data = loader.construct_mapping(node)
+        __AREAS__[data['name']] = self
+        print data
+        for room in data['rooms']:
+            print room
+            __ROOMS__[room['name']] = room
+        print __AREAS__
+        print __ROOMS__
+        print self.rooms
+        return data
+    """
+
     def done_init(self):
         __AREAS__[self.name] = self
         for room in self.rooms:

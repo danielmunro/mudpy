@@ -1,8 +1,8 @@
-client:
-  messages: {connection_lost: Good bye!, connection_made: 'By what name do you wish
-      to be known?', creation_alignment_not_valid: 'That is not a valid alignment.
-      What is your alignment?', creation_alignment_query: 'What alignment are you
-      (good/neutral/evil)?', creation_name_not_valid: 'That name does not appear to
-      be valid, try again.', creation_race_not_valid: 'That is not a valid race. What
-      is your race?', creation_race_query: 'What is your race?', input_not_handled: 'What
-      was that?'}
+!<u!config>
+messages: {connection_lost: Good bye!, connection_made: 'By what name do you wish
+  to be known?', creation_alignment_not_valid: 'That is not a valid alignment.
+  What is your alignment?', creation_alignment_query: 'What alignment are you
+  (good/neutral/evil)?', creation_name_not_valid: 'That name does not appear to
+  be valid, try again.', creation_race_not_valid: 'That is not a valid race. What
+  is your race?', creation_race_query: 'What is your race?', input_not_handled: 'What
+  was that?'}

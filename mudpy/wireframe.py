@@ -3,39 +3,29 @@
 from . import debug
 import os, yaml
 
-__wireframes__ = {}
+path = None
 
-def execute(path):
-    recurse(run, path)
+def execute():
+    recurse(os.path.join(path, "areas"))
 
-def load(path):
-    recurse(add_wireframe_file, path)
-
-def recurse(method, path, onceLoaded = False):
+def recurse(path, onceLoaded = False):
     """Load wireframes from initialization script, with slightly different 
     formatting than a persisted world.
     
     """
 
     if path.endswith('.yaml'):
-        method(path)
+        run(path)
         onceLoaded = True
         return
     elif os.path.isdir(path):
         for infile in os.listdir(path):
             fullpath = path+'/'+infile
-            recurse(method, fullpath, onceLoaded)
+            recurse(fullpath, onceLoaded)
         return
     
     if not onceLoaded:
         raise IOError(path+" not found or not valid")
-
-def add_wireframe_file(path):
-    """Load a yaml config file and add the wireframes."""
-
-    debug.log("adding to wireframe: "+path)
-    with open(path, "r") as fp:
-        __wireframes__.update(yaml.load(fp))
 
 def run(path):
 
@@ -47,41 +37,16 @@ def run(path):
         except AttributeError:
             pass
 
-def add(name, data):
-    """Add a wireframe definition to the internal dict."""
-
-    __wireframes__[name] = data
-
-def save(data_dir, wireframe = None):
-    """Save all defined wireframes."""
-
-    global __wireframes__
-
-    if wireframe:
-        record = {wireframe: __wireframes__[wireframe]}
-        file_name = os.path.join(data_dir, wireframe+".yaml")
-        with open(file_name, "w") as fp:
-            yaml.dump(record, fp)
-    else:
-        for i, wireframe in __wireframes__.iteritems():
-            record = {i: wireframe}
-            file_name = os.path.join(data_dir, i+".yaml")
-            with open(file_name, "w") as fp:
-                yaml.dump(record, fp)
-
-def apply(_object, name):
+def create(name):
     """Creates an object from a name, a unique identifier for a wireframe.
 
     Eg:
 
-    ab = new("gnome") # returns a new gnome race to assign to an actor
+    ab = create("gnome") # returns a new gnome race to assign to an actor
     
     """
 
-    try:
-        _object.__dict__.update(__wireframes__[name])
-    except KeyError:
-        debug.log("wireframe not found: "+name, "error")
-        raise
+    wireframe_path = os.path.join(path, "wireframes", name+".yaml")
 
-    return _object
+    with open(wireframe_path, "r") as fp:
+        return yaml.load(fp)

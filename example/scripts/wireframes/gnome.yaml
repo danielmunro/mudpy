@@ -1,6 +1,6 @@
-gnome:
-  abilities: [sneak, dirt kick, infravision]
-  attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 14}
-  is_playable: true
-  proficiencies: {dodge: 10, maladictions: 5, sneak: 10, sorcery: 5}
-  size: 2
+!<u!race>
+abilities: [sneak, dirt kick, infravision]
+attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 14}
+is_playable: true
+proficiencies: {dodge: 10, maladictions: 5, sneak: 10, sorcery: 5}
+size: 2

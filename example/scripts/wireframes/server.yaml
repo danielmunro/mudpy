@@ -1,1 +1,3 @@
-server: {display_name: My Great Mud, port: 9000}
+!<u!config>
+display_name: My Great Mud
+port: 9000

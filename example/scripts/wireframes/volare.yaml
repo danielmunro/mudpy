@@ -1,4 +1,4 @@
-volare:
-  attributes: {cha: 18, con: 13, dex: 15, int: 16, str: 11, wis: 18}
-  is_playable: true
-  proficiencies: {curative: 10, healing: 10}
+!<u!race>
+attributes: {cha: 18, con: 13, dex: 15, int: 16, str: 11, wis: 18}
+is_playable: true
+proficiencies: {curative: 10, healing: 10}

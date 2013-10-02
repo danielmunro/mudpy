@@ -1,6 +1,6 @@
-giant:
-  abilities: [hand to hand]
-  attributes: {cha: 11, con: 18, dex: 14, int: 12, str: 19, wis: 13}
-  is_playable: true
-  proficiencies: {alchemy: 5, bash: 5, elemental: 5, melee: 5}
-  size: 5
+!<u!race>
+abilities: [hand to hand]
+attributes: {cha: 11, con: 18, dex: 14, int: 12, str: 19, wis: 13}
+is_playable: true
+proficiencies: {alchemy: 5, bash: 5, elemental: 5, melee: 5}
+size: 5

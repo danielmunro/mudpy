@@ -1,1 +1,3 @@
-ogre: {is_playable: true, size: 4}
+!<u!race>
+is_playable: true
+size: 4
