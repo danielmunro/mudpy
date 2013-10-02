@@ -1,6 +1,6 @@
 """Wireframes module."""
 
-from . import debug
+from . import debug, observer
 import os, yaml
 
 path = None
@@ -50,3 +50,23 @@ def create(name):
 
     with open(wireframe_path, "r") as fp:
         return yaml.load(fp)
+
+class Blueprint(observer.Observer, yaml.YAMLObject):
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        data = loader.construct_mapping(node)
+        if "wireframe" in data:
+            self = create(data['wireframe'])
+        else:
+            self = cls()
+            self.__dict__.update(data)
+        return self
+
+    """
+    @classmethod
+    def to_yaml(self, dumper, data):
+        del data['observers']
+        node = dumper.represent_mapping(data)
+        return node
+        """

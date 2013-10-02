@@ -1,5 +1,7 @@
 !<u!race>
-abilities: [sneak]
+abilities:
+    - !<u!ability>
+        wireframe: ability.sneak
 attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 16}
 is_playable: true
 proficiencies: {dodge: 5, light armor: 5, pierce: 5, sneak: 5, sorcery: 5}

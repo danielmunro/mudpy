@@ -1250,12 +1250,14 @@ class Attack:
 
         aggressor.dispatch('attack_resolution', attack=self)
 
-class Ability(observer.Observer, room.Reporter):
+class Ability(wireframe.Blueprint, room.Reporter):
     """Represents something cool an actor can do. Invoked when the hook is
     triggered on the parent actor. Applies costs in the costs dict, and affects
     in the affects list.
     
     """
+
+    yaml_tag = "u!ability"
 
     def __init__(self):
         self.name = "an ability"
@@ -1267,7 +1269,6 @@ class Ability(observer.Observer, room.Reporter):
         self.hook = ""
         self.aggro = False
         self.messages = {}
-        super(Ability, self).__init__()
     
     def try_perform(self, invoker, args):
         """Parses the user input, finds a target, applies the ability cost,

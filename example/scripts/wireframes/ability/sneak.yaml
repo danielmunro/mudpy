@@ -1,0 +1,11 @@
+!<u!ability>
+level: 0
+type: skill
+hook: input
+costs:
+    movement: 1
+affects:
+    - sneak
+messages:
+    fail:
+        invoker: "You fail to move silently."
