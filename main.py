@@ -38,10 +38,10 @@ server.__instance__ = server.Instance()
 calendar.load_calendar()
 
 # configuration values
-server.__config__ = wireframe.create("server")
-client.__config__ = wireframe.create("client")
-calendar.__config__ = wireframe.create("calendar")
-actor.__config__ = wireframe.create("actor")
+server.__config__ = wireframe.create("config.server")
+client.__config__ = wireframe.create("config.client")
+calendar.__config__ = wireframe.create("config.calendar")
+actor.__config__ = wireframe.create("config.actor")
 
 # have the server start listening for connections
 server.__instance__.start_listening(client.ClientFactory())

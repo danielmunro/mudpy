@@ -46,7 +46,7 @@ def create(name):
     
     """
 
-    wireframe_path = os.path.join(path, "wireframes", name+".yaml")
+    wireframe_path = os.path.join(*[path, "wireframes"]+name.split('.'))+".yaml"
 
     with open(wireframe_path, "r") as fp:
         return yaml.load(fp)
