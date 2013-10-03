@@ -9,6 +9,9 @@ class Observer(object):
 
     """
 
+    def init(self):
+        self.observers = {}
+
     def attach(self, event, func):
         """Attach a new listener function to a named event."""
 
