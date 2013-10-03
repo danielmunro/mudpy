@@ -28,13 +28,14 @@ except IndexError:
     debug.log("need to specify an initialization path", "error")
     raise
 
+server.__instance__ = server.Instance()
+
 try:
     wireframe.execute()
 except IOError:
     debug.log("specified path does not exist: "+wireframe.path, "error")
     raise
 
-server.__instance__ = server.Instance()
 calendar.load_calendar()
 
 # configuration values

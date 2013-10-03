@@ -15,7 +15,8 @@ rooms:
         name: mob.1
         title: hassan
         long: Hassan is standing here
-        race: giant
+        race: !<u!race>
+            wireframe: race.giant
   - !<u!room>
     name: room.82
     title: The Temple Altar

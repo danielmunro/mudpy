@@ -5,7 +5,7 @@ dungeons, and more.
 """
 
 from . import item, observer, wireframe
-import random, yaml
+import random
 
 __START_ROOM__ = None
 __PURGATORY__ = None
@@ -21,7 +21,7 @@ def get(room_name):
 def area(area_name):
     return __AREAS__[area_name]
 
-class Room(observer.Observer, yaml.YAMLObject):
+class Room(wireframe.Blueprint):
     """Basic space representation game configuration files. Has a name (title),
     description, a list of actors in the room, an inventory of items, and a
     dictionary of possible directions to leave.
@@ -216,7 +216,7 @@ class Down(Direction):
     name = "down"
     reverse = "up"
 
-class Area(yaml.YAMLObject):
+class Area(wireframe.Blueprint):
 
     yaml_tag = "u!area"
 

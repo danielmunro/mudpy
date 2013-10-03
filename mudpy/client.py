@@ -16,6 +16,7 @@ class Client(observer.Observer, Protocol):
         self.client_factory = None
         self.user = None
         self.login = Login(self)
+        self.observers = {}
         super(Client, self).__init__()
 
     def connectionMade(self):

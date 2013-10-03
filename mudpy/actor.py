@@ -6,7 +6,7 @@ how they interact with the world.
 from __future__ import division
 from . import debug, room, utility, server, proficiency, item, \
                 attributes, observer, command, affect, calendar, wireframe
-import time, random, os, pickle, re, yaml
+import time, random, os, pickle, re
 
 __SAVE_DIR__ = 'data'
 __config__ = None
@@ -45,7 +45,7 @@ def get_attr_mod(actor, attribute_name):
 
     return (actor.get_attribute(attribute_name) / Actor.MAX_STAT) * 4
 
-class Actor(observer.Observer, yaml.YAMLObject):
+class Actor(wireframe.Blueprint):
     """Abstract 'person' in the game, base object for users and mobs."""
     MAX_STAT = 25
     stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
@@ -1320,7 +1320,7 @@ class Ability(wireframe.Blueprint, room.Reporter):
     def __str__(self):
         return self.name
 
-class Race(yaml.YAMLObject):
+class Race(wireframe.Blueprint):
     """Gives various properties to an actor that have far reaching affects
     throughout the game.
 
