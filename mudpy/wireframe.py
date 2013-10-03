@@ -64,10 +64,6 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         else:
             self = cls()
             self.__dict__.update(data)
-        try:
-            self.done_init()
-        except AttributeError:
-            pass
         return self
 
     """
