@@ -42,14 +42,17 @@ def create(name):
 
     Eg:
 
-    ab = create("gnome") # returns a new gnome race to assign to an actor
+    race = create("gnome") # returns a new gnome race to assign to an actor
     
     """
 
     wireframe_path = os.path.join(*[path, "wireframes"]+name.split('.'))+".yaml"
 
-    with open(wireframe_path, "r") as fp:
-        return yaml.load(fp)
+    try:
+        with open(wireframe_path, "r") as fp:
+            return yaml.load(fp)
+    except IOError:
+        raise WireframeException("wireframe does not exist: "+name)
 
 class Blueprint(observer.Observer, yaml.YAMLObject):
 
@@ -61,6 +64,10 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         else:
             self = cls()
             self.__dict__.update(data)
+        try:
+            self.done_init()
+        except AttributeError:
+            pass
         return self
 
     """
@@ -70,3 +77,6 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         node = dumper.represent_mapping(data)
         return node
         """
+
+class WireframeException(Exception):
+    pass

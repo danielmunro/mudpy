@@ -891,7 +891,7 @@ class User(Actor):
 
         try:
             com = wireframe.create(args[0])
-        except KeyError:
+        except wireframe.WireframeException:
             return False
 
         if com.required_dispositions and self.disposition not in \
