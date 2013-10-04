@@ -145,7 +145,7 @@ class Actor(wireframe.Blueprint):
 
         amount = self._get_unmodified_attribute(attribute_name)
         for _affect in self.affects:
-            amount += getattr(_affect.attributes, attribute_name)
+            amount += _affect.get_attribute(attribute_name)
         for equipment in self.equipped.values():
             if equipment:
                 amount += getattr(equipment.attributes, attribute_name)
@@ -305,7 +305,7 @@ class Actor(wireframe.Blueprint):
 
         # for any modifiers that are percents, we need to 
         # get the percent of the actor's attribute
-        for attr in vars(aff.attributes):
+        for attr in aff.attributes:
             modifier = getattr(aff.attributes, attr)
             if modifier > 0 and modifier < 1:
                 setattr(aff.attributes, attr, self.get_attribute(attr)
@@ -383,7 +383,7 @@ class Actor(wireframe.Blueprint):
         try:
             self.dispatch('changed', 
                     affect=args['affect'], actor=self,
-                    changed=args['affect'].messages['end']['*'] % self)
+                    changed=args['affect'].messages['end']['all'] % self)
         except KeyError:
             pass
     
@@ -855,21 +855,19 @@ class User(Actor):
         calendar.__instance__.setup_listeners_for(self.calendar_changed)
 
         # attach listeners to client input for abilities
-        """
         for ability in self.get_abilities():
             ability.attach('perform', self.perform_ability)
             if ability.hook == 'input':
                 def check_input(args):
-                    ""Checks if the user is trying to perform an ability with
+                    """Checks if the user is trying to perform an ability with
                     a given input.
 
-                    ""
+                    """
 
                     if ability.name.startswith(args['args'][0]):
                         ability.try_perform(self, args['args'][:2])
                         return True
                 self.client.attach('input', check_input)
-        """
 
         debug.log('client logged in as '+str(self))
 

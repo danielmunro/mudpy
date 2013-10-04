@@ -3,10 +3,12 @@ to be used to apply attribute changes to an actor or item.
 
 """
 
-from . import debug, server, room, observer
+from . import server, room, wireframe
 
-class Affect(observer.Observer, room.Reporter):
+class Affect(wireframe.Blueprint, room.Reporter):
     """Give an actor or item an affect."""
+
+    yaml_tag = "u!affect"
 
     def __init__(self):
         self.name = "an affect"

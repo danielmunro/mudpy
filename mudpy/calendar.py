@@ -33,13 +33,13 @@ class Instance(observer.Observer):
     """Calendar instance, keeps track of the date in the game."""
 
     def __init__(self):
-        super(Instance, self).__init__()
         self.elapsed_time = 0
         self.hour = 0
         self.day_of_month = 1
         self.month = 1
         self.year = 0
         self.daylight = True
+        self.observers = {}
 
     def tick(self):
         """Tick event listener function, increments the hour and checks for

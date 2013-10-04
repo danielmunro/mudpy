@@ -64,6 +64,7 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         else:
             self = cls()
             self.__dict__.update(data)
+        self.observers = {}
         return self
 
     """

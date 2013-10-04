@@ -1,11 +1,12 @@
 !<u!ability>
 level: 0
+name: "sneak"
 type: skill
 hook: input
 costs:
     movement: 1
 affects:
-    - sneak
+    - affect.sneak
 messages:
     fail:
         invoker: "You fail to move silently."
