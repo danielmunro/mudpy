@@ -297,7 +297,7 @@ class Actor(wireframe.Blueprint):
         try:
             self.dispatch('changed', 
                     affect=aff, actor=self,
-                    changed=aff.messages['success']['*'] % self)
+                    changed=aff.messages['start']['all'] % self)
         except KeyError:
             pass
 
@@ -306,10 +306,9 @@ class Actor(wireframe.Blueprint):
         # for any modifiers that are percents, we need to 
         # get the percent of the actor's attribute
         for attr in aff.attributes:
-            modifier = getattr(aff.attributes, attr)
+            modifier = aff.get_attribute(attr)
             if modifier > 0 and modifier < 1:
-                setattr(aff.attributes, attr, self.get_attribute(attr)
-                        * modifier)
+                aff.attributes[attr] = self.get_attribute(attr) * modifier
 
         if aff.timeout > -1:
             server.__instance__.heartbeat.attach('tick', aff.countdown_timeout)
@@ -774,7 +773,7 @@ class User(Actor):
 
     def add_affect(self, aff):
         super(User, self).add_affect(aff)
-        self.notify(aff.messages['success']['self'])
+        self.notify(aff.messages['start']['self'])
 
     def _end_affect(self, args):
         super(User, self)._end_affect(args)

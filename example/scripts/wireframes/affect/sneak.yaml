@@ -1,7 +1,7 @@
 !<u!affect>
 name: sneak
 messages:
-    success:
+    start:
         self: "You silently fade into the shadows."
     end:
         self: "You no longer move silently."

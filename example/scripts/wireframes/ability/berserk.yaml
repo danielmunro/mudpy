@@ -1,0 +1,15 @@
+!<u!ability>
+level: 0
+name: berserk
+type: skill
+hook: input
+delay: 2
+costs:
+    movement: 0.5
+affects:
+    - affect.berserk
+messages:
+    fail:
+        invoker: "Your face gets red as you huff and stomp around."
+    success:
+        invoker: "You fly into a rage!"

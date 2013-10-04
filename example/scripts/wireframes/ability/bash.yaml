@@ -1,0 +1,17 @@
+!<u!ability>
+level: 0
+type: skill
+hook: input
+delay: 2
+costs:
+    movement: 5
+aggro: true
+affects:
+    - affect.stun
+messages:
+    fail:
+        invoker: "You fall flat on your face!"
+        all: "%s falls flat on its face!"
+    success:
+        invoker: "You slam into %s and send them flying!"
+        all: "%s slams into %s!"

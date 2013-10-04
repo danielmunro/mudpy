@@ -1,6 +1,6 @@
 !<u!ability>
 level: 0
-name: "sneak"
+name: sneak
 type: skill
 hook: input
 costs:

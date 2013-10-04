@@ -1,0 +1,13 @@
+!<u!affect>
+name: berserk
+attributes:
+    hp: 0.1
+    hit: 0.1
+    dam: 0.1
+messages:
+    start:
+        self: "Your pulse speeds up as you are consumed by rage!"
+        all: "%s goes into a rage!"
+    end:
+        self: "You calm down."
+        all: "%s calms down."
