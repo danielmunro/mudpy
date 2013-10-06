@@ -1,0 +1,8 @@
+!<u!command>
+name: north
+required_dispositions:
+    - standing
+priority: 1
+execute:
+    method: move
+    args: north

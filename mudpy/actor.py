@@ -87,6 +87,9 @@ class Actor(wireframe.Blueprint):
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
 
+    def get_room(self):
+        return room.get(self.room)
+
     def _attribute(self, attr):
         try:
             return self.attributes[attr]
@@ -221,7 +224,7 @@ class Actor(wireframe.Blueprint):
             self.notify(__config__.messages['move_failed_incapacitated'])
             return
 
-        new_room = self.room.directions[direction]
+        new_room = self.get_room().directions[direction]
         if not new_room:
             self.notify(__config__.messages['move_failed_no_room'])
             return
@@ -349,14 +352,16 @@ class Actor(wireframe.Blueprint):
     def can_see(self):
         """Can the user see?"""
 
+        _room = self.get_room()
+
         if utility.match_partial("glow", self.get_affects()):
             return True
 
-        if self.room.get_area().location == room.__LOCATION_OUTSIDE__ and \
+        if _room.get_area().location == room.__LOCATION_OUTSIDE__ and \
                 calendar.__instance__.daylight:
             return True
 
-        return self.room.lit
+        return _room.lit
 
     def is_updateable(self):
         return True
@@ -488,14 +493,16 @@ class Actor(wireframe.Blueprint):
     def _pre_move(self, direction):
         """Called before an actor moves."""
 
-        self.detach('changed', self.room.actor_changed)
-        self.room.actor_leave(self, direction)
+        _room = self.get_room()
+        self.detach('changed', _room.actor_changed)
+        _room.actor_leave(self, direction)
 
     def _post_move(self, direction):
         """Called after an actor moves."""
 
-        self.attach('changed', self.room.actor_changed)
-        self.room.actor_arrive(self, direction)
+        _room = self.get_room()
+        self.attach('changed', _room.actor_changed)
+        _room.actor_arrive(self, direction)
 
     def _level_up(self):
         """Increase the actor's level."""
@@ -538,30 +545,6 @@ class Actor(wireframe.Blueprint):
                 "changed", 
                 actor=self, 
                 changed=str(self).title()+" dies.")
-
-    def _command_north(self, _invoked_command, _args):
-        """Attempt to move the actor in the north direction."""
-        self.move("north")
-
-    def _command_south(self, _invoked_command, _args):
-        """Attempt to move the actor in the south direction."""
-        self.move("south")
-
-    def _command_east(self, _invoked_command, _args):
-        """Attempt to move the actor in the east direction."""
-        self.move("east")
-
-    def _command_west(self, _invoked_command, _args):
-        """Attempt to move the actor in the west direction."""
-        self.move("west")
-
-    def _command_up(self, _invoked_command, _args):
-        """Attempt to move the actor in the up direction."""
-        self.move("up")
-
-    def _command_down(self, _invoked_command, _args):
-        """Attempt to move the actor in the down direction."""
-        self.move("down")
 
     def _command_sit(self, invoked_command, _args):
         """Change the actor's disposition to sitting."""
@@ -732,7 +715,7 @@ class Mob(Actor):
     def _die(self):
         super(Mob, self)._die()
         self._pre_move("sky")
-        self.room = room.__ROOMS__[room.__PURGATORY__]
+        self.room = room.__PURGATORY__
         self._post_move("sky")
     
 class User(Actor):
@@ -797,7 +780,7 @@ class User(Actor):
     def _die(self):
         super(User, self)._die()
         self.room.actor_leave(self)
-        self.room = room.__ROOMS__[room.__START_ROOM__]
+        self.room = room.__START_ROOM__
         self.room.actor_arrive(self)
         self.notify(__config__.messages['died'])
     
@@ -841,7 +824,7 @@ class User(Actor):
             new_room_id = self.room_id
         else:
             new_room_id = 'room.1'#room.__START_ROOM__
-        self.room = room.get(new_room_id)
+        self.room = new_room_id
         self._post_move("sky")
 
         # listener for client input
@@ -887,7 +870,7 @@ class User(Actor):
         args = args['args']
 
         try:
-            com = wireframe.create(args[0])
+            com = wireframe.create("command."+args[0])
         except wireframe.WireframeException:
             return False
 
@@ -898,9 +881,17 @@ class User(Actor):
                 else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
         else:
             try:
-                getattr(self, "_command_"+com.name)(com, args)
-            except AttributeError as e:
-                debug.log(e, "notice")
+                attr = getattr(self, com.execute['method'])
+            except AttributeError:
+                try:
+                    attr = getattr(self, "_command_"+com.name)
+                except AttributeError as e:
+                    debug.log(e, "notice")
+            try:
+                args = com.execute['args']
+            except AttributeError:
+                pass
+            attr(args)
         return True
 
     def leaving(self, args):
@@ -923,12 +914,12 @@ class User(Actor):
 
     def _pre_move(self, direction):
         super(User, self)._pre_move(direction)
-        self.room.detach('update', self._room_update)
+        self.get_room().detach('update', self._room_update)
 
     def _post_move(self, direction):
         super(User, self)._post_move(direction)
         self._command_look()
-        self.room.attach('update', self._room_update)
+        self.get_room().attach('update', self._room_update)
 
     def _room_update(self, args):
         """Event listener for when the room update fires."""
@@ -942,11 +933,9 @@ class User(Actor):
         client = self.client
         _room = self.room
         self.client = None
-        self.room = None
         with open(User.get_save_file(self.name), 'wb') as fp:
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
         self.client = client
-        self.room = _room
 
     @staticmethod
     def get_save_file(name):
@@ -981,24 +970,25 @@ class User(Actor):
 
         """
 
+        _room = self.get_room()
         args = args or []
         if len(args) <= 1:
             # room and exits
             can_see = self.can_see()
             if can_see:
-                msg = "%s\n%s\n" % (self.room.title, self.room.description)
+                msg = "%s\n%s\n" % (_room.title, _room.description)
             else:
                 msg = __config__.messages["cannot_see_too_dark"]
             msg += "\n[Exits %s]\n" % (
                     "".join(direction[:1] for direction, room in 
-                        self.room.directions.iteritems() if room))
+                        _room.directions.iteritems() if room))
             # items
             #msg += self.room.inventory.inspection(' is here.')
             # actors
-            if self.room.actors:
+            if _room.actors:
                 if can_see:
                     msg += "\n".join(_actor.looked_at().capitalize() for _actor
-                                in self.room.actors if _actor is not self)+"\n"
+                                in _room.actors if _actor is not self)+"\n"
                 else:
                     msg += \
                     __config__.messages["cannot_see_actors_in_room"]+"\n"
@@ -1006,8 +996,8 @@ class User(Actor):
             looking_at = utility.match_partial(
                     args[0], 
                     self.inventory.items, 
-                    self.room.inventory.items, 
-                    self.room.actors)
+                    _room.inventory.items, 
+                    _room.actors)
             if looking_at:
                 msg = looking_at.description.capitalize()
             else:
@@ -1038,18 +1028,20 @@ class User(Actor):
 
         """
 
+        _room = self.get_room()
+
         if len(args) == 1:
             self.notify("Your proficiencies:\n" + \
                     "\n".join(name+": "+str(proficiency.level) \
                     for name, proficiency in 
                         self._get_proficiencies().iteritems()))
-        elif any(mob.role == Mob.ROLE_ACOLYTE for mob in self.room.mobs()):
+        elif any(mob.role == Mob.ROLE_ACOLYTE for mob in _room.mobs()):
             for prof_name, prof in self._get_proficiencies().iteritems():
                 if prof_name.find(args[1]) == 0:
                     if self.practices:
                         self.practices -= 1
                         prof.level += 1
-                        self.room.announce({
+                        _room.announce({
                             self: invoked_command.messages['success_self'] % (prof_name),
                             '*': invoked_command.messages['success_room'] % (str(self).title(), prof_name)
                         })

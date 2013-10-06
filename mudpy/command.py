@@ -1,4 +1,8 @@
-class Command:
+from . import wireframe
+
+class Command(wireframe.Blueprint):
+
+    yaml_tag = "u!command"
 
     def __init__(self):
         self.name = ""
