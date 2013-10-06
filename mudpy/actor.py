@@ -870,7 +870,7 @@ class User(Actor):
         args = args['args']
 
         try:
-            com = wireframe.create("command."+args[0])
+            com = wireframe.create_from_match("command."+args[0])
         except wireframe.WireframeException:
             return False
 

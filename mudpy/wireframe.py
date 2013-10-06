@@ -37,6 +37,19 @@ def run(path):
         except AttributeError:
             pass
 
+def create_from_match(search):
+    parts = search.split('.')
+    _file = parts[-1]
+    _path = os.path.join(*[path, "wireframes"]+parts[0:-1])
+    try:
+        for infile in os.listdir(_path):
+            if infile.startswith(_file):
+                with open(os.path.join(_path, infile), "r") as fp:
+                    return yaml.load(fp)
+    except OSError:
+        pass
+    raise WireframeException("wireframe match not found: "+search)
+
 def create(name):
     """Creates an object from a name, a unique identifier for a wireframe.
 
