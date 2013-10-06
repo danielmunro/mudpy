@@ -23,4 +23,4 @@ rooms:
     description: A temple altar is here.
     lit: true
     directions:
-        north: room.82
+        south: room.1
