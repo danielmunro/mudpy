@@ -7,7 +7,7 @@ listening on the configured port.
 from mudpy import server, debug, client, calendar, actor, wireframe, config
 import sys, os, yaml
 
-# data directory is for storing users, wireframes, and game details
+# data directory is for storing users and game state
 
 __data__ = "data"
 
