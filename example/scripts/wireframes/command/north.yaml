@@ -2,9 +2,6 @@
 name: north
 required_dispositions:
     - standing
-priority: 1
 execute:
-    method: move
-    args: north
-    chain:
-        - {method: look}
+    - {method: move, args: north}
+    - {method: look}

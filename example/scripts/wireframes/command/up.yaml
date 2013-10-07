@@ -2,8 +2,6 @@
 name: up
 required_dispositions:
     - standing
-priority: 1
 execute:
-    method: move
-    args: up
-    chain: [look]
+    - {method: move, args: up}
+    - {method: look}

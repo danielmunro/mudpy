@@ -883,24 +883,10 @@ class User(Actor):
                 else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
             return False
 
-        if 'method' in com.execute:
-            attr = getattr(self, com.execute['method'])
-        else:
-            try:
-                attr = getattr(self, "_command_"+com.name)
-            except AttributeError as e:
-                debug.log(e, "notice")
-
-        if 'args' in com.execute:
-            args = com.execute['args']
-
-        attr(args)
-
-        if 'chain' in com.execute:
-            for chain in com.execute['chain']:
-                attr = getattr(self, chain['method'])
-                args = chain['args'] if 'args' in chain else {}
-                attr(args)
+        for chain in com.execute:
+            method = getattr(self, chain['method'])
+            args = chain['args'] if 'args' in chain else {}
+            method(args)
 
         return True
 

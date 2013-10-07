@@ -2,9 +2,6 @@
 name: west
 required_dispositions:
     - standing
-priority: 1
 execute:
-    method: move
-    args: west
-    chain:
-        - {method: look}
+    - {method: move, args: west}
+    - {method: look}

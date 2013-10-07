@@ -4,4 +4,4 @@ required_dispositions:
     - standing
     - sitting
 execute:
-    method: look
+    - {method: look}
