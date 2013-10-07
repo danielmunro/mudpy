@@ -247,6 +247,9 @@ class Area(wireframe.Blueprint):
             __ROOMS__[room.name] = room
             room.area = self
 
+    def __str__(self):
+        return self.name
+
 class Reporter:
 
     def get_messages(self, messagePart, invoker, receiver = None):
