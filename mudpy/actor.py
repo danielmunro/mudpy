@@ -827,6 +827,8 @@ class User(Actor):
         self.room = new_room_id
         self._post_move("sky")
 
+        self.look()
+
         # listener for client input
         self.client.attach('input', self.check_input)
 
@@ -879,19 +881,27 @@ class User(Actor):
             self.notify("You are incapacitated and cannot do that." \
                 if self.disposition == Disposition.INCAPACITATED \
                 else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
+            return False
+
+        if 'method' in com.execute:
+            attr = getattr(self, com.execute['method'])
         else:
             try:
-                attr = getattr(self, com.execute['method'])
-            except AttributeError:
-                try:
-                    attr = getattr(self, "_command_"+com.name)
-                except AttributeError as e:
-                    debug.log(e, "notice")
-            try:
-                args = com.execute['args']
-            except AttributeError:
-                pass
-            attr(args)
+                attr = getattr(self, "_command_"+com.name)
+            except AttributeError as e:
+                debug.log(e, "notice")
+
+        if 'args' in com.execute:
+            args = com.execute['args']
+
+        attr(args)
+
+        if 'chain' in com.execute:
+            for chain in com.execute['chain']:
+                attr = getattr(self, chain['method'])
+                args = chain['args'] if 'args' in chain else {}
+                attr(args)
+
         return True
 
     def leaving(self, args):
@@ -918,7 +928,6 @@ class User(Actor):
 
     def _post_move(self, direction):
         super(User, self)._post_move(direction)
-        self._command_look()
         self.get_room().attach('update', self._room_update)
 
     def _room_update(self, args):
@@ -964,14 +973,13 @@ class User(Actor):
         name_len = len(name)
         return name.isalpha() and name_len > 2 and name_len < 12
 
-    def _command_look(self, _invoked_command = None, args = None):
+    def look(self, args = []):
         """Describes the room and its inhabitants to the user, including
         actors, items on the ground, and the exits.
 
         """
 
         _room = self.get_room()
-        args = args or []
         if len(args) <= 1:
             # room and exits
             can_see = self.can_see()

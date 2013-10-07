@@ -1,0 +1,7 @@
+!<u!command>
+name: look
+required_dispositions:
+    - standing
+    - sitting
+execute:
+    method: look

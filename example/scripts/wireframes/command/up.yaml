@@ -6,3 +6,4 @@ priority: 1
 execute:
     method: move
     args: up
+    chain: [look]

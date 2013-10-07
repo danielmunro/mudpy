@@ -6,3 +6,5 @@ priority: 1
 execute:
     method: move
     args: west
+    chain:
+        - {method: look}
