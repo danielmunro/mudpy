@@ -17,6 +17,8 @@ rooms:
         long: Hassan is standing here
         race: !<u!race>
             wireframe: race.giant
+        inventory: !<u!inventory>
+            items: []
   - !<u!room>
     name: room.82
     title: The Temple Altar

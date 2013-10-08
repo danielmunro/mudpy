@@ -4,8 +4,12 @@ different ways.
 
 """
 
-class Inventory:
+from . import wireframe
+
+class Inventory(wireframe.Blueprint):
     """A bucket of items."""
+
+    yaml_tag = "u!inventory"
 
     def __init__(self):
         self.items = []
