@@ -8,6 +8,8 @@ rooms:
     title: Temple of Midgaard
     description: A large temple surrounds you, with sculptures of gods adorning the walls.
     lit: true
+    inventory: !<u!inventory>
+        items: []
     directions:
         north: room.82
     actors:
@@ -24,5 +26,7 @@ rooms:
     title: The Temple Altar
     description: A temple altar is here.
     lit: true
+    inventory: !<u!inventory>
+        items: []
     directions:
         south: room.1
