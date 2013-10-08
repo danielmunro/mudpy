@@ -1,4 +1,5 @@
 !<u!race>
+name: giant
 abilities: [hand to hand]
 attributes: {cha: 11, con: 18, dex: 14, int: 12, str: 19, wis: 13}
 is_playable: true
