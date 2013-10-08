@@ -66,7 +66,6 @@ class Actor(wireframe.Blueprint):
         self.curmovement = self.attributes['movement']
         self.sex = "neutral"
         self.room = None
-        self.room_id = 0 # we only save the room id, not the room itself
         self.abilities = []
         self.affects = []
         self.target = None
@@ -684,8 +683,6 @@ class Mob(Actor):
         self.movement_timer = self.movement
         self.respawn = 1
         self.auto_flee = False
-        self.area = None
-        self.role = ''
         super(Mob, self).__init__()
     
     def _decrement_movement_timer(self):
@@ -820,11 +817,8 @@ class User(Actor):
         server.__instance__.heartbeat.attach('cycle', self._update_delay)
 
         # set the room
-        if self.room_id:
-            new_room_id = self.room_id
-        else:
-            new_room_id = 'room.1'#room.__START_ROOM__
-        self.room = new_room_id
+        if not self.room:
+            self.room = 'room.1'#room.__START_ROOM__
         self._post_move("sky")
 
         self.look()
@@ -885,8 +879,7 @@ class User(Actor):
 
         for chain in com.execute:
             method = getattr(self, chain['method'])
-            args = chain['args'] if 'args' in chain else {}
-            method(args)
+            method(chain['args'] if 'args' in chain else args[1:])
 
         return True
 
@@ -922,15 +915,20 @@ class User(Actor):
         if args['actor'] != self:
             self.notify(args['changed'])
 
-    def save(self):
-        """Persists the user as a pickle dump."""
+    def save(self, args = []):
+        """Persisting stuff."""
 
+        if 'area' in args:
+            wireframe.save(self.get_room().get_area())
+
+        """
         client = self.client
         _room = self.room
         self.client = None
         with open(User.get_save_file(self.name), 'wb') as fp:
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
         self.client = client
+        """
 
     @staticmethod
     def get_save_file(name):
@@ -1346,6 +1344,11 @@ class Race(wireframe.Blueprint):
         except KeyError:
             self.proficiencies[prof] = wireframe.create(prof)
             self.proficiencies[prof].level = level
+
+    @classmethod
+    def to_yaml(self, dumper, thing):
+        thing.__dict__ = {'wireframe': 'race.'+str(thing)}
+        return super(Race, self).to_yaml(dumper, thing)
 
     def __str__(self):
         return self.name

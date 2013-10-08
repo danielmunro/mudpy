@@ -67,6 +67,12 @@ def create(name):
     except IOError:
         raise WireframeException("wireframe does not exist: "+name)
 
+def save(thing):
+    
+    wireframe_path = os.path.join(*[path, "areas", str(thing)])+".yaml"
+    with open(wireframe_path, "w") as fp:
+        yaml.dump(thing, fp)
+
 class Blueprint(observer.Observer, yaml.YAMLObject):
 
     @classmethod
@@ -80,13 +86,13 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         self.observers = {}
         return self
 
-    """
     @classmethod
-    def to_yaml(self, dumper, data):
-        del data['observers']
-        node = dumper.represent_mapping(data)
+    def to_yaml(self, dumper, thing):
+        data = thing.__dict__
+        if 'observers' in data:
+            del data['observers']
+        node = dumper.represent_mapping(thing.yaml_tag, data)
         return node
-        """
 
 class WireframeException(Exception):
     pass

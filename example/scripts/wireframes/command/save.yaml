@@ -1,0 +1,4 @@
+!<u!command>
+name: save
+execute:
+    - {method: save}

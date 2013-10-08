@@ -31,7 +31,6 @@ class Room(wireframe.Blueprint):
     yaml_tag = "u!room"
 
     def __init__(self):
-        self.id = 0
         self.name = ''
         self.title = ''
         self.description = ''
@@ -43,7 +42,7 @@ class Room(wireframe.Blueprint):
         self.observers = {}
 
     def get_area(self):
-        return self.area
+        return area(self.area)
     
     def announce(self, messages, add_prompt = True):
         """Will take a message and convey it to the various actors in the
@@ -99,6 +98,12 @@ class Room(wireframe.Blueprint):
         self.dispatch('update', actor=args['actor'],
                                     changed=args['changed'])
     
+    @classmethod
+    def to_yaml(self, dumper, thing):
+        from . import actor
+        thing.actors = [i for i in thing.actors if isinstance(i, actor.Mob)]
+        return super(Room, self).to_yaml(dumper, thing)
+
     def __str__(self):
         return self.name
 
@@ -226,26 +231,11 @@ class Area(wireframe.Blueprint):
         self.location = ""
         self.rooms = []
 
-    """
-    @classmethod
-    def from_yaml(self, loader, node):
-        data = loader.construct_mapping(node)
-        __AREAS__[data['name']] = self
-        print data
-        for room in data['rooms']:
-            print room
-            __ROOMS__[room['name']] = room
-        print __AREAS__
-        print __ROOMS__
-        print self.rooms
-        return data
-    """
-
     def done_init(self):
         __AREAS__[self.name] = self
         for room in self.rooms:
             __ROOMS__[room.name] = room
-            room.area = self
+            room.area = self.name
 
     def __str__(self):
         return self.name
