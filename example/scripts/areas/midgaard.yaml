@@ -1,32 +1,64 @@
 !<u!area>
-name: midgaard
-terrain: urban
 location: outside
+name: midgaard
 rooms:
-  - !<u!room>
-    name: room.1
-    title: Temple of Midgaard
-    description: A large temple surrounds you, with sculptures of gods adorning the walls.
-    lit: true
+- !<u!room>
+  actors:
+  - !<u!mob>
+    abilities: []
+    affects: []
+    alignment: 0
+    attacks: [reg]
+    attributes: {ac_bash: 100, ac_magic: 100, ac_pierce: 100, ac_slash: 100, dam: 1,
+      hit: 1, hp: 20, mana: 100, movement: 100}
+    auto_flee: false
+    curhp: 20
+    curmana: 100
+    curmovement: 100
+    description: ''
+    disposition: standing
+    equipped: {arms: null, body: null, feet: null, finger0: null, finger1: null, float: null,
+      hands: null, head: null, legs: null, light: null, neck0: null, neck1: null,
+      torso: null, waist: null, wield0: null, wield1: null, wrist0: null, wrist1: null}
+    experience: 0
+    experience_per_level: 1000
     inventory: !<u!inventory>
-        items: []
-    directions:
-        north: room.82
-    actors:
-      - !<u!mob>
-        name: mob.1
-        title: hassan
-        long: Hassan is standing here
-        race: !<u!race>
-            wireframe: race.giant
-        inventory: !<u!inventory>
-            items: []
-  - !<u!room>
-    name: room.82
-    title: The Temple Altar
-    description: A temple altar is here.
-    lit: true
-    inventory: !<u!inventory>
-        items: []
-    directions:
-        south: room.1
+      item_count: {}
+      items: []
+    level: 0
+    long: Hassan is standing here
+    movement: 0
+    movement_timer: 0
+    name: mob.1
+    practices: 0
+    proficiencies: {}
+    race: !<u!race> {wireframe: race.giant}
+    respawn: 1
+    room: null
+    sex: neutral
+    target: null
+    title: hassan
+    trained_attributes: {}
+    trains: 0
+  area: midgaard
+  description: A large temple surrounds you, with sculptures of gods adorning the
+    walls.
+  directions: {north: room.82}
+  inventory: !<u!inventory>
+    item_count: {}
+    items: []
+  lit: true
+  name: room.1
+  title: Temple of Midgaard
+- !<u!room>
+  actors: []
+  area: midgaard
+  description: A temple altar is here.
+  directions: {south: room.1}
+  inventory: !<u!inventory>
+    item_count: {}
+    items: []
+  lit: true
+  name: room.82
+  title: The Temple Altar
+terrain: urban

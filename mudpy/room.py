@@ -101,8 +101,10 @@ class Room(wireframe.Blueprint):
     @classmethod
     def to_yaml(self, dumper, thing):
         from . import actor
-        thing.actors = [i for i in thing.actors if isinstance(i, actor.Mob)]
-        return super(Room, self).to_yaml(dumper, thing)
+        import copy
+        persist = copy.copy(thing)
+        persist.actors = [i for i in persist.actors if isinstance(i, actor.Mob)]
+        return super(Room, self).to_yaml(dumper, persist)
 
     def __str__(self):
         return self.name

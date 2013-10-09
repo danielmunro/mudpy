@@ -1347,8 +1347,10 @@ class Race(wireframe.Blueprint):
 
     @classmethod
     def to_yaml(self, dumper, thing):
-        thing.__dict__ = {'wireframe': 'race.'+str(thing)}
-        return super(Race, self).to_yaml(dumper, thing)
+        import copy
+        persist = copy.copy(thing)
+        persist.__dict__ = {'wireframe': 'race.'+str(persist)}
+        return super(Race, self).to_yaml(dumper, persist)
 
     def __str__(self):
         return self.name
