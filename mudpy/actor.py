@@ -996,7 +996,7 @@ class User(Actor):
                 msg = __config__.messages['look_at_nothing']
         self.notify(msg+"\n")
 
-    def _command_affects(self, _args = None):
+    def _affects(self, _args = None):
         """Describes the affects currently active on the user."""
 
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
