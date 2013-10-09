@@ -996,7 +996,7 @@ class User(Actor):
                 msg = __config__.messages['look_at_nothing']
         self.notify(msg+"\n")
 
-    def _command_affects(self, _invoked_command, _args):
+    def _command_affects(self, _args = None):
         """Describes the affects currently active on the user."""
 
         self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
@@ -1259,7 +1259,7 @@ class Ability(wireframe.Blueprint, room.Reporter):
 
         args = args[0]
         try:
-            receiver = utility.match_partial(args[-1], invoker.room.actors)
+            receiver = utility.match_partial(args[-1], invoker.get_room().actors)
         except IndexError:
             receiver = invoker
         if not receiver:
@@ -1270,7 +1270,7 @@ class Ability(wireframe.Blueprint, room.Reporter):
             if success:
                 self.perform(receiver)
             else:
-                receiver.room.announce(self.get_messages('fail', invoker, receiver))
+                receiver.get_room().announce(self.get_messages('fail', invoker, receiver))
         else:
             invoker.notify(__config__.messages['apply_cost_fail'])
 
