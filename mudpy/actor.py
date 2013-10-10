@@ -248,12 +248,8 @@ class Actor(wireframe.Blueprint):
 
         # award experience and check for level change
         self.experience += experience
-        diff = self.experience / self.experience_per_level
-        if diff > self.level:
-            gain = 0
-            while gain < diff:
-                self._level_up()
-                gain += 1
+        if self.qualifies_for_level():
+            self.notify(__config__.messages["qualifies_for_level"])
 
     def set_experience_per_level(self):
         """Based on the current configuration of proficiencies, calculate how
@@ -493,7 +489,10 @@ class Actor(wireframe.Blueprint):
         self.attach('changed', _room.actor_changed)
         _room.actor_arrive(self, direction)
 
-    def _level_up(self):
+    def qualifies_for_level(self):
+        return self.experience / self.experience_per_level > self.level
+
+    def level_up(self):
         """Increase the actor's level."""
 
         self.level += 1
@@ -791,8 +790,8 @@ class User(Actor):
             server.__instance__.heartbeat.attach('cycle', self.client.poll)
             self.last_delay = 0
     
-    def _level_up(self):
-        super(User, self)._level_up()
+    def level_up(self):
+        super(User, self).level_up()
         self.notify(__config__.messages['level_up'])
 
     def perform_ability(self, ability):

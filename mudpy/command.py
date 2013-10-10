@@ -16,7 +16,8 @@ def check_input(event):
     return command.run(user, params)
 
 def level(actor):
-    actor.notify("booyah")
+    if actor.qualifies_for_level():
+        actor.level_up()
 
 def move(actor, direction = None):
     """Try to move the actor in the given direction."""
@@ -83,17 +84,19 @@ class Command(wireframe.Blueprint):
         """Takes an actor and input arguments and runs the command."""
 
         for req in self.required:
-            req_prop = req['property']
             req_value = req['value']
-            attr = getattr(actor, req_prop)
-            if not attr in req_value:
-                fail = req['fail']
-                if isinstance(req_value, list):
-                    fail_val = " or ".join(req_value)
-                else:
-                    fail_val = req_value
-                actor.notify((fail+"\n") % fail_val)
-                return True
+            if 'property' in req:
+                req_prop = req['property']
+                attr = getattr(actor, req_prop)
+                if not attr in req_value:
+                    self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
+                    return True
+            elif 'method' in req:
+                req_method = req['method']
+                attr = getattr(actor, req_method)
+                if not attr() == req_value:
+                    self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
+                    return True
 
         for chain in self.execute:
             _args = chain['args'] if 'args' in chain else args
@@ -106,6 +109,16 @@ class Command(wireframe.Blueprint):
             globals()[method](actor, *_args)
 
         return True
+    
+    def fail(self, actor, req_value, fail):
+        if '%s' in fail:
+            if isinstance(req_value, list):
+                fail_val = " or ".join(req_value)
+            else:
+                fail_val = req_value
+            actor.notify((fail+"\n") % fail_val)
+        else:
+            actor.notify(fail+"\n")
     
     def __str__(self):
         return self.name
