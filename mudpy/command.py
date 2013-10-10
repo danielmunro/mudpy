@@ -15,6 +15,9 @@ def check_input(event):
 
     return command.run(user, params)
 
+def level(actor):
+    actor.notify("booyah")
+
 def move(actor, direction = None):
     """Try to move the actor in the given direction."""
 
@@ -60,7 +63,7 @@ def look(actor, _args = []):
             msg = __config__.messages['look_at_nothing']
     actor.notify(msg)
 
-def affects(actor, _args = []):
+def affects(actor):
     """Describes the affects currently active on the user."""
 
     actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
@@ -100,7 +103,7 @@ class Command(wireframe.Blueprint):
             if handled:
                 return True
             method = chain['method']
-            globals()[method](actor, _args)
+            globals()[method](actor, *_args)
 
         return True
     

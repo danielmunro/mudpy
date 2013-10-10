@@ -92,7 +92,8 @@ class Actor(wireframe.Blueprint):
             if self.target:
                 self.notify(__config__.messages['move_failed_fighting'])
                 return True
-            if not self.last_args in self.get_room().directions:
+            direction = self.last_args[0]
+            if not direction in self.get_room().directions:
                 self.notify(__config__.messages['move_failed_no_room'])
                 return True
             if self._get_movement_cost() > self.curmovement:
@@ -909,7 +910,10 @@ class User(Actor):
         not exist, the client is trying to create a new user.
 
         """
-        return wireframe.create(name.capitalize(), "data")
+        try:
+            return wireframe.create(name.capitalize(), "data")
+        except wireframe.WireframeException:
+            pass
 
     @staticmethod
     def is_valid_name(name):

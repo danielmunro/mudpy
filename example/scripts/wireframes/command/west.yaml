@@ -3,5 +3,5 @@ name: west
 required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
 execute:
-    - {method: move, args: west}
+    - {method: move, args: [west]}
     - {method: look}
