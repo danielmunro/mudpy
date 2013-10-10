@@ -50,7 +50,7 @@ def create_from_match(search):
         pass
     raise WireframeException("wireframe match not found: "+search)
 
-def create(name):
+def create(name, subdirectory = "wireframes"):
     """Creates an object from a name, a unique identifier for a wireframe.
 
     Eg:
@@ -59,7 +59,7 @@ def create(name):
     
     """
 
-    wireframe_path = os.path.join(*[path, "wireframes"]+name.split('.'))+".yaml"
+    wireframe_path = os.path.join(*[path, subdirectory]+name.split('.'))+".yaml"
 
     try:
         with open(wireframe_path, "r") as fp:
@@ -67,9 +67,9 @@ def create(name):
     except IOError:
         raise WireframeException("wireframe does not exist: "+name)
 
-def save(thing):
+def save(thing, subdirectory = "areas"):
     
-    wireframe_path = os.path.join(*[path, "areas", str(thing)])+".yaml"
+    wireframe_path = os.path.join(*[path, subdirectory, str(thing)])+".yaml"
     with open(wireframe_path, "w") as fp:
         yaml.dump(thing, fp)
 

@@ -6,7 +6,7 @@ how they interact with the world.
 from __future__ import division
 from . import debug, room, utility, server, proficiency, item, \
                 attributes, observer, command, affect, calendar, wireframe
-import time, random, os, pickle, re
+import time, random, os, re
 
 __SAVE_DIR__ = 'data'
 __config__ = None
@@ -707,6 +707,8 @@ class Mob(Actor):
 class User(Actor):
     """The actor controlled by a client connected by the server."""
 
+    yaml_tag = "u!user"
+
     def __init__(self):
         self.delay_counter = 0
         self.last_delay = 0
@@ -714,6 +716,7 @@ class User(Actor):
         self.practices = 5
         self.client = None
         self.observers = {}
+        self.role = 'player'
         super(User, self).__init__()
 
     def is_updateable(self):
@@ -879,20 +882,20 @@ class User(Actor):
         if args['actor'] != self:
             self.notify(args['changed'])
 
+    @classmethod
+    def to_yaml(self, dumper, thing):
+        import copy
+        persist = copy.copy(thing)
+        del persist.client
+        return super(User, self).to_yaml(dumper, persist)
+
     def save(self, args = []):
         """Persisting stuff."""
 
-        if 'area' in args:
+        if "area" in args:
             wireframe.save(self.get_room().get_area())
-
-        """
-        client = self.client
-        _room = self.room
-        self.client = None
-        with open(User.get_save_file(self.name), 'wb') as fp:
-            pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
-        self.client = client
-        """
+        else:
+            wireframe.save(self, "data")
 
     @staticmethod
     def get_save_file(name):
@@ -906,13 +909,7 @@ class User(Actor):
         not exist, the client is trying to create a new user.
 
         """
-
-        user = None
-        user_file = User.get_save_file(name)
-        if os.path.isfile(user_file):
-            with open(user_file, 'rb') as fp:
-                user = pickle.load(fp)
-        return user
+        return wireframe.create(name.capitalize(), "data")
 
     @staticmethod
     def is_valid_name(name):
