@@ -1,7 +1,6 @@
 !<u!command>
 name: look
-required_dispositions:
-    - standing
-    - sitting
+required:
+    - {property: disposition, value: [standing, sitting], fail: "You need to be %s to do that."}
 execute:
     - {method: look}

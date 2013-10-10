@@ -86,6 +86,23 @@ class Actor(wireframe.Blueprint):
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
 
+    def check_action(self, _args = None):
+
+        if "move" in self.last_action:
+            if self.target:
+                self.notify(__config__.messages['move_failed_fighting'])
+                return True
+            if not self.last_args in self.get_room().directions:
+                self.notify(__config__.messages['move_failed_no_room'])
+                return True
+            if self._get_movement_cost() > self.curmovement:
+                self.notify(__config__.messages['move_failed_too_tired'])
+                return True
+
+        if self.disposition == Disposition.INCAPACITATED:
+            self.notify(__config__.messages['move_failed_incapacitated'])
+            return True
+
     def get_room(self):
         return room.get(self.room)
 
@@ -209,34 +226,6 @@ class Actor(wireframe.Blueprint):
             description = 'is in excellent condition'
 
         return str(self).title()+' '+description+'.'
-    
-    def move(self, direction = None):
-        """Try to move the actor in the given direction."""
-        direction = direction or random.choice([direction for direction, _room 
-            in self.room.directions.iteritems() if _room])
-
-        if self.target:
-            self.notify(__config__.messages['move_failed_fighting'])
-            return
-
-        if self.disposition == Disposition.INCAPACITATED:
-            self.notify(__config__.messages['move_failed_incapacitated'])
-            return
-
-        new_room = self.get_room().directions[direction]
-        if not new_room:
-            self.notify(__config__.messages['move_failed_no_room'])
-            return
-
-        cost = self._get_movement_cost()
-        if(self.curmovement >= cost):
-            # actor is leaving, subtract movement cost
-            self.curmovement -= cost
-            self._pre_move(direction)
-            self.room = new_room
-            self._post_move(room.Direction.get_reverse(direction))
-        else:
-            self.notify(__config__.messages['move_failed_too_tired'])
     
     def reward_kill(self, victim):
         """Applies kill experience from the victim to the killer and checks
@@ -821,10 +810,11 @@ class User(Actor):
             self.room = 'room.1'#room.__START_ROOM__
         self._post_move("sky")
 
-        self.look()
+        command.look(self)
 
-        # listener for client input
-        self.client.attach('input', self.check_input)
+        # listener for client input to trigger commands in the game
+        self.client.attach('input', command.check_input)
+        self.attach('action', self.check_action)
 
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
@@ -856,32 +846,6 @@ class User(Actor):
         """
 
         self.notify(args['changed'])
-
-    def check_input(self, args):
-        """Takes input from the user and tries to find a match against known
-        commands.
-
-        """
-
-        args = args['args']
-
-        try:
-            com = wireframe.create_from_match("command."+args[0])
-        except wireframe.WireframeException:
-            return False
-
-        if com.required_dispositions and self.disposition not in \
-                com.required_dispositions:
-            self.notify("You are incapacitated and cannot do that." \
-                if self.disposition == Disposition.INCAPACITATED \
-                else "You need to be "+(" or ".join(com.required_dispositions))+" to do that.")
-            return False
-
-        for chain in com.execute:
-            method = getattr(self, chain['method'])
-            method(chain['args'] if 'args' in chain else args[1:])
-
-        return True
 
     def leaving(self, args):
         super(User, self).leaving(args)
@@ -956,51 +920,6 @@ class User(Actor):
 
         name_len = len(name)
         return name.isalpha() and name_len > 2 and name_len < 12
-
-    def look(self, args = []):
-        """Describes the room and its inhabitants to the user, including
-        actors, items on the ground, and the exits.
-
-        """
-
-        _room = self.get_room()
-        if len(args) <= 1:
-            # room and exits
-            can_see = self.can_see()
-            if can_see:
-                msg = "%s\n%s\n" % (_room.title, _room.description)
-            else:
-                msg = __config__.messages["cannot_see_too_dark"]
-            msg += "\n[Exits %s]\n" % (
-                    "".join(direction[:1] for direction, room in 
-                        _room.directions.iteritems() if room))
-            # items
-            #msg += self.room.inventory.inspection(' is here.')
-            # actors
-            if _room.actors:
-                if can_see:
-                    msg += "\n".join(_actor.looked_at().capitalize() for _actor
-                                in _room.actors if _actor is not self)+"\n"
-                else:
-                    msg += \
-                    __config__.messages["cannot_see_actors_in_room"]+"\n"
-        else:
-            looking_at = utility.match_partial(
-                    args[0], 
-                    self.inventory.items, 
-                    _room.inventory.items, 
-                    _room.actors)
-            if looking_at:
-                msg = looking_at.description.capitalize()
-            else:
-                msg = __config__.messages['look_at_nothing']
-        self.notify(msg+"\n")
-
-    def _affects(self, _args = None):
-        """Describes the affects currently active on the user."""
-
-        self.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
-                    " ticks" for x in self.affects))
 
     def _command_sit(self, invoked_command, args):
         super(User, self)._command_sit(invoked_command, args)
@@ -1181,7 +1100,9 @@ class Attack:
         self.damroll = 0
         self.defroll = 0
 
-        self.aggressor.dispatch('attackstart', attack=self)
+        handled = self.aggressor.dispatch('attack_start', attack=self)
+        if handled:
+            return
 
         # initial rolls for attack/defense
         hit_roll = aggressor.get_attribute('hit') + get_attr_mod(aggressor, 'dex')

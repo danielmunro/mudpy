@@ -1,4 +1,4 @@
 !<u!command>
 name: affects
 execute:
-    - {method: _affects}
+    - {method: affects}

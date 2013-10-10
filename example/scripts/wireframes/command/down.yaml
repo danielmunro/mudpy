@@ -1,7 +1,7 @@
 !<u!command>
 name: down
-required_dispositions:
-    - standing
+required:
+    - {property: disposition, value: standing, fail: "You need to be %s to do that."}
 execute:
     - {method: move, args: down}
     - {method: look}
