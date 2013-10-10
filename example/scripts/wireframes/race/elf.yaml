@@ -1,4 +1,5 @@
 !<u!race>
+name: elf
 abilities:
     - !<u!ability>
         wireframe: ability.sneak
