@@ -28,13 +28,10 @@ def move(actor, direction = None):
 
     if not direction:
         direction = random.choice([direction for direction, _room 
-            in actor.get_room().directions.iteritems() if _room])
+            in curroom.directions.iteritems() if _room])
 
-    new_room = actor.get_room().directions[direction]
     actor.curmovement -= actor._get_movement_cost()
-    actor._pre_move(direction)
-    actor.room = new_room
-    actor._post_move(room.Direction.get_reverse(direction))
+    actor.get_room().move_actor(actor, direction)
 
 def look(actor, _args = []):
     _room = actor.get_room()

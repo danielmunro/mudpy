@@ -477,20 +477,6 @@ class Actor(wireframe.Blueprint):
         else:
             server.__instance__.heartbeat.detach('pulse', self._do_regular_attacks)
 
-    def _pre_move(self, direction):
-        """Called before an actor moves."""
-
-        _room = self.get_room()
-        self.detach('changed', _room.actor_changed)
-        _room.actor_leave(self, direction)
-
-    def _post_move(self, direction):
-        """Called after an actor moves."""
-
-        _room = self.get_room()
-        self.attach('changed', _room.actor_changed)
-        _room.actor_arrive(self, direction)
-
     def qualifies_for_level(self):
         return self.experience / self.experience_per_level > self.level
 
@@ -702,9 +688,7 @@ class Mob(Actor):
     
     def _die(self):
         super(Mob, self)._die()
-        self._pre_move("sky")
         self.room = room.__PURGATORY__
-        self._post_move("sky")
     
 class User(Actor):
     """The actor controlled by a client connected by the server."""
@@ -770,9 +754,10 @@ class User(Actor):
     
     def _die(self):
         super(User, self)._die()
-        self.room.actor_leave(self)
+        self.get_room()
+        curroom.leaving(self)
         self.room = room.__START_ROOM__
-        self.room.actor_arrive(self)
+        self.get_room().arriving(self)
         self.notify(__config__.messages['died'])
     
     def _update_delay(self):
@@ -813,7 +798,8 @@ class User(Actor):
         # set the room
         if not self.room:
             self.room = 'room.1'#room.__START_ROOM__
-        self._post_move("sky")
+
+        self.get_room().arriving(self)
 
         command.look(self)
 
@@ -852,30 +838,21 @@ class User(Actor):
         self.notify(args['changed'])
 
     def leaving(self, args):
-        super(User, self).leaving(args)
-        if not args['actor'] == self and args['direction']:
+        if not args['actor'] == self:
+            direction = args['direction'] if args['direction'] else 'sky'
             if self.can_see():
                 actor_seen = args['actor']
             else:
                 actor_seen = "Someone"
-            self.notify(__config__.messages['actor_leaves_room'] % (actor_seen, args['direction']))
+            self.notify(__config__.messages['actor_leaves_room'] % (actor_seen, direction))
 
     def arriving(self, args):
-        super(User, self).arriving(args)
-        if args['direction']:
-            if self.can_see():
-                actor_seen = args['actor']
-            else:
-                actor_seen = "Someone"
-            self.notify(__config__.messages['actor_enters_room'] % (actor_seen, args['direction']))
-
-    def _pre_move(self, direction):
-        super(User, self)._pre_move(direction)
-        self.get_room().detach('update', self._room_update)
-
-    def _post_move(self, direction):
-        super(User, self)._post_move(direction)
-        self.get_room().attach('update', self._room_update)
+        direction = args['direction'] if args['direction'] else 'sky'
+        if self.can_see():
+            actor_seen = args['actor']
+        else:
+            actor_seen = "Someone"
+        self.notify(__config__.messages['actor_enters_room'] % (actor_seen, direction))
 
     def _room_update(self, args):
         """Event listener for when the room update fires."""

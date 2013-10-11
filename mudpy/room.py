@@ -82,14 +82,21 @@ class Room(wireframe.Blueprint):
             except KeyError:
                 self.directions[direction.name] = None
 
-    def actor_leave(self, actor, direction=""):
+    def move_actor(self, actor, direction):
+        if actor in self.actors:
+            self.leaving(actor, direction)
+            new_room = get(self.directions[direction])
+            new_room.arriving(actor, Direction.get_reverse(direction))
+
+    def leaving(self, actor, direction = ""):
         self.dispatch('leaving', actor=actor, direction=direction)
         self.actors.remove(actor)
         self.detach('leaving', actor.leaving)
         self.detach('arriving', actor.arriving)
-    
-    def actor_arrive(self, actor, direction=""):
+
+    def arriving(self, actor, direction = ""):
         self.actors.append(actor)
+        actor.room = self.name
         self.dispatch('arriving', actor=actor, direction=direction)
         self.attach('leaving', actor.leaving)
         self.attach('arriving', actor.arriving)
