@@ -13,7 +13,9 @@ def check_input(event):
     except wireframe.WireframeException:
         return False
 
-    return command.run(user, params)
+    command.run(user, params)
+
+    return True
 
 def level(actor):
     if actor.qualifies_for_level():
@@ -91,25 +93,21 @@ class Command(wireframe.Blueprint):
                 attr = getattr(actor, req_prop)
                 if not attr in req_value:
                     self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
-                    return True
+                    return
             elif 'method' in req:
                 req_method = req['method']
                 attr = getattr(actor, req_method)
                 if not attr() == req_value:
                     self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
-                    return True
+                    return
 
         for chain in self.execute:
             _args = chain['args'] if 'args' in chain else args
-            actor.last_action = chain['method']
-            actor.last_args = _args
-            handled = actor.dispatch('action')
-            if handled:
-                return True
             method = chain['method']
-            globals()[method](actor, *_args)
-
-        return True
+            if actor.can(method, _args):
+                globals()[method](actor, *_args)
+            else:
+                return
     
     def fail(self, actor, req_value, fail):
         if '%s' in fail:

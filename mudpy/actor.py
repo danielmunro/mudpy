@@ -86,23 +86,25 @@ class Actor(wireframe.Blueprint):
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
 
-    def check_action(self, _args = None):
+    def can(self, action, args = []):
 
-        if "move" in self.last_action:
+        if "move" in action:
             if self.target:
                 self.notify(__config__.messages['move_failed_fighting'])
-                return True
-            direction = self.last_args[0]
+                return False
+            direction = args[0]
             if not direction in self.get_room().directions:
                 self.notify(__config__.messages['move_failed_no_room'])
-                return True
+                return False
             if self._get_movement_cost() > self.curmovement:
                 self.notify(__config__.messages['move_failed_too_tired'])
-                return True
+                return False
 
         if self.disposition == Disposition.INCAPACITATED:
             self.notify(__config__.messages['move_failed_incapacitated'])
-            return True
+            return False
+
+        return True
 
     def get_room(self):
         return room.get(self.room)
@@ -817,7 +819,6 @@ class User(Actor):
 
         # listener for client input to trigger commands in the game
         self.client.attach('input', command.check_input)
-        self.attach('action', self.check_action)
 
         # listener for the server tick
         server.__instance__.heartbeat.attach('tick', self._tick)
