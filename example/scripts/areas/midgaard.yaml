@@ -29,7 +29,8 @@ rooms:
     long: Hassan is standing here
     movement: 0
     movement_timer: 0
-    name: mob.1
+    name: hassan
+    description: "Standing over 12 feet tall, Hassan the giant guards the temple."
     practices: 0
     proficiencies: {}
     race: !<u!race> {wireframe: race.giant}

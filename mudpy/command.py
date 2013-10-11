@@ -53,13 +53,14 @@ def look(actor, _args = []):
                 msg += \
                 __config__.messages["cannot_see_actors_in_room"]+"\n"
     else:
+        from . import utility
         looking_at = utility.match_partial(
-                _args[0], 
+                _args, 
                 actor.inventory.items, 
                 _room.inventory.items, 
                 _room.actors)
         if looking_at:
-            msg = looking_at.description.capitalize()
+            msg = looking_at.description
         else:
             msg = __config__.messages['look_at_nothing']
     actor.notify(msg)
