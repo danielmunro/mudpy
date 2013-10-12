@@ -1,4 +1,10 @@
 !<u!command>
 name: wake
+action: change_disposition
+messages:
+    self: "You stand up."
+    all: "%s stands up."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
 execute:
-    - {method: wake}
+    - actor.wake()

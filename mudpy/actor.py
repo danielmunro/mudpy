@@ -76,6 +76,7 @@ class Actor(wireframe.Blueprint):
         self.disposition = Disposition.STANDING
         self.proficiencies = dict()
         self.attacks = ['reg']
+        self.last_command = None
         self.set_experience_per_level()
         
         self.equipped = dict((position, None) for position in ['light',
@@ -110,10 +111,9 @@ class Actor(wireframe.Blueprint):
         return room.get(self.room)
 
     def _attribute(self, attr):
-        try:
+        if attr in self.attributes:
             return self.attributes[attr]
-        except KeyError:
-            return 0
+        return 0
 
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
@@ -839,8 +839,12 @@ class User(Actor):
     def room_update(self, args):
         """Event listener for when the room update fires."""
 
-        if args['actor'] != self:
-            self.notify(args['changed'])
+        actor = args['actor']
+
+        if actor is self:
+            self.notify(actor.last_command.messages['self'])
+        else:
+            self.notify(actor.last_command.messages['all'] % str(actor).title())
 
     @classmethod
     def to_yaml(self, dumper, thing):

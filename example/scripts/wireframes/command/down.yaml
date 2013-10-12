@@ -3,5 +3,5 @@ name: down
 required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
 execute:
-    - {method: move, args: [down]}
-    - {method: look}
+    - move(actor, 'down')
+    - look(actor)

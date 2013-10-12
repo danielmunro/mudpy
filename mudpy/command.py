@@ -1,8 +1,6 @@
 from . import wireframe
 import random
 
-__config__ = None
-
 def check_input(event):
     args = event['args']
     user = event['user']
@@ -71,49 +69,37 @@ def affects(actor):
     actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
                 " ticks" for x in actor.affects))
 
-def sit(actor):
-    """Change the actor's disposition to sitting."""
-
-    actor.sit()
-    actor.notify(__config__.messages['sit_self'])
-    actor.get_room().dispatch(
-            'actor_changed', 
-            actor=actor, 
-            changed=__config__.messages['sit_room'] % (str(actor).title()))
-
-def wake(actor):
-    """Change the actor's disposition to standing."""
-
-    actor.wake()
-    actor.notify(__config__.messages['wake_self'])
-    actor.get_room().dispatch(
-            'actor_changed', 
-            actor=actor, 
-            changed=__config__.messages['wake_room'] % (str(actor).title()))
-
-def sleep(actor):
-    """Change the actor's disposition to sleeping."""
-
-    actor.sleep()
-    actor.notify(__config__.messages['sleep_self'])
-    actor.get_room().dispatch(
-            'actor_changed', 
-            actor=actor, 
-            changed=__config__.messages['sleep_room'] % (str(actor).title()))
-
 class Command(wireframe.Blueprint):
 
     yaml_tag = "u!command"
 
     def __init__(self):
         self.name = ""
+        self.action = ""
         self.required = []
         self.messages = {}
+        self.dispatches = {}
         self.execute = []
 
     def run(self, actor, args):
         """Takes an actor and input arguments and runs the command."""
 
+        handled = self.required_chain(actor)
+        if handled:
+            return
+
+        self.execute_chain(actor, args)
+
+    def execute_chain(self, actor, args):
+        if actor.can(self.action):
+            actor.last_command = self
+            handled = self.dispatch_chain(actor)
+            if handled:
+                return
+            for e in self.execute:
+                eval(e)
+
+    def required_chain(self, actor):
         for req in self.required:
             req_value = req['value']
             if 'property' in req:
@@ -121,22 +107,21 @@ class Command(wireframe.Blueprint):
                 attr = getattr(actor, req_prop)
                 if not attr in req_value:
                     self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
-                    return
+                    return True
             elif 'method' in req:
                 req_method = req['method']
                 attr = getattr(actor, req_method)
                 if not attr() == req_value:
                     self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
-                    return
-
-        for chain in self.execute:
-            _args = chain['args'] if 'args' in chain else args
-            method = chain['method']
-            if actor.can(method, _args):
-                globals()[method](actor, *_args)
-            else:
-                return
+                    return True
     
+    def dispatch_chain(self, actor):
+        for d in self.dispatches:
+            call = d['object']+".dispatch('"+d['event']+"', actor=actor)"
+            handled = eval(call)
+            if handled:
+                return True
+
     def fail(self, actor, req_value, fail):
         if '%s' in fail:
             if isinstance(req_value, list):

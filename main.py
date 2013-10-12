@@ -4,7 +4,7 @@ listening on the configured port.
 
 """
 
-from mudpy import server, debug, client, calendar, actor, wireframe, config, command
+from mudpy import server, debug, client, calendar, actor, wireframe, config
 import sys, os, yaml
 
 # data directory is for storing users and game state
@@ -43,7 +43,6 @@ server.__config__ = wireframe.create("config.server")
 client.__config__ = wireframe.create("config.client")
 calendar.__config__ = wireframe.create("config.calendar")
 actor.__config__ = wireframe.create("config.actor")
-command.__config__ = wireframe.create("config.command")
 
 # have the server start listening for connections
 server.__instance__.start_listening(client.ClientFactory())

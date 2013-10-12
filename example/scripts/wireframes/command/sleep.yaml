@@ -1,4 +1,10 @@
 !<u!command>
 name: sleep
+action: change_disposition
+messages:
+    self: "You go to sleep."
+    all: "%s goes to sleep."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
 execute:
-    - {method: sleep}
+    - actor.sleep()

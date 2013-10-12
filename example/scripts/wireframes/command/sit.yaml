@@ -1,4 +1,10 @@
 !<u!command>
 name: sit
+action: change_disposition
+messages:
+    self: "You sit down and rest."
+    all: "%s sits down and rests."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
 execute:
-    - {method: sit}
+    - actor.sit()
