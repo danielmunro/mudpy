@@ -2,6 +2,10 @@
 name: up
 required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
+messages:
+    all: "%s leaves heading up."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
 execute:
     - move(actor, 'up')
     - look(actor)

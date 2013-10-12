@@ -1,5 +1,10 @@
 !<u!command>
 name: down
+action: move
+messages:
+    all: "%s leaves heading down."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
 required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
 execute:

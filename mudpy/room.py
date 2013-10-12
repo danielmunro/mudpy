@@ -89,18 +89,12 @@ class Room(wireframe.Blueprint):
             new_room.arriving(actor, Direction.get_reverse(direction))
 
     def leaving(self, actor, direction = ""):
-        self.dispatch('leaving', actor=actor, direction=direction)
         self.actors.remove(actor)
-        self.detach('leaving', actor.leaving)
-        self.detach('arriving', actor.arriving)
         self.detach('actor_changed', actor.room_update)
 
     def arriving(self, actor, direction = ""):
         self.actors.append(actor)
         actor.room = self.name
-        self.dispatch('arriving', actor=actor, direction=direction)
-        self.attach('leaving', actor.leaving)
-        self.attach('arriving', actor.arriving)
         self.attach('actor_changed', actor.room_update)
     
     @classmethod

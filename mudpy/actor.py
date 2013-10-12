@@ -304,16 +304,6 @@ class Actor(wireframe.Blueprint):
             server.__instance__.heartbeat.attach('tick', aff.countdown_timeout)
             aff.attach('end', self._end_affect)
 
-    def leaving(self, _args):
-        """Called when an actor leaves a room."""
-
-        pass
-
-    def arriving(self, _args):
-        """Called when an actor enters a new room."""
-
-        pass
-
     def set_target(self, target = None):
         """Sets up a new target for the actor."""
 
@@ -338,6 +328,9 @@ class Actor(wireframe.Blueprint):
 
     def can_see(self):
         """Can the user see?"""
+
+        if self.disposition is Disposition.SLEEPING:
+            return False
 
         _room = self.get_room()
 
@@ -819,23 +812,6 @@ class User(Actor):
 
         self.notify(args['changed'])
 
-    def leaving(self, args):
-        if not args['actor'] == self:
-            direction = args['direction'] if args['direction'] else 'sky'
-            if self.can_see():
-                actor_seen = args['actor']
-            else:
-                actor_seen = "Someone"
-            self.notify(__config__.messages['actor_leaves_room'] % (actor_seen, direction))
-
-    def arriving(self, args):
-        direction = args['direction'] if args['direction'] else 'sky'
-        if self.can_see():
-            actor_seen = args['actor']
-        else:
-            actor_seen = "Someone"
-        self.notify(__config__.messages['actor_enters_room'] % (actor_seen, direction))
-
     def room_update(self, args):
         """Event listener for when the room update fires."""
 
@@ -843,7 +819,7 @@ class User(Actor):
 
         if actor is self:
             self.notify(actor.last_command.messages['self'])
-        else:
+        elif self.can_see():
             self.notify(actor.last_command.messages['all'] % str(actor).title())
 
     @classmethod

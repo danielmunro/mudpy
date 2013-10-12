@@ -2,6 +2,10 @@
 name: south
 required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
+messages:
+    all: "%s leaves heading south."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
 execute:
     - move(actor, 'south')
     - look(actor)
