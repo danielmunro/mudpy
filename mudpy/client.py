@@ -31,7 +31,7 @@ class Client(observer.Observer, Protocol):
         """Called when a client loses their connection."""
 
         self.client_factory.dispatch("destroyed", client=self)
-        self.user.room.actors.remove(self.user)
+        self.user.get_room().move_actor(self.user)
         self.transport.loseConnection()
     
     def dataReceived(self, data):

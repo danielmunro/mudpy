@@ -82,11 +82,12 @@ class Room(wireframe.Blueprint):
             except KeyError:
                 self.directions[direction.name] = None
 
-    def move_actor(self, actor, direction):
+    def move_actor(self, actor, direction = None):
         if actor in self.actors:
             self.leaving(actor, direction)
-            new_room = get(self.directions[direction])
-            new_room.arriving(actor, Direction.get_reverse(direction))
+            if direction:
+                new_room = get(self.directions[direction])
+                new_room.arriving(actor, Direction.get_reverse(direction))
 
     def leaving(self, actor, direction = ""):
         self.actors.remove(actor)

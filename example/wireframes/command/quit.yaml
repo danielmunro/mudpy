@@ -1,0 +1,11 @@
+!<u!command>
+name: quit
+required:
+    - {property: yaml_tag, value: u!user}
+messages:
+    all: "%s disappears in a puff of smoke."
+dispatches:
+    - {object: actor.get_room(), event: actor_changed}
+execute:
+    - actor.save()
+    - actor.client.disconnect()

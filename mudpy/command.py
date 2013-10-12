@@ -126,7 +126,7 @@ class Command(wireframe.Blueprint):
             else:
                 fail_val = req_value
             actor.notify((fail+"\n") % fail_val)
-        else:
+        elif fail:
             actor.notify(fail+"\n")
     
     def __str__(self):

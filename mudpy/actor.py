@@ -862,18 +862,6 @@ class User(Actor):
         name_len = len(name)
         return name.isalpha() and name_len > 2 and name_len < 12
 
-    def _command_sit(self, invoked_command, args):
-        super(User, self)._command_sit(invoked_command, args)
-        self.notify(invoked_command.messages['sit_self'])
-
-    def _command_wake(self, invoked_command, args):
-        super(User, self)._command_wake(invoked_command, args)
-        self.notify(invoked_command.messages['wake_self'])
-
-    def _command_sleep(self, invoked_command, args):
-        super(User, self)._command_sleep(invoked_command, args)
-        self.notify(invoked_command.messages['sleep_self'])
-
     def _command_practice(self, invoked_command, args):
         """Describes proficiency information to the user and if an acolyte is
         present, allows the user to get better at those proficiencies.
@@ -903,12 +891,6 @@ class User(Actor):
                 self.notify(invoked_command.messages['not_proficiency'])
         else:
             self.notify(invoked_command.messages['no_acolyte'])
-
-    def _command_quit(self, _invoked_command, _args):
-        """Saves and disconnects the user."""
-
-        self.save()
-        self.client.disconnect()
 
     def _command_equipped(self, _invoked_command, _args):
         """Tells the user what they have equipped."""
