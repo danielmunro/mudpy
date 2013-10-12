@@ -17,9 +17,6 @@ def check_input(event):
 
     return True
 
-def level(actor):
-    actor.level_up()
-
 def move(actor, direction = None):
     """Try to move the actor in the given direction."""
 
