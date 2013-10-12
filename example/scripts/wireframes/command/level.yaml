@@ -1,0 +1,6 @@
+!<u!command>
+name: level
+required:
+    - {method: qualifies_for_level, value: true, fail: "You are not qualified to level up."}
+execute:
+    - {method: level}
