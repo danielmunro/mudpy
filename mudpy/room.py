@@ -93,6 +93,7 @@ class Room(wireframe.Blueprint):
         self.actors.remove(actor)
         self.detach('leaving', actor.leaving)
         self.detach('arriving', actor.arriving)
+        self.detach('actor_changed', actor.room_update)
 
     def arriving(self, actor, direction = ""):
         self.actors.append(actor)
@@ -100,10 +101,7 @@ class Room(wireframe.Blueprint):
         self.dispatch('arriving', actor=actor, direction=direction)
         self.attach('leaving', actor.leaving)
         self.attach('arriving', actor.arriving)
-
-    def actor_changed(self, args):
-        self.dispatch('update', actor=args['actor'],
-                                    changed=args['changed'])
+        self.attach('actor_changed', actor.room_update)
     
     @classmethod
     def to_yaml(self, dumper, thing):

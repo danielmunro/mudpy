@@ -1,6 +1,8 @@
 from . import wireframe
 import random
 
+__config__ = None
+
 def check_input(event):
     args = event['args']
     user = event['user']
@@ -68,6 +70,36 @@ def affects(actor):
 
     actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
                 " ticks" for x in actor.affects))
+
+def sit(actor):
+    """Change the actor's disposition to sitting."""
+
+    actor.sit()
+    actor.notify(__config__.messages['sit_self'])
+    actor.get_room().dispatch(
+            'actor_changed', 
+            actor=actor, 
+            changed=__config__.messages['sit_room'] % (str(actor).title()))
+
+def wake(actor):
+    """Change the actor's disposition to standing."""
+
+    actor.wake()
+    actor.notify(__config__.messages['wake_self'])
+    actor.get_room().dispatch(
+            'actor_changed', 
+            actor=actor, 
+            changed=__config__.messages['wake_room'] % (str(actor).title()))
+
+def sleep(actor):
+    """Change the actor's disposition to sleeping."""
+
+    actor.sleep()
+    actor.notify(__config__.messages['sleep_self'])
+    actor.get_room().dispatch(
+            'actor_changed', 
+            actor=actor, 
+            changed=__config__.messages['sleep_room'] % (str(actor).title()))
 
 class Command(wireframe.Blueprint):
 

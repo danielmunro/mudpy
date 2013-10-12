@@ -1,0 +1,4 @@
+!<u!command>
+name: sleep
+execute:
+    - {method: sleep}

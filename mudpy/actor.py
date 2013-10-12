@@ -484,7 +484,16 @@ class Actor(wireframe.Blueprint):
         """Increase the actor's level."""
 
         self.level += 1
+
+    def sit(self):
+        self.disposition = Disposition.SITTING
+
+    def wake(self):
+        self.disposition = Disposition.STANDING
     
+    def sleep(self):
+        self.disposition = Disposition.SLEEPING
+
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are
         targeting this actor.
@@ -521,33 +530,6 @@ class Actor(wireframe.Blueprint):
                 "changed", 
                 actor=self, 
                 changed=str(self).title()+" dies.")
-
-    def _command_sit(self, invoked_command, _args):
-        """Change the actor's disposition to sitting."""
-
-        self.disposition = Disposition.SITTING
-        self.dispatch(
-                "changed", 
-                actor=self, 
-                changed=invoked_command.messages['sit_room'] % (str(self).title()))
-
-    def _command_wake(self, invoked_command, _args):
-        """Change the actor's disposition to standing."""
-
-        self.disposition = Disposition.STANDING
-        self.dispatch(
-                "changed", 
-                actor=self, 
-                changed=invoked_command.messages['wake_room'] % (str(self).title()))
-
-    def _command_sleep(self, invoked_command, _args):
-        """Change the actor's disposition to sleeping."""
-
-        self.disposition = Disposition.SLEEPING
-        self.dispatch(
-                "changed", 
-                actor=self, 
-                changed=invoked_command.messages['sleep_room'] % (str(self).title()))
 
     def _command_wear(self, _invoked_command, _args):
         """Attempt to wear a piece of equipment or a weapon from the inventory.
@@ -854,7 +836,7 @@ class User(Actor):
             actor_seen = "Someone"
         self.notify(__config__.messages['actor_enters_room'] % (actor_seen, direction))
 
-    def _room_update(self, args):
+    def room_update(self, args):
         """Event listener for when the room update fires."""
 
         if args['actor'] != self:

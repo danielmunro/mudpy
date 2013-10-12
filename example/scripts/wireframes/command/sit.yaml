@@ -1,0 +1,4 @@
+!<u!command>
+name: sit
+execute:
+    - {method: sit}

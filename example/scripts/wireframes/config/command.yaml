@@ -1,0 +1,8 @@
+!<u!config>
+    messages:
+        sit_self: "You sit down and rest."
+        sit_room: "%s sits down and rests."
+        wake_self: "You stand up."
+        wake_room: "%s stands up."
+        sleep_self: "You go to sleep."
+        sleep_room: "%s goes to sleep."

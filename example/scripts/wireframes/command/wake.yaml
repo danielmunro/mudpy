@@ -1,0 +1,4 @@
+!<u!command>
+name: wake
+execute:
+    - {method: wake}
