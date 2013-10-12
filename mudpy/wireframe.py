@@ -59,7 +59,7 @@ def create(name, subdirectory = "wireframes"):
     
     """
 
-    wireframe_path = os.path.join(*[path, subdirectory]+name.split('.'))+".yaml"
+    wireframe_path = os.path.join(*[path]+subdirectory.split('.')+name.split('.'))+".yaml"
 
     try:
         with open(wireframe_path, "r") as fp:

@@ -849,8 +849,9 @@ class User(Actor):
         not exist, the client is trying to create a new user.
 
         """
+
         try:
-            return wireframe.create(name.capitalize(), "data")
+            return wireframe.create(name.capitalize(), "data.users")
         except wireframe.WireframeException:
             pass
 
