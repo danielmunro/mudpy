@@ -1,11 +1,9 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
-from . import debug, observer, server
-import os, pickle, __main__
+from . import wireframe
 
-__CALENDAR_DATA__ = os.path.join(os.getcwd(), "data", "servertime.pk")
-__instance__ = None
 __config__ = None
+__instance__ = None
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
@@ -13,24 +11,18 @@ def suffix(dec):
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
-def load_calendar():
-    """Initialize the global calendar object."""
-
+def load(server):
     global __instance__
-
     try:
-        with open(__CALENDAR_DATA__, 'rb') as fp:
-            __instance__ = pickle.load(fp)
-            __instance__.observers = {}
-        debug.log("resuming calendar")
-    except (IOError, EOFError):
+        __instance__ = wireframe.create("calendar", "data")
+    except wireframe.WireframeException:
         __instance__ = Instance()
-        debug.log("starting new calendar")
+    server.__instance__.heartbeat.attach('tick', __instance__.tick)
 
-    server.__instance__.heartbeat.attach("tick", __instance__.tick)
-
-class Instance(observer.Observer):
+class Instance(wireframe.Blueprint):
     """Calendar instance, keeps track of the date in the game."""
+
+    yaml_tag = "u!calendar"
 
     def __init__(self):
         self.elapsed_time = 0
@@ -68,18 +60,9 @@ class Instance(observer.Observer):
                 if self.month > len(__config__.months)-1:
                     self.month = 1
                     self.year += 1
-        self.save()
+        wireframe.save(self, "data")
 
-    def save(self):
-        """Save the current calendar (the date).."""
-
-        observers = self.observers
-        self.observers = None
-        with open(__CALENDAR_DATA__, 'wb') as fp:
-            pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
-        self.observers = observers
-
-    def __str__(self):
+    def get_game_time(self):
         if self.hour < 13:
             hour = self.hour
             time = 'am'
@@ -90,6 +73,9 @@ class Instance(observer.Observer):
         return "It is %i o'clock %s, the %i%s day of %s, year %i" % (
                 hour, time, self.day_of_month, suffix(self.day_of_month), 
                 __config__.months[self.month]["name"], self.year)
+
+    def __str__(self):
+        return "calendar"
 
     def setup_listeners_for(self, func):
         """Binds function to calendar related events."""

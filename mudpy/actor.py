@@ -835,7 +835,7 @@ class User(Actor):
         if "area" in args:
             wireframe.save(self.get_room().get_area())
         else:
-            wireframe.save(self, "data")
+            wireframe.save(self, "data.users")
 
     @staticmethod
     def get_save_file(name):

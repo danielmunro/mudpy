@@ -69,7 +69,7 @@ def create(name, subdirectory = "wireframes"):
 
 def save(thing, subdirectory = "areas"):
     
-    wireframe_path = os.path.join(*[path, subdirectory, str(thing)])+".yaml"
+    wireframe_path = os.path.join(*[path]+subdirectory.split('.')+[str(thing)])+".yaml"
     with open(wireframe_path, "w") as fp:
         yaml.dump(thing, fp)
 

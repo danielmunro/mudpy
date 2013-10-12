@@ -36,7 +36,7 @@ except IOError:
     debug.log("specified path does not exist: "+wireframe.path, "error")
     raise
 
-calendar.load_calendar()
+calendar.load(server)
 
 # configuration values
 server.__config__ = wireframe.create("config.server")
