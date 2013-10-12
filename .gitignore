@@ -1,5 +1,5 @@
 *.pyc
 debug.log
-users/*
+example/data/users/*
 !.keep
 calendar.yaml
