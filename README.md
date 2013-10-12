@@ -11,7 +11,7 @@ To run the example included in the framework:
 ```
 git clone git://github.com/danielmunro/mudpy.git && \
 cd mudpy && \
-python main.py example/elkhead elkhead
+python main.py example
 ```
 
 In a new tab:
