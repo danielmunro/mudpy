@@ -85,7 +85,8 @@ def save(thing, subdirectory = "areas"):
     thing_yaml = yaml.dump(thing)
     with open(wireframe_path, "w") as fp:
         fp.write(thing_yaml)
-    wireframes[wireframe_path] = thing_yaml
+    if subdirectory == "wireframes":
+        wireframes[wireframe_path] = thing_yaml
 
 class Blueprint(observer.Observer, yaml.YAMLObject):
 
