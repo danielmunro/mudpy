@@ -1,6 +1,6 @@
 !<u!command>
-name: affects
+name: score
 required:
     - {property: yaml_tag, value: u!user}
 execute:
-    - affects(actor)
+    - score(actor)

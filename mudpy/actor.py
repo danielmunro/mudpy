@@ -6,7 +6,7 @@ how they interact with the world.
 from __future__ import division
 from . import debug, room, utility, server, proficiency, item, \
                 attributes, observer, command, affect, calendar, wireframe
-import time, random, os, re
+import time, random, os
 
 __SAVE_DIR__ = 'data'
 __config__ = wireframe.create('config.actor')
@@ -186,7 +186,7 @@ class Actor(wireframe.Blueprint):
 
         racial_attr = self.race.get_attribute(attribute_name)
         return min(
-                getattr(self.attributes, attribute_name) + racial_attr + 4, 
+                self._attribute(attribute_name) + racial_attr + 4, 
                 racial_attr + 8)
     
     def get_abilities(self):
@@ -891,47 +891,6 @@ class User(Actor):
                 self.notify(invoked_command.messages['not_proficiency'])
         else:
             self.notify(invoked_command.messages['no_acolyte'])
-
-    def _command_equipped(self, _invoked_command, _args):
-        """Tells the user what they have equipped."""
-
-        msg = ""
-        for position, equipment in self.equipped.iteritems():
-            msg += re.sub(r"\d+", "", position)+": "+str(equipment)+"\n"
-        self.notify("You are wearing: "+msg)
-
-    def _command_score(self, _invoked_command, _args):
-        """Provides a more detailed score card of the user's status, including
-        name, race, attributes, carrying weight, trains, practices, and
-        experience.
-
-        """
-
-        self.notify(("You are %s, a %s\n"+\
-            "%i/%i hp %i/%i mana %i/%i mv\n"+\
-            "str (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i),"+\
-            "cha(%i/%i)\nYou are carrying %g/%i lbs\n"+\
-            "You have %i trains, %i practices\n"+\
-            "You are level %i with %i experience, %i to next level\n"+\
-            "Your alignment is: %s") % (self, self.race, self.curhp, 
-            self.get_attribute('hp'), self.curmana,
-            self.get_attribute('mana'), self.curmovement,
-            self.get_attribute('movement'),
-            self.get_attribute('str'), self._get_unmodified_attribute('str'),
-            self.get_attribute('int'), self._get_unmodified_attribute('int'),
-            self.get_attribute('wis'), self._get_unmodified_attribute('wis'),
-            self.get_attribute('dex'), self._get_unmodified_attribute('dex'),
-            self.get_attribute('con'), self._get_unmodified_attribute('con'),
-            self.get_attribute('cha'), self._get_unmodified_attribute('cha'),
-            self.inventory.get_weight(), self._get_max_weight(),
-            self.trains, self.practices, self.level, self.experience,
-            (self.experience % self.experience_per_level),
-            self.get_alignment()))
-
-    def _command_inventory(self, _invoked_command, _args):
-        """Relays the user's inventory of items back to them."""
-
-        self.notify("Your inventory:\n"+str(self.inventory))
 
     def _command_who(self, invoked_command, args):
         """
