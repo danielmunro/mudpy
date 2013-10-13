@@ -1007,7 +1007,7 @@ class Attack:
 
         aggressor.dispatch('attack_resolution', attack=self)
 
-class Ability(wireframe.Blueprint, room.Reporter):
+class Ability(wireframe.Blueprint):
     """Represents something cool an actor can do. Invoked when the hook is
     triggered on the parent actor. Applies costs in the costs dict, and affects
     in the affects list.
@@ -1046,7 +1046,7 @@ class Ability(wireframe.Blueprint, room.Reporter):
             if success:
                 self.perform(receiver)
             else:
-                receiver.get_room().announce(self.get_messages('fail', invoker, receiver))
+                self.notify('failed')
         else:
             invoker.notify(__config__.messages['apply_cost_fail'])
 

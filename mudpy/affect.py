@@ -3,9 +3,9 @@ to be used to apply attribute changes to an actor or item.
 
 """
 
-from . import server, room, wireframe
+from . import server, wireframe
 
-class Affect(wireframe.Blueprint, room.Reporter):
+class Affect(wireframe.Blueprint):
     """Give an actor or item an affect."""
 
     yaml_tag = "u!affect"
