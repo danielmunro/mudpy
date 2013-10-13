@@ -1,0 +1,6 @@
+!<u!command>
+name: time
+required:
+    - {property: yaml_tag, value: u!user}
+execute:
+    - time(actor)

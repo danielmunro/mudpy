@@ -923,16 +923,6 @@ class User(Actor):
         else:
             self.notify(invoked_command.messages['not_trainable'])
 
-    def _command_date(self, _command, _args):
-        """Notifies the user of the in-game date and time."""
-
-        self.notify(calendar.__instance__)
-
-    def _command_time(self, _command, _args):
-        """Notifies the user of the in-game date and time."""
-
-        self.notify(calendar.__instance__)
-
     def __str__(self):
         return self.name.title()
 

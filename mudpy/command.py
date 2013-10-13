@@ -116,6 +116,18 @@ def who(user):
     wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
     user.notify(wholist)
 
+def date(user):
+    """Notifies the user of the in-game date and time."""
+    from . import calendar
+
+    user.notify(calendar.__instance__.get_game_time())
+
+def time(user):
+    """Notifies the user of the in-game date and time."""
+    from . import calendar
+
+    user.notify(calendar.__instance__.get_game_time())
+
 class Command(wireframe.Blueprint):
 
     yaml_tag = "u!command"

@@ -1,0 +1,6 @@
+!<u!command>
+name: date
+required:
+    - {property: yaml_tag, value: u!user}
+execute:
+    - date(actor)
