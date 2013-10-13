@@ -4,6 +4,17 @@ from . import debug, observer
 import os, yaml
 
 path = None
+wireframes = {}
+
+def preload(examine_path = "wireframes"):
+    global wireframes
+    start_path = os.path.join(path, examine_path)
+    if os.path.isdir(start_path):
+        for p in os.listdir(start_path):
+            preload(os.path.join(examine_path, p))
+    else:
+        with open(start_path, "r") as fp:
+            wireframes[start_path] = fp.read()
 
 def execute():
     recurse(os.path.join(path, "areas"))
@@ -32,10 +43,8 @@ def run(path):
     debug.log("running: "+path)
     with open(path, "r") as fp:
         _object = yaml.load(fp)
-        try:
+        if 'done_init' in dir(_object) and callable(getattr(_object, 'done_init')):
             _object.done_init()
-        except AttributeError:
-            pass
 
 def create_from_match(search):
     parts = search.split('.')
@@ -44,8 +53,9 @@ def create_from_match(search):
     try:
         for infile in os.listdir(_path):
             if infile.startswith(_file):
-                with open(os.path.join(_path, infile), "r") as fp:
-                    return yaml.load(fp)
+                i = os.path.join(_path, infile)
+                if i in wireframes:
+                    return yaml.load(wireframes[i])
     except OSError:
         pass
     raise WireframeException("wireframe match not found: "+search)
@@ -60,18 +70,22 @@ def create(name, subdirectory = "wireframes"):
     """
 
     wireframe_path = os.path.join(*[path]+subdirectory.split('.')+name.split('.'))+".yaml"
-
+    if wireframe_path in wireframes:
+        return yaml.load(wireframes[wireframe_path])
     try:
         with open(wireframe_path, "r") as fp:
             return yaml.load(fp)
     except IOError:
-        raise WireframeException("wireframe does not exist: "+name)
+        pass
+    raise WireframeException("wireframe does not exist: "+name)
 
 def save(thing, subdirectory = "areas"):
     
     wireframe_path = os.path.join(*[path]+subdirectory.split('.')+[str(thing)])+".yaml"
+    thing_yaml = yaml.dump(thing)
     with open(wireframe_path, "w") as fp:
-        yaml.dump(thing, fp)
+        fp.write(thing_yaml)
+    wireframes[wireframe_path] = thing_yaml
 
 class Blueprint(observer.Observer, yaml.YAMLObject):
 

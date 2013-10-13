@@ -5,10 +5,11 @@ and wireframes.
 """
 
 from mudpy import wireframe, debug
-import sys
+import sys, os
 
 try:
     wireframe.path = sys.argv[1]
+    wireframe.preload()
 except IndexError:
     debug.log("need to specify an initialization path", "error")
     raise
