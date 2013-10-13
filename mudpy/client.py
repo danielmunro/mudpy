@@ -6,7 +6,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, observer, actor, wireframe
 
-__config__ = None
+__config__ = wireframe.create('config.client')
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""

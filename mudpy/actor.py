@@ -9,7 +9,7 @@ from . import debug, room, utility, server, proficiency, item, \
 import time, random, os, re
 
 __SAVE_DIR__ = 'data'
-__config__ = None
+__config__ = wireframe.create('config.actor')
     
 def get_damage_verb(dam_roll):
     """A string representation of the severity of damage dam_roll will cause.

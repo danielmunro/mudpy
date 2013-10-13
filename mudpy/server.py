@@ -6,9 +6,9 @@ user defined scripts.
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time, __main__
-from . import debug, observer
+from . import debug, observer, wireframe, config
 
-__config__ = None
+__config__ = wireframe.create('config.server')
 __instance__ = None
 
 class Instance:

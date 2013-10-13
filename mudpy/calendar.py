@@ -2,7 +2,7 @@
 
 from . import wireframe
 
-__config__ = None
+__config__ = wireframe.create('config.calendar')
 __instance__ = None
 
 def suffix(dec):
