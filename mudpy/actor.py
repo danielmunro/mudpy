@@ -838,12 +838,6 @@ class User(Actor):
             wireframe.save(self, "data.users")
 
     @staticmethod
-    def get_save_file(name):
-        """The path to the user file based on the name given."""
-
-        return os.path.join(os.getcwd(), __SAVE_DIR__, name+'.pk')
-
-    @staticmethod
     def load(name):
         """Attempts to load a user from the user save file. If the file does
         not exist, the client is trying to create a new user.
@@ -891,17 +885,6 @@ class User(Actor):
                 self.notify(invoked_command.messages['not_proficiency'])
         else:
             self.notify(invoked_command.messages['no_acolyte'])
-
-    def _command_who(self, invoked_command, args):
-        """
-        wholist = ''
-        for i in self.client.factory.clients:
-            wholist += str(i.user) if i.user else ""
-        l = len(self.client.factory.clients)
-        wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
-        self.notify(wholist)
-        """
-        pass
 
     def _command_train(self, invoked_command, args):
         """Handles training the user and displaying information about what

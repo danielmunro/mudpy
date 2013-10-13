@@ -108,6 +108,14 @@ def inventory(user):
 
     user.notify("Your inventory:\n"+str(user.inventory))
 
+def who(user):
+    wholist = ''
+    for i in user.client.client_factory.clients:
+        wholist += str(i.user)+"\n" if i.user else ""
+    l = len(user.client.client_factory.clients)
+    wholist += "\n"+str(l)+" player"+("" if l == 1 else "s")+" found."
+    user.notify(wholist)
+
 class Command(wireframe.Blueprint):
 
     yaml_tag = "u!command"

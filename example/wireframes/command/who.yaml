@@ -1,0 +1,6 @@
+!<u!command>
+name: who
+required:
+    - {property: yaml_tag, value: u!user}
+execute:
+    - who(actor)

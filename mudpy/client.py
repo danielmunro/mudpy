@@ -31,6 +31,7 @@ class Client(observer.Observer, Protocol):
         """Called when a client loses their connection."""
 
         self.client_factory.dispatch("destroyed", client=self)
+        self.client_factory.clients.remove(self)
         self.user.get_room().move_actor(self.user)
         self.transport.loseConnection()
     
@@ -151,6 +152,7 @@ class ClientFactory(tFactory, observer.Observer):
 
     def __init__(self):
         self.observers = {}
+        self.clients = []
         super(ClientFactory, self).__init__()
 
     def buildProtocol(self, addr):
@@ -162,6 +164,7 @@ class ClientFactory(tFactory, observer.Observer):
         client = Client()
         client.client_factory = self
         self.dispatch("created", client=client)
+        self.clients.append(client)
         return client
 
 class LoginException(Exception):
