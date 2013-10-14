@@ -50,12 +50,16 @@ def create_from_match(search):
     parts = search.split('.')
     _file = parts[-1]
     _path = os.path.join(*[path, "wireframes"]+parts[0:-1])
+    matches = {}
     try:
         for infile in os.listdir(_path):
             if infile.startswith(_file):
                 i = os.path.join(_path, infile)
                 if i in wireframes:
-                    return yaml.load(wireframes[i])
+                    result = yaml.load(wireframes[i])
+                    priority = result.priority if 'priority' in result.__dict__ else 0
+                    matches[priority] = result
+        return matches[max(matches.keys())]
     except OSError:
         pass
     raise WireframeException("wireframe match not found: "+search)
