@@ -293,6 +293,7 @@ class Actor(wireframe.Blueprint):
         if not target:
             self.target.detach('attack_resolution', self._normalize_stats)
             self.target = None
+            return
         
         # target acquired
         self.target = target
