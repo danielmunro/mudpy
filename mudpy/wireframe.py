@@ -59,9 +59,10 @@ def create_from_match(search):
                     result = yaml.load(wireframes[i])
                     priority = result.priority if 'priority' in result.__dict__ else 0
                     matches[priority] = result
-        return matches[max(matches.keys())]
     except OSError:
         pass
+    if matches:
+        return matches[max(matches.keys())]
     raise WireframeException("wireframe match not found: "+search)
 
 def create(name, subdirectory = "wireframes"):
