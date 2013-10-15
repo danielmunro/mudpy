@@ -4,8 +4,8 @@ how they interact with the world.
 """
 
 from __future__ import division
-from . import debug, room, utility, server, proficiency, item, \
-                attributes, observer, command, affect, calendar, wireframe
+from . import debug, room, server, proficiency, item, collection, command, \
+                affect, calendar, wireframe
 import time, random, os
 
 __SAVE_DIR__ = 'data'
@@ -57,10 +57,9 @@ class Actor(wireframe.Blueprint):
         self.description = ""
         self.level = 0
         self.experience = 0
-        self.experience_per_level = 0
+        self.experience_per_level = 1000
         self.alignment = 0
         self.attributes = get_default_attributes()
-        self.trained_attributes = {}
         self.curhp = self.attributes['hp']
         self.curmana = self.attributes['mana']
         self.curmovement = self.attributes['movement']
@@ -74,10 +73,9 @@ class Actor(wireframe.Blueprint):
         self.trains = 0
         self.practices = 0
         self.disposition = Disposition.STANDING
-        self.proficiencies = dict()
+        self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
-        self.set_experience_per_level()
         
         self.equipped = dict((position, None) for position in ['light',
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
@@ -160,10 +158,6 @@ class Actor(wireframe.Blueprint):
             return min(amount, self.get_max_attribute(attribute_name))
         return amount
 
-    def get_trained_attribute(self, attribute):
-        return self.trained_attributes[attribute] if \
-                attribute in self.trained_attributes else 0
-
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
 
@@ -236,16 +230,6 @@ class Actor(wireframe.Blueprint):
         if self.qualifies_for_level():
             self.notify(__config__.messages["qualifies_for_level"])
 
-    def set_experience_per_level(self):
-        """Based on the current configuration of proficiencies, calculate how
-        much experience the actor needs to obtain to get a level.
-
-        @todo: stub out this function.
-        
-        """
-
-        self.experience_per_level = 1000
-    
     def get_alignment(self):
         """A string representation of the actor's alignment. Alignment is
         changed based on the actor's actions.
@@ -304,6 +288,9 @@ class Actor(wireframe.Blueprint):
         # calls attack rounds until target is removed
         server.__instance__.heartbeat.attach('pulse', self._do_regular_attacks)
 
+    def has_affect(self, name):
+        return collection.find("glow", self.get_affects())
+
     def can_see(self):
         """Can the user see?"""
 
@@ -312,7 +299,7 @@ class Actor(wireframe.Blueprint):
 
         _room = self.get_room()
 
-        if utility.match_partial("glow", self.get_affects()):
+        if self.has_affect('glow'):
             return True
 
         if _room.get_area().location == room.__LOCATION_OUTSIDE__ and \
@@ -321,8 +308,30 @@ class Actor(wireframe.Blueprint):
 
         return _room.lit
 
-    def is_updateable(self):
-        return True
+    def qualifies_for_level(self):
+        return self.experience / self.experience_per_level > self.level
+
+    def level_up(self):
+        """Increase the actor's level."""
+
+        self.level += 1
+
+        con = self._attribute('con')
+        wis = self._attribute('wis')
+        _str = self._attribute('str')
+
+        self.attributes['hp'] += random.randint(con-4, con+4)
+        self.attributes['mana'] += random.randint(wis*.5, wis*1.5)
+        self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
+
+    def sit(self):
+        self.disposition = Disposition.SITTING
+
+    def wake(self):
+        self.disposition = Disposition.STANDING
+    
+    def sleep(self):
+        self.disposition = Disposition.SLEEPING
 
     def get_affects(self):
         """Returns all affects currently applied to the actor, including base
@@ -429,7 +438,6 @@ class Actor(wireframe.Blueprint):
         """
 
         return self._attribute(attribute_name) + \
-                self.get_trained_attribute(attribute_name) + \
                 self.race.get_attribute(attribute_name)
     
     def _do_regular_attacks(self, recursed_attack_index = 0):
@@ -450,31 +458,6 @@ class Actor(wireframe.Blueprint):
                     pass
         else:
             server.__instance__.heartbeat.detach('pulse', self._do_regular_attacks)
-
-    def qualifies_for_level(self):
-        return self.experience / self.experience_per_level > self.level
-
-    def level_up(self):
-        """Increase the actor's level."""
-
-        self.level += 1
-
-        con = self._attribute('con')
-        wis = self._attribute('wis')
-        _str = self._attribute('str')
-
-        self.attributes['hp'] += random.randint(con-4, con+4)
-        self.attributes['mana'] += random.randint(wis*.5, wis*1.5)
-        self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
-
-    def sit(self):
-        self.disposition = Disposition.SITTING
-
-    def wake(self):
-        self.disposition = Disposition.STANDING
-    
-    def sleep(self):
-        self.disposition = Disposition.SLEEPING
 
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are
@@ -571,9 +554,6 @@ class User(Actor):
         self.role = 'player'
         super(User, self).__init__()
 
-    def is_updateable(self):
-        return False
-    
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
         and movement. Not yet configurable."""
@@ -581,7 +561,6 @@ class User(Actor):
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
     
     def notify(self, message = "", add_prompt = True):
-        super(User, self).notify(message, add_prompt)
         if self.client.user:
             self.client.write(str(message)+"\n"+(self.prompt() if add_prompt \
                     else ""))
@@ -656,6 +635,8 @@ class User(Actor):
         exciting.
 
         """
+
+        from . import command
 
         # attach server events
         server.__instance__.heartbeat.attach('stat', self.stat)
@@ -859,9 +840,9 @@ class Ability(wireframe.Blueprint):
 
         args = args[0]
         try:
-            receiver = utility.match_partial(args[-1], invoker.get_room().actors)
+            receiver = invoker.get_room().get_actor(args[-1])
         except IndexError:
-            receiver = invoker
+            pass
         if not receiver:
             receiver = invoker
         if self.apply_cost(invoker):

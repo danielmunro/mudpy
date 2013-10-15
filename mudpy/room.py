@@ -4,7 +4,7 @@ dungeons, and more.
 
 """
 
-from . import item, observer, wireframe
+from . import item, observer, wireframe, collection
 import random
 
 __START_ROOM__ = None
@@ -43,6 +43,9 @@ class Room(wireframe.Blueprint):
 
     def get_area(self):
         return area(self.area)
+
+    def get_actor(self, name):
+        return collection.find(name, self.actors)
     
     def announce(self, messages, add_prompt = True):
         """Will take a message and convey it to the various actors in the

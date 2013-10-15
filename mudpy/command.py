@@ -48,12 +48,12 @@ def look(actor, _args = []):
                 msg += \
                 __config__.messages["cannot_see_actors_in_room"]+"\n"
     else:
-        from . import utility
-        looking_at = utility.match_partial(
-                _args, 
-                actor.inventory.items, 
-                _room.inventory.items, 
-                _room.actors)
+        from . import collection
+        looking_at = collection.find(_args, actor.inventory.items)
+        if not looking_at:
+            looking_at = collection.find(_args, _room.inventory.items)
+        if not looking_at:
+            looking_at = _room.get_actor(_args)
         if looking_at:
             msg = looking_at.description
         else:
@@ -130,9 +130,8 @@ def time(user):
 
 def kill(actor, _target):
     """Attempt to kill another actor within the same room."""
-    from . import utility
 
-    target = utility.match_partial(_target, actor.get_room().actors)
+    target = actor.get_room().get_actor(_target)
     if target:
         actor.set_target(target)
         actor.get_room().announce({

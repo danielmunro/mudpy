@@ -110,7 +110,7 @@ class Login:
             """If a new alt, have them select a race."""
 
             try:
-                self.newuser.race = wireframe.create("race."+data)
+                self.newuser.race = wireframe.create_from_match("race."+data)
             except KeyError:
                 raise LoginException(__config__.messages["creation_race_not_valid"])
 
