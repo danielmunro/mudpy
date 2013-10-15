@@ -1,12 +1,14 @@
-"""The actor module is the 'meat' of the framework, defines users and mobs and
-how they interact with the world.
+"""The actor module defines users and mobs and how they interact with the world.
 
 """
 
 from __future__ import division
-from . import debug, room, server, proficiency, item, collection, command, \
-                affect, calendar, wireframe
-import time, random, os
+import time, random
+
+from . import debug, room, server, item, collection, calendar, wireframe
+
+# Needed for creating these things from wireframes -- hacky
+from . import command, affect
 
 __SAVE_DIR__ = 'data'
 __config__ = wireframe.create('config.actor')
