@@ -5,7 +5,7 @@ and wireframes.
 """
 
 from mudpy import wireframe, debug
-import sys, os
+import sys
 
 try:
     wireframe.path = sys.argv[1]
