@@ -133,7 +133,8 @@ def kill(actor, _target):
     from . import utility
 
     target = utility.match_partial(_target, actor.get_room().actors)
-    if target and actor.set_target(target):
+    if target:
+        actor.set_target(target)
         actor.get_room().announce({
             actor: actor.last_command.messages['success_self'],
             'all': actor.last_command.messages['success_room'] % (actor, target)

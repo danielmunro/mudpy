@@ -111,9 +111,7 @@ class Actor(wireframe.Blueprint):
         return room.get(self.room)
 
     def _attribute(self, attr):
-        if attr in self.attributes:
-            return self.attributes[attr]
-        return 0
+        return self.attributes[attr] if attr in self.attributes else 0
 
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
@@ -176,10 +174,8 @@ class Actor(wireframe.Blueprint):
         return amount
 
     def get_trained_attribute(self, attribute):
-        try:
-            return self.trained_attributes[attribute]
-        except KeyError:
-            return 0
+        return self.trained_attributes[attribute] if \
+                attribute in self.trained_attributes else 0
 
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
@@ -310,11 +306,6 @@ class Actor(wireframe.Blueprint):
         if not target:
             self.target.detach('attack_resolution', self._normalize_stats)
             self.target = None
-            return True
-
-        if self.target:
-            self.notify(__config__.messages['target_already_acquired'])
-            return False
         
         # target acquired
         self.target = target
@@ -324,7 +315,6 @@ class Actor(wireframe.Blueprint):
 
         # calls attack rounds until target is removed
         server.__instance__.heartbeat.attach('pulse', self._do_regular_attacks)
-        return True
 
     def can_see(self):
         """Can the user see?"""
@@ -495,8 +485,8 @@ class Actor(wireframe.Blueprint):
 
         if self.target:
             if self.target.target is self:
-                self.target.target = None
-            self.target = None
+                self.target.set_target()
+            self.set_target()
     
     def _die(self):
         """What happens when the user is killed (regardless of the method of
