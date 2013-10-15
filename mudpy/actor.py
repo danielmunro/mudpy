@@ -110,9 +110,6 @@ class Actor(wireframe.Blueprint):
     def get_room(self):
         return room.get(self.room)
 
-    def _attribute(self, attr):
-        return self.attributes[attr] if attr in self.attributes else 0
-
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
         if successfully found.
@@ -122,16 +119,6 @@ class Actor(wireframe.Blueprint):
         for prof in self._get_proficiencies():
             if(prof.name == _proficiency):
                 return prof
-    
-    def add_proficiency(self, _proficiency, level):
-        """Adds a proficiency to the actor."""
-
-        _proficiency = str(proficiency)
-        try:
-            self.proficiencies[_proficiency].level += level
-        except KeyError:
-            self.proficiencies[_proficiency] = wireframe.create(_proficiency)
-            self.proficiencies[_proficiency].level = level
     
     def get_equipment_by_position(self, position):
         """Returns what the actor has equipped for requested position."""
@@ -360,6 +347,9 @@ class Actor(wireframe.Blueprint):
                     changed=args['affect'].messages['end']['all'] % self)
         except KeyError:
             pass
+
+    def _attribute(self, attr):
+        return self.attributes[attr] if attr in self.attributes else 0
     
     def _tick(self):
         """Called on the actor by the server, part of a series of "heartbeats".
@@ -467,6 +457,14 @@ class Actor(wireframe.Blueprint):
         """Increase the actor's level."""
 
         self.level += 1
+
+        con = self._attribute('con')
+        wis = self._attribute('wis')
+        _str = self._attribute('str')
+
+        self.attributes['hp'] += random.randint(con-4, con+4)
+        self.attributes['mana'] += random.randint(wis*.5, wis*1.5)
+        self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
 
     def sit(self):
         self.disposition = Disposition.SITTING
@@ -933,19 +931,6 @@ class Race(wireframe.Blueprint):
         except KeyError:
             return 0
     
-    def add_proficiency(self, prof, level):
-        """Give a proficiency to this race. Actor's proficiencies are a
-        composite of what they know and the race they are assigned.
-
-        """
-
-        prof = str(prof)
-        try:
-            self.proficiencies[prof].level += level
-        except KeyError:
-            self.proficiencies[prof] = wireframe.create(prof)
-            self.proficiencies[prof].level = level
-
     @classmethod
     def to_yaml(self, dumper, thing):
         import copy
