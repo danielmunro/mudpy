@@ -24,7 +24,7 @@ def move(actor, direction = None):
 
     if not direction:
         direction = random.choice([direction for direction, _room 
-            in curroom.directions.iteritems() if _room])
+            in actor.get_room().directions.iteritems() if _room])
 
     actor.curmovement -= actor._get_movement_cost()
     actor.get_room().move_actor(actor, direction)
@@ -128,6 +128,36 @@ def time(user):
 
     user.notify(calendar.__instance__.get_game_time())
 
+def kill(actor, _target):
+    """Attempt to kill another actor within the same room."""
+    from . import utility
+
+    target = utility.match_partial(_target, actor.get_room().actors)
+    if target and actor.set_target(target):
+        actor.get_room().announce({
+            actor: actor.last_command.messages['success_self'],
+            'all': actor.last_command.messages['success_room'] % (actor, target)
+        })
+    elif not target:
+        actor.notify(actor.last_command.messages['target_not_found'])
+
+def flee(actor):
+    """Attempt to flee from a battle. This will cause the actor to flee
+    to another room in a random direction.
+
+    """
+
+    if actor.target:
+        actor._end_battle()
+        actor.get_room().announce({
+            actor: actor.last_command.messages['success_self'],
+            'all': actor.last_command.messages['success_room'] % (str(actor).title())
+        })
+        move(actor)
+        look(actor)
+    else:
+        actor.notify(actor.last_command.messages['no_target'])
+
 class Command(wireframe.Blueprint):
 
     yaml_tag = "u!command"
@@ -160,11 +190,12 @@ class Command(wireframe.Blueprint):
 
     def required_chain(self, actor):
         for req in self.required:
-            req_value = req['value']
+            req_value = req['value'] if 'value' in req else True
             if 'property' in req:
                 req_prop = req['property']
                 attr = getattr(actor, req_prop)
-                if not attr in req_value:
+                if (req_value is True and not attr) or (not isinstance(req_value, bool) and not attr in req_value):
+                #if req_value is True and not attr or not attr in req_value:
                     self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
                     return True
             elif 'method' in req:

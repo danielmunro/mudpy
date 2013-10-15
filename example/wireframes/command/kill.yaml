@@ -1,0 +1,10 @@
+!<u!command>
+name: kill
+messages:
+    target_not_found: "They aren't here."
+    success_self: "You scream and attack!"
+    success_room: "%s screams and attacks %s!"
+required:
+    - {property: target, value: False, fail: "You're already fighting!"}
+execute:
+    - kill(actor, args[0])

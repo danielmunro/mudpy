@@ -518,7 +518,7 @@ class Actor(wireframe.Blueprint):
         for i in self.inventory.items:
             self.inventory.remove(i)
             corpse.inventory.append(i)
-        self.room.inventory.append(corpse)
+        self.get_room().inventory.append(corpse)
         self.dispatch(
                 "changed", 
                 actor=self, 
@@ -555,34 +555,6 @@ class Actor(wireframe.Blueprint):
         else:
             self.notify(invoked_command.messages['no_item'])
 
-    def _command_kill(self, invoked_command, args):
-        """Attempt to kill another actor within the same room."""
-
-        target = utility.match_partial(args[1], self.room.actors)
-        if target and self.set_target(target):
-            self.room.announce({
-                self: invoked_command.messages['success_self'],
-                '*': invoked_command.messages['success_room'] % (self, target)
-            })
-        elif not target:
-            self.notify(invoked_command.messages['target_not_found'])
-
-    def _command_flee(self, invoked_command, _args):
-        """Attempt to flee from a battle. This will cause the actor to flee
-        to another room in a random direction.
-
-        """
-
-        if self.target:
-            self._end_battle()
-            self.room.announce({
-                self: invoked_command.messages['success_self'],
-                "*": invoked_command.messages['success_room'] % (str(self).title())
-            })
-            self.move()
-        else:
-            self.notify(invoked_command.messages['no_target'])
-
     def _command_get(self, invoked_command, args):
         """Locates and transfers an item from an accessible inventory into
         the actor's inventory. An accessible inventory is the room's inventory
@@ -591,11 +563,11 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        _item = utility.match_partial(args[1], self.room.inventory.items)
+        _item = utility.match_partial(args[1], self.get_room().inventory.items)
         if _item and _item.can_own:
-            self.room.inventory.remove(_item)
+            self.get_room().inventory.remove(_item)
             self.inventory.append(_item)
-            self.room.announce({
+            self.get_room().announce({
                 self: invoked_command.messages['success_self'],
                 "*": invoked_command.messages['success_room'] % (str(self).title(), _item)
             })
@@ -614,8 +586,8 @@ class Actor(wireframe.Blueprint):
         _item = utility.match_partial(args[1], self.inventory.items)
         if _item:
             self.inventory.remove(_item)
-            self.room.inventory.append(_item)
-            self.room.announce({
+            self.get_room().inventory.append(_item)
+            self.get_room().announce({
                 self: invoked_command.messages['success_self'],
                 "*": invoked_command.messages['success_room'] % (str(self).title(), _item)
             })
@@ -646,8 +618,8 @@ class Mob(Actor):
         self.movement_timer -= 1
         if self.movement_timer < 0:
             direction = random.choice([direction for direction, _room in 
-                self.room.directions.iteritems() if _room and 
-                _room.area == self.room.area])
+                self.get_room().directions.iteritems() if _room and 
+                _room.area == self.get_room().area])
             self.move(direction)
             self.movement_timer = self.movement
     
@@ -895,7 +867,7 @@ class User(Actor):
         if self.trains < 1:
             self.notify(invoked_command.messages['no_trains'])
             return
-        if not any(mob.role == Mob.ROLE_TRAINER for mob in self.room.mobs()):
+        if not any(mob.role == Mob.ROLE_TRAINER for mob in self.get_room().mobs()):
             self.notify(invoked_command.messages['no_trainers'])
             return
         if len(args) == 0:
@@ -914,7 +886,7 @@ class User(Actor):
             if attr+1 <= mattr:
                 setattr(self.trained_attributes, stat, getattr(self.trained_attributes, stat)+1)
                 self.trains -= 1
-                self.room.announce({
+                self.get_room().announce({
                     self: invoked_command.messages['success_self'] % (stat),
                     '*': invoked_command.messages['success_room'] % (str(self).title(), stat)
                 })
@@ -995,10 +967,10 @@ class Attack:
         verb = get_damage_verb(dam_roll)
         ucname = str(aggressor).title()
         tarname = str(aggressor.target)
-        aggressor.room.announce({
+        aggressor.get_room().announce({
             aggressor: "("+attackname+") Your "+verb+" attack "+is_hit+" "+tarname+".",
             aggressor.target: ucname+"'s "+verb+" attack "+is_hit+" you.",
-            "*": ucname+"'s "+verb+" attack "+is_hit+" "+tarname+"."
+            "all": ucname+"'s "+verb+" attack "+is_hit+" "+tarname+"."
         }, add_prompt = False)
 
         #need to do this check again here, can't have the actor dead before the hit message

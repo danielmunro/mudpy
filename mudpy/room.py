@@ -54,7 +54,7 @@ class Room(wireframe.Blueprint):
         announcedActors = []
         generalMessage = ""
         for actor, message in messages.iteritems():
-            if actor == "*":
+            if actor == "all":
                 generalMessage = message
             else:
                 if message:
@@ -238,6 +238,8 @@ class Area(wireframe.Blueprint):
         for room in self.rooms:
             __ROOMS__[room.name] = room
             room.area = self.name
+            for m in room.mobs():
+                m.room = room.name
 
     def __str__(self):
         return self.name

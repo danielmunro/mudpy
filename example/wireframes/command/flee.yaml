@@ -1,0 +1,10 @@
+!<u!command>
+name: flee
+messages:
+    success_self: "You run scared!"
+    success_room: "%s runs in fear!"
+    no_target: "You're not fighting anyone!"
+required:
+    - {property: target, fail: "You're not fighting anyone!"}
+execute:
+    - flee(actor)
