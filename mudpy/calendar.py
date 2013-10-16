@@ -11,14 +11,6 @@ def suffix(dec):
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
-def load(server):
-    global __instance__
-    try:
-        __instance__ = wireframe.create("calendar", "data")
-    except wireframe.WireframeException:
-        __instance__ = Instance()
-    server.__instance__.heartbeat.attach('tick', __instance__.tick)
-
 class Instance(wireframe.Blueprint):
     """Calendar instance, keeps track of the date in the game."""
 

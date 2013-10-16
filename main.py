@@ -2,26 +2,31 @@
 load areas, wireframes, and game data. Instantiate the server, calendar,
 and wireframes.
 
+Wireframes need to be set up in order to import game modules (server, calendar,
+and client).
+
 """
 
 from mudpy import wireframe, debug
 import sys
 
 try:
-    wireframe.path = sys.argv[1]
-    wireframe.preload()
+    wireframe.load_wireframes(sys.argv[1])
 except IndexError:
-    debug.log("need to specify an initialization path", "error")
+    debug.log("need to pass in a path, ie python mud.py example", "error")
+    raise
+except IOError:
+    debug.log("path does not exist: "+sys.argv[1], "error")
     raise
 
-from mudpy import server, calendar, room, actor, client
-server.__instance__ = server.Instance()
-calendar.load(server)
+from mudpy import server, calendar, client
 
 try:
-    wireframe.execute()
-except IOError:
-    debug.log("specified path does not exist: "+wireframe.path, "error")
-    raise
+    calendar.__instance__ = wireframe.create("calendar", "data")
+except wireframe.WireframeException:
+    calendar.__instance__ = calendar.Instance()
 
+server.__instance__ = server.Instance()
+server.__instance__.heartbeat.attach("tick", calendar.__instance__.tick)
+wireframe.load_areas()
 server.__instance__.start_listening(client.ClientFactory())

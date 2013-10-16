@@ -6,6 +6,15 @@ import os, yaml
 path = None
 wireframes = {}
 
+def load_wireframes(_path):
+    global path
+    path = _path
+    preload()
+
+def load_areas():
+    from . import room, actor
+    recurse(os.path.join(path, "areas"))
+
 def preload(examine_path = "wireframes"):
     global wireframes
     start_path = os.path.join(path, examine_path)
@@ -13,34 +22,26 @@ def preload(examine_path = "wireframes"):
         for p in os.listdir(start_path):
             preload(os.path.join(examine_path, p))
     else:
+        debug.log("preloading "+start_path)
         with open(start_path, "r") as fp:
             wireframes[start_path] = fp.read()
 
-def execute():
-    recurse(os.path.join(path, "areas"))
-
-def recurse(path, onceLoaded = False):
+def recurse(path):
     """Load wireframes from initialization script, with slightly different 
     formatting than a persisted world.
     
     """
 
-    if path.endswith('.yaml'):
-        run(path)
-        onceLoaded = True
-        return
-    elif os.path.isdir(path):
+    if os.path.isdir(path):
         for infile in os.listdir(path):
             fullpath = path+'/'+infile
-            recurse(fullpath, onceLoaded)
-        return
-    
-    if not onceLoaded:
-        raise IOError(path+" not found or not valid")
+            recurse(fullpath)
+    elif path.endswith('.yaml'):
+        run(path)
 
 def run(path):
 
-    debug.log("running: "+path)
+    debug.log("running "+path)
     with open(path, "r") as fp:
         _object = yaml.load(fp)
         if 'done_init' in dir(_object) and callable(getattr(_object, 'done_init')):
