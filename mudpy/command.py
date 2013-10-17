@@ -1,9 +1,7 @@
 from . import wireframe
 import random
 
-def check_input(event):
-    args = event['args']
-    user = event['user']
+def check_input(user, args):
 
     command = args[0]
     params = args[1:]
@@ -345,7 +343,7 @@ class Command(wireframe.Blueprint):
     
     def dispatch_chain(self, actor):
         for d in self.dispatches:
-            call = d['object']+".dispatch('"+d['event']+"', actor=actor)"
+            call = d['object']+".dispatch('"+d['event']+"', actor)"
             handled = eval(call)
             if handled:
                 return True

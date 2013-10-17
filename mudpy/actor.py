@@ -3,15 +3,33 @@
 """
 
 from __future__ import division
-import time, random
+import time, random, __main__
 
-from . import debug, room, server, item, collection, calendar, wireframe
+from . import debug, room, server, item, collection, calendar, wireframe, \
+        observer
 
 # Needed for creating these things from wireframes -- hacky
 from . import command, affect
 
+class Proxy(observer.Observer):
+    def __init__(self):
+        self.observers = {}
+
 __SAVE_DIR__ = 'data'
-__config__ = wireframe.create('config.actor')
+__config__ = None
+__proxy__ = Proxy()
+
+if '__mudpy__' in __main__.__dict__:
+
+    def initialize_actor():
+        global __config__
+        __config__ = wireframe.create('config.actor')
+
+    def actor_created(actor):
+        __main__.__mudpy__.dispatch('actor_created', actor)
+
+    __proxy__.attach('actor_created', actor_created)
+    __main__.__mudpy__.attach('initialize', initialize_actor)
     
 def get_damage_verb(dam_roll):
     """A string representation of the severity of damage dam_roll will cause.
@@ -84,8 +102,7 @@ class Actor(wireframe.Blueprint):
             'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
             'wield0', 'wield1', 'float'])
 
-        # listener for the server tick
-        server.__instance__.heartbeat.attach('tick', self._tick)
+        __proxy__.dispatch('actor_created', self)
 
     def can(self, action, args = []):
 
@@ -254,9 +271,7 @@ class Actor(wireframe.Blueprint):
         """Apply an affect to the actor."""
 
         try:
-            self.dispatch('changed', 
-                    affect=aff, actor=self,
-                    changed=aff.messages['start']['all'] % self)
+            self.dispatch('changed', aff, self, aff.messages['start']['all'] % self)
         except KeyError:
             pass
 
@@ -354,9 +369,7 @@ class Actor(wireframe.Blueprint):
                                 args['affect'].countdown_timeout)
         self.affects.remove(args['affect'])
         try:
-            self.dispatch('changed', 
-                    affect=args['affect'], actor=self,
-                    changed=args['affect'].messages['end']['all'] % self)
+            self.dispatch('changed', args['affect'], self, args['affect'].messages['end']['all'] % self)
         except KeyError:
             pass
 
@@ -493,10 +506,7 @@ class Actor(wireframe.Blueprint):
             self.inventory.remove(i)
             corpse.inventory.append(i)
         self.get_room().inventory.append(corpse)
-        self.dispatch(
-                "changed", 
-                actor=self, 
-                changed=str(self).title()+" dies.")
+        self.dispatch("changed", self, str(self).title()+" dies.")
 
 class Mob(Actor):
     """NPCs of the game, mobs are the inhabitants of the mud world."""
@@ -686,10 +696,8 @@ class User(Actor):
 
         self.notify(args['changed'])
 
-    def room_update(self, args):
+    def room_update(self, actor):
         """Event listener for when the room update fires."""
-
-        actor = args['actor']
 
         if actor is self:
             self.notify(actor.last_command.messages['self'])
@@ -762,7 +770,7 @@ class Attack:
         self.damroll = 0
         self.defroll = 0
 
-        handled = self.aggressor.dispatch('attack_start', attack=self)
+        handled = self.aggressor.dispatch('attack_start', self)
         if handled:
             return
 
@@ -784,7 +792,7 @@ class Attack:
         except AttributeError:
             ac = 0
 
-        self.aggressor.dispatch('attackmodifier', attack=self)
+        self.aggressor.dispatch('attackmodifier', self)
 
         # roll the dice and determine if the attack was successful
         roll = random.uniform(hit_roll/2, hit_roll) - random.uniform(def_roll/2, def_roll) - ac
@@ -812,7 +820,7 @@ class Attack:
         if roll > 0: 
             aggressor.target.curhp -= dam_roll
 
-        aggressor.dispatch('attack_resolution', attack=self)
+        aggressor.dispatch('attack_resolution', self)
 
 class Ability(wireframe.Blueprint):
     """Represents something cool an actor can do. Invoked when the hook is

@@ -28,7 +28,7 @@ class Affect(wireframe.Blueprint):
         self.timeout -= 1
         if self.timeout < 0:
             server.__instance__.heartbeat.detach('tick', self.countdown_timeout)
-            self.dispatch('end', affect=self)
+            self.dispatch('end', self)
 
     def __str__(self):
         return self.name

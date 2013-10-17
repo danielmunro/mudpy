@@ -1,9 +1,27 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
-from . import wireframe
+from . import wireframe, server
+import __main__
 
-__config__ = wireframe.create('config.calendar')
+__config__ = None
 __instance__ = None
+
+if '__mudpy__' in __main__.__dict__:
+
+    def initialize_calendar():
+
+        global __instance__, __config__
+
+        __config__ = wireframe.create('config.calendar')
+
+        try:
+            __instance__ = wireframe.create("calendar", "data")
+        except wireframe.WireframeException:
+            __instance__ = Instance()
+
+        server.__instance__.heartbeat.attach("tick", __instance__.tick)
+
+    __main__.__mudpy__.attach('initialize', initialize_calendar)
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
@@ -34,14 +52,10 @@ class Instance(wireframe.Blueprint):
         self.elapsed_time += 1
         self.hour += 1
         if self.hour == __config__.months[self.month]['sunrise']:
-            self.dispatch('sunrise', 
-                    calendar=self, 
-                    changed="The sun begins to rise.")
+            self.dispatch('sunrise', self, "The sun begins to rise.")
             self.daylight = True
         elif self.hour == __config__.months[self.month]['sunset']:
-            self.dispatch('sunset', 
-                    calendar=self, 
-                    changed="The sun begins to set.")
+            self.dispatch('sunset', self, "The sun begins to set.")
             self.daylight = False
         if self.hour == __config__.hours_in_day:
             self.hour = 0

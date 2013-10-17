@@ -8,8 +8,28 @@ from twisted.internet import reactor
 import random, time, __main__
 from . import debug, observer, wireframe, config
 
-__config__ = wireframe.create('config.server')
+__config__ = None
 __instance__ = None
+
+if '__mudpy__' in __main__.__dict__:
+
+    def initialize_server():
+        global __instance__, __config__
+
+        __instance__ = Instance()
+        __config__ = wireframe.create("config.server")
+
+    def start_server():
+        from . import client
+        __instance__.start_listening(client.ClientFactory())
+
+    def actor_created(actor):
+        __instance__.heartbeat.attach('tick', actor._tick)
+
+    m = __main__.__mudpy__
+    m.attach('initialize', initialize_server)
+    m.attach('start', start_server)
+    m.attach('actor_created', actor_created)
 
 class Instance:
     """Information about the implementation of this mud.py server."""
@@ -29,21 +49,21 @@ class Instance:
 
         """
 
-        def set_client_poll(args):
+        def set_client_poll(client):
             """Called when the client_factory reports that a client is
             created.
 
             """
 
-            __instance__.heartbeat.attach("cycle", args['client'].poll)
+            __instance__.heartbeat.attach("cycle", client.poll)
 
-        def unset_client_poll(args):
+        def unset_client_poll(client):
             """Called when the client_factory reports that a client has been
             destroyed.
 
             """
 
-            __instance__.heartbeat.detach("cycle", args['client'].poll)
+            __instance__.heartbeat.detach("cycle", client.poll)
 
 
         # call set_client_poll whenever client_factory creates a new client,

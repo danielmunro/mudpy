@@ -1,15 +1,26 @@
 """Wireframes module."""
 
 from . import debug, observer
-import os, yaml
+import os, yaml, __main__
 
 path = None
 wireframes = {}
 
-def load_wireframes(_path):
-    global path
-    path = _path
-    preload()
+if '__mudpy__' in __main__.__dict__:
+
+    m = __main__.__mudpy__
+
+    def load_wireframes():
+        global path
+
+        path = m.path
+        preload()
+
+    def start_wireframes():
+        load_areas()
+
+    m.attach('initialize', load_wireframes)
+    m.attach('start', start_wireframes)
 
 def load_areas():
     from . import room, actor

@@ -5,8 +5,19 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, observer, actor, wireframe
+import __main__
 
-__config__ = wireframe.create('config.client')
+__config__ = None
+
+if '__mudpy__' in __main__.__dict__:
+
+    def initialize_client():
+
+        global __config__
+
+        __config__ = wireframe.create("config.client")
+
+    __main__.__mudpy__.attach('initialize', initialize_client)
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
@@ -30,7 +41,7 @@ class Client(observer.Observer, Protocol):
     def disconnect(self):
         """Called when a client loses their connection."""
 
-        self.client_factory.dispatch("destroyed", client=self)
+        self.client_factory.dispatch("destroyed", self)
         self.client_factory.clients.remove(self)
         self.user.get_room().move_actor(self.user)
         self.transport.loseConnection()
@@ -60,7 +71,7 @@ class Client(observer.Observer, Protocol):
             return self.login.step(data)
         elif data:
             args = data.split(" ")
-            handled = self.dispatch("input", user=self.user, args=args)
+            handled = self.dispatch("input", self.user, args)
             if not handled:
                 self.user.notify(__config__.messages["input_not_handled"])
     
@@ -163,7 +174,7 @@ class ClientFactory(tFactory, observer.Observer):
 
         client = Client()
         client.client_factory = self
-        self.dispatch("created", client=client)
+        self.dispatch("created", client)
         self.clients.append(client)
         return client
 

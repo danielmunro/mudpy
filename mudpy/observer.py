@@ -28,14 +28,14 @@ class Observer(object):
         except (ValueError, KeyError):
             pass
     
-    def dispatch(self, event, **args):
+    def dispatch(self, event, *args):
         """Fire off an event, calling any found listeners."""
 
         handled = None
 
         try:
             for func in self.observers[event]:
-                handled = func(args)
+                handled = func(*args)
                 if handled:
                     break
         except KeyError:
