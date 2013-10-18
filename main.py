@@ -13,6 +13,11 @@ class Mudpy(observer.Observer):
         self.observers = {}
         self.path = ""
 
+def main():
+    from mudpy import wireframe, server, calendar, client, actor
+    __mudpy__.dispatch('initialize')
+    __mudpy__.dispatch('start')
+
 __mudpy__ = Mudpy()
 
 try:
@@ -22,6 +27,4 @@ except KeyError:
     raise
 
 if __name__ == "__main__":
-    from mudpy import wireframe, server, calendar, client, actor
-    __mudpy__.dispatch('initialize')
-    __mudpy__.dispatch('start')
+    main()
