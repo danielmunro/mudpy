@@ -695,9 +695,11 @@ class User(Actor):
         """Event listener for when the room update fires."""
 
         if actor is self:
-            self.notify(actor.last_command.messages['self'])
+            if 'self' in actor.last_command.messages:
+                self.notify(actor.last_command.messages['self'])
         elif self.can_see():
-            self.notify(actor.last_command.messages['all'] % str(actor).title())
+            if 'all' in actor.last_command.messages:
+                self.notify(actor.last_command.messages['all'] % str(actor).title())
 
     @classmethod
     def to_yaml(self, dumper, thing):

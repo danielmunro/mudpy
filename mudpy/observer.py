@@ -15,30 +15,26 @@ class Observer(object):
     def attach(self, event, func):
         """Attach a new listener function to a named event."""
 
-        try:
-            self.observers[event].append(func)
-        except KeyError:
-            self.observers[event] = [func]
+        if not event in self.observers:
+            self.observers[event] = []
+
+        self.observers[event].append(func)
     
     def detach(self, event, func):
         """Remove a listener function from a named event."""
 
-        try:
+        if event in self.observers:
             self.observers[event].remove(func)
-        except (ValueError, KeyError):
-            pass
     
     def dispatch(self, event, *args):
         """Fire off an event, calling any found listeners."""
 
         handled = None
 
-        try:
+        if event in self.observers:
             for func in self.observers[event]:
                 handled = func(*args)
                 if handled:
                     break
-        except KeyError:
-            pass
 
         return handled
