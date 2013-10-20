@@ -328,19 +328,12 @@ class Command(wireframe.Blueprint):
     def _required_chain(self, actor):
         for req in self.required:
             req_value = req['value'] if 'value' in req else True
-            if 'property' in req:
-                req_prop = req['property']
-                attr = eval('actor.'+req_prop)
-                if self._did_fail(req_value, attr):
-                    self._fail(actor, req_value, req['fail'] if 'fail' in req else '')
-                    return True
+            req_prop = req['property']
+            attr = eval('actor.'+req_prop)
+            if self._did_fail(req_value, attr):
+                self._fail(actor, req_value, req['fail'] if 'fail' in req else '')
+                return True
 
-    def _did_fail(self, req_value, attr):
-        if isinstance(req_value, bool):
-            return (req_value and not attr) or (not req_value and attr)
-        else:
-            return not attr in req_value
-    
     def _dispatch_chain(self, actor):
         for d in self.dispatches:
             call = d['object']+".dispatch('"+d['event']+"', actor)"
@@ -348,6 +341,12 @@ class Command(wireframe.Blueprint):
             if handled:
                 return True
 
+    def _did_fail(self, req_value, attr):
+        if isinstance(req_value, bool):
+            return (req_value and not attr) or (not req_value and attr)
+        else:
+            return not attr in req_value
+    
     def _fail(self, actor, req_value, fail):
         if '%s' in fail:
             if isinstance(req_value, list):
