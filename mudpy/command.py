@@ -309,54 +309,54 @@ class Command(wireframe.Blueprint):
     def run(self, actor, args):
         """Takes an actor and input arguments and runs the command."""
 
-        handled = self.required_chain(actor)
+        handled = self._required_chain(actor)
         if handled:
             return
 
-        self.execute_chain(actor, args)
+        self._execute_chain(actor, args)
 
-    def execute_chain(self, actor, args):
-        if actor.can(self.action):
+    def _execute_chain(self, actor, args):
+        handled = actor.dispatch('action', self.action)
+        if not handled:
             actor.last_command = self
-            handled = self.dispatch_chain(actor)
+            handled = self._dispatch_chain(actor)
             if handled:
                 return
             for e in self.execute:
                 eval(e)
 
-    def required_chain(self, actor):
+    def _required_chain(self, actor):
         for req in self.required:
             req_value = req['value'] if 'value' in req else True
             if 'property' in req:
                 req_prop = req['property']
-                attr = getattr(actor, req_prop)
-                if (req_value is True and not attr) or (not isinstance(req_value, bool) and not attr in req_value):
-                #if req_value is True and not attr or not attr in req_value:
-                    self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
+                attr = eval('actor.'+req_prop)
+                if self._did_fail(req_value, attr):
+                    self._fail(actor, req_value, req['fail'] if 'fail' in req else '')
                     return True
-            elif 'method' in req:
-                req_method = req['method']
-                attr = getattr(actor, req_method)
-                if not attr() == req_value:
-                    self.fail(actor, req_value, req['fail'] if 'fail' in req else '')
-                    return True
+
+    def _did_fail(self, req_value, attr):
+        if isinstance(req_value, bool):
+            return (req_value and not attr) or (not req_value and attr)
+        else:
+            return not attr in req_value
     
-    def dispatch_chain(self, actor):
+    def _dispatch_chain(self, actor):
         for d in self.dispatches:
             call = d['object']+".dispatch('"+d['event']+"', actor)"
-            handled = eval(call)
+            handled = eval("actor."+call)
             if handled:
                 return True
 
-    def fail(self, actor, req_value, fail):
+    def _fail(self, actor, req_value, fail):
         if '%s' in fail:
             if isinstance(req_value, list):
                 fail_val = " or ".join(req_value)
             else:
                 fail_val = req_value
-            actor.notify((fail+"\n") % fail_val)
+            actor.notify((fail) % fail_val)
         elif fail:
-            actor.notify(fail+"\n")
+            actor.notify(fail)
     
     def __str__(self):
         return self.name

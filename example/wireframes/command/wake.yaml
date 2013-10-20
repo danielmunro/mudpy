@@ -5,6 +5,6 @@ messages:
     self: "You stand up."
     all: "%s stands up."
 dispatches:
-    - {object: actor.get_room(), event: actor_changed}
+    - {object: get_room(), event: actor_changed}
 execute:
     - actor.wake()

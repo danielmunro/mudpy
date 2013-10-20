@@ -5,7 +5,7 @@ required:
 messages:
     all: "%s disappears in a puff of smoke."
 dispatches:
-    - {object: actor.get_room(), event: actor_changed}
+    - {object: get_room(), event: actor_changed}
 execute:
     - actor.save()
     - actor.client.disconnect()

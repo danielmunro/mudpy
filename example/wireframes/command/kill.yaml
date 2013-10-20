@@ -5,6 +5,6 @@ messages:
     success_self: "You scream and attack!"
     success_room: "%s screams and attacks %s!"
 required:
-    - {property: target, value: False, fail: "You're already fighting!"}
+    - {property: target, value: false, fail: "You're already fighting!"}
 execute:
     - kill(actor, args[0])

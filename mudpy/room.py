@@ -15,8 +15,14 @@ __AREAS__ = {}
 __LAST_AREA__ = None
 __LOCATION_OUTSIDE__ = "outside"
 
-def get(room_name):
-    return __ROOMS__[room_name]
+def get(room_name, direction = ""):
+    _room = __ROOMS__[room_name]
+    if direction:
+        if direction in _room.directions:
+            _room = _room.directions[direction]
+        else:
+            _room = None
+    return _room
 
 def area(area_name):
     return __AREAS__[area_name]

@@ -1,12 +1,16 @@
 !<u!command>
 name: south
 priority: 1
+action: move
 required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
+    - {property: get_room('south'), fail: "Alas, nothing is there."}
+    - {property: target, value: false, fail: "You can't walk away from a fight!"}
+    - {property: has_enough_movement(), fail: "You are too tired to move."}
 messages:
     all: "%s leaves heading south."
 dispatches:
-    - {object: actor.get_room(), event: actor_changed}
+    - {object: get_room(), event: actor_changed}
 execute:
     - move(actor, 'south')
     - look(actor)

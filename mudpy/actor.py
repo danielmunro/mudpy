@@ -96,6 +96,7 @@ class Actor(wireframe.Blueprint):
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
+        self.observers = {}
         
         self.equipped = dict((position, None) for position in ['light',
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
@@ -104,28 +105,8 @@ class Actor(wireframe.Blueprint):
 
         __proxy__.dispatch('actor_created', self)
 
-    def can(self, action, args = []):
-
-        if "move" in action:
-            if self.target:
-                self.notify(__config__.messages['move_failed_fighting'])
-                return False
-            direction = args[0]
-            if not direction in self.get_room().directions:
-                self.notify(__config__.messages['move_failed_no_room'])
-                return False
-            if self._get_movement_cost() > self.curmovement:
-                self.notify(__config__.messages['move_failed_too_tired'])
-                return False
-
-        if self.disposition == Disposition.INCAPACITATED:
-            self.notify(__config__.messages['move_failed_incapacitated'])
-            return False
-
-        return True
-
-    def get_room(self):
-        return room.get(self.room)
+    def get_room(self, direction = ""):
+        return room.get(self.room, direction)
 
     def get_proficiency(self, _proficiency):
         """Checks if an actor has a given proficiency and returns the object
@@ -308,6 +289,9 @@ class Actor(wireframe.Blueprint):
     def has_affect(self, name):
         return collection.find("glow", self.get_affects())
 
+    def has_enough_movement(self):
+        return self._get_movement_cost() <= self.curmovement
+
     def can_see(self):
         """Can the user see?"""
 
@@ -341,6 +325,9 @@ class Actor(wireframe.Blueprint):
         self.attributes['mana'] += random.randint(wis*.5, wis*1.5)
         self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
 
+    def is_incapacitated(self):
+        return self.disposition == Disposition.INCAPACITATED
+
     def sit(self):
         self.disposition = Disposition.SITTING
 
@@ -361,6 +348,12 @@ class Actor(wireframe.Blueprint):
             if equipment:
                 affects += equipment.affects
         return affects
+
+    def _check_if_incapacitated(self, action):
+
+        if self.is_incapacitated():
+            self.notify(__config__.messages['move_failed_incapacitated'])
+            return True
 
     def _end_affect(self, args):
         """Called when an affect ends."""
@@ -650,6 +643,8 @@ class User(Actor):
 
         from . import command
 
+        self.attach('action', self._check_if_incapacitated)
+
         # attach server events
         server.__instance__.heartbeat.attach('stat', self.stat)
         server.__instance__.heartbeat.attach('cycle', self._update_delay)
@@ -688,13 +683,13 @@ class User(Actor):
 
         debug.log('client logged in as '+str(self))
 
-    def calendar_changed(self, args):
+    def calendar_changed(self, calendar, changed):
         """Notifies the user when a calendar event happens, such as the sun
         rises.
 
         """
 
-        self.notify(args['changed'])
+        self.notify(changed)
 
     def room_update(self, actor):
         """Event listener for when the room update fires."""

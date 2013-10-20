@@ -5,6 +5,6 @@ messages:
     self: "You go to sleep."
     all: "%s goes to sleep."
 dispatches:
-    - {object: actor.get_room(), event: actor_changed}
+    - {object: get_room(), event: actor_changed}
 execute:
     - actor.sleep()
