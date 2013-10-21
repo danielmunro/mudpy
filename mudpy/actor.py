@@ -660,9 +660,6 @@ class User(Actor):
         # listener for client input to trigger commands in the game
         self.client.attach('input', command.check_input)
 
-        # listener for the server tick
-        server.__instance__.heartbeat.attach('tick', self._tick)
-
         # listeners for calendar events (sunrise, sunset) 
         calendar.__instance__.setup_listeners_for(self.calendar_changed)
 
