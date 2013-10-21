@@ -45,6 +45,7 @@ def look(actor, _args = []):
             else:
                 msg += \
                 __config__.messages["cannot_see_actors_in_room"]+"\n"
+        msg += _room.inventory.inspection(" is here.")
     else:
         from . import collection
         looking_at = collection.find(_args, actor.inventory.items)
@@ -161,10 +162,9 @@ def room(actor, args):
     arg_len = len(args)
 
     command = args[0] if arg_len > 0 else ""
-    prop = args[1] if arg_len > 1 else ""
 
     if command == "copy":
-        direction = prop
+        direction = args[1] if arg_len > 1 else ""
         if not direction:
             actor.notify(actor.last_command.messages['room_need_dir'])
             return
@@ -175,18 +175,20 @@ def room(actor, args):
             actor.notify(actor.last_command.messages['room_created'])
         else:
             actor.notify(actor.last_command.messages['room_bad_dir'])
-    elif command == "set":
-        if prop == "title":
-            actor.get_room().title = " ".join(args[2:])
-        elif prop == "description":
-            actor.get_room().description = " ".join(args[2:])
-        elif prop == "lit":
-            actor.get_room().lit = args[2]
-        else:
-            actor.notify(actor.last_command.messages['room_bad_property'])
-        actor.notify(actor.last_command.messages['room_property_set'] % prop)
-    else:
+    elif command == "title":
+        actor.get_room().title = " ".join(args[1:])
+    elif command == "description":
+        actor.get_room().description = " ".join(args[1:])
+    elif command == "lit":
+        actor.get_room().lit = args[1]
+    elif command == "area":
+        actor.get_room().area = args[1]
+    elif command == "":
         actor.notify(actor.last_command.messages['room_no_args'])
+    else:
+        actor.notify(actor.last_command.messages['room_bad_property'])
+        return
+    actor.notify(actor.last_command.messages['room_property_set'])
 
 
 """

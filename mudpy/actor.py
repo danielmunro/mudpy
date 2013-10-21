@@ -106,6 +106,8 @@ class Actor(wireframe.Blueprint):
         __proxy__.dispatch('actor_created', self)
 
     def get_room(self, direction = ""):
+        """Returns the current room the actor is in."""
+
         return room.get(self.room, direction)
 
     def get_proficiency(self, _proficiency):
@@ -132,6 +134,11 @@ class Actor(wireframe.Blueprint):
         """
 
         return self._set_equipment_by_position(equipment.position, equipment)
+    
+    def get_wielded_weapons(self):
+        """Helper function to return the weapons the actor has wielded."""
+
+        return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
     
     def notify(self, message = "", add_prompt = True):
         """Called to tell the actor a generic message. Only utilized by the 
@@ -177,11 +184,6 @@ class Actor(wireframe.Blueprint):
     def __str__(self):
         return self.title
     
-    def get_wielded_weapons(self):
-        """Helper function to return the weapons the actor has wielded."""
-
-        return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
-    
     def status(self):
         """A string representation of the approximate physical health of the
         actor, based on the percentage of hp remaining.
@@ -206,29 +208,6 @@ class Actor(wireframe.Blueprint):
             description = 'is in excellent condition'
 
         return str(self).title()+' '+description+'.'
-    
-    def reward_kill(self, victim):
-        """Applies kill experience from the victim to the killer and checks
-        for a level up.
-
-        """
-
-        # calculate the kill experience
-        leveldiff = victim.level - self.level
-        experience = 200 + 30 * leveldiff
-        if leveldiff > 5:
-            experience *= 1 + random.randint(0, leveldiff*2) / 100
-        aligndiff = abs(victim.alignment - self.alignment) / 2000
-        if aligndiff > 0.5:
-            mod = random.randint(15, 35) / 100
-            experience *= 1 + aligndiff - mod
-        experience = random.uniform(experience * 0.8, experience * 1.2)
-        experience = experience if experience > 0 else 0
-
-        # award experience and check for level change
-        self.experience += experience
-        if self.qualifies_for_level():
-            self.notify(__config__.messages["qualifies_for_level"])
 
     def get_alignment(self):
         """A string representation of the actor's alignment. Alignment is
@@ -246,7 +225,7 @@ class Actor(wireframe.Blueprint):
     def looked_at(self):
         """What a user sees when they look at the actor."""
 
-        return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here"
+        return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here."
 
     def add_affect(self, aff):
         """Apply an affect to the actor."""
@@ -285,9 +264,30 @@ class Actor(wireframe.Blueprint):
 
         # calls attack rounds until target is removed
         server.__instance__.heartbeat.attach('pulse', self._do_regular_attacks)
+    
+    def reward_kill(self, victim):
+        """Applies kill experience from the victim to the killer and checks
+        for a level up.
 
-    def has_affect(self, name):
-        return collection.find("glow", self.get_affects())
+        """
+
+        # calculate the kill experience
+        leveldiff = victim.level - self.level
+        experience = 200 + 30 * leveldiff
+        if leveldiff > 5:
+            experience *= 1 + random.randint(0, leveldiff*2) / 100
+        aligndiff = abs(victim.alignment - self.alignment) / 2000
+        if aligndiff > 0.5:
+            mod = random.randint(15, 35) / 100
+            experience *= 1 + aligndiff - mod
+        experience = int(round(random.uniform(experience * 0.8, experience * 1.2)))
+        experience = experience if experience > 0 else 0
+
+        # award experience and check for level change
+        self.experience += experience
+        self.notify("You gained "+str(experience)+" experience points.")
+        if self.qualifies_for_level():
+            self.notify(__config__.messages["qualifies_for_level"])
 
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
@@ -336,6 +336,9 @@ class Actor(wireframe.Blueprint):
     
     def sleep(self):
         self.disposition = Disposition.SLEEPING
+
+    def has_affect(self, name):
+        return collection.find("glow", self.get_affects())
 
     def get_affects(self):
         """Returns all affects currently applied to the actor, including base
@@ -485,6 +488,10 @@ class Actor(wireframe.Blueprint):
         
         """
 
+        self.get_room().announce({
+            self: "You died!!",
+            "all": "%s died!" % str(self).title()
+        })
         if self.target:
             self.target.reward_kill(self)
         self._end_battle()
@@ -499,7 +506,6 @@ class Actor(wireframe.Blueprint):
             self.inventory.remove(i)
             corpse.inventory.append(i)
         self.get_room().inventory.append(corpse)
-        self.dispatch("changed", self, str(self).title()+" dies.")
 
 class Mob(Actor):
     """NPCs of the game, mobs are the inhabitants of the mud world."""
@@ -513,8 +519,15 @@ class Mob(Actor):
         self.movement = 0
         self.movement_timer = self.movement
         self.respawn = 1
+        self.respawn_timer = self.respawn
         self.auto_flee = False
+        self.start_room = None
         super(Mob, self).__init__()
+
+    def room_update(self, actor):
+        """Event listener for when the room update fires."""
+
+        pass
     
     def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from
@@ -542,7 +555,19 @@ class Mob(Actor):
     
     def _die(self):
         super(Mob, self)._die()
-        self.room = room.__PURGATORY__
+        self.get_room().move_actor(self)
+        room.get(room.__PURGATORY__).arriving(self)
+        server.__instance__.heartbeat.attach('tick', self._respawn)
+
+    def _respawn(self):
+        self.respawn_timer -= 1
+        if self.respawn_timer < 0:
+            server.__instance__.heartbeat.detach('tick', self._respawn)
+            self.curhp = self.get_attribute('hp')
+            self.curmana = self.get_attribute('mana')
+            self.curmovement = self.get_attribute('movement')
+            self.get_room().move_actor(self)
+            room.get(self.start_room).arriving(self)
     
 class User(Actor):
     """The actor controlled by a client connected by the server."""

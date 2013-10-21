@@ -27,7 +27,7 @@ rooms:
       items: []
     last_command: null
     level: 0
-    long: Hassan is standing here
+    long: 
     movement: 0
     movement_timer: 0
     name: hassan
@@ -38,7 +38,7 @@ rooms:
     room: 1
     sex: neutral
     target: null
-    title: hassan
+    title: Hassan
     trained_attributes: {}
     trains: 0
   area: midgaard

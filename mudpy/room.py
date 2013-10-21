@@ -7,8 +7,8 @@ dungeons, and more.
 from . import item, observer, wireframe, collection
 import random
 
-__START_ROOM__ = None
-__PURGATORY__ = None
+__START_ROOM__ = 1
+__PURGATORY__ = "purgatory"
 __ROOMS__ = {}
 __AREAS__ = {}
 
@@ -121,7 +121,8 @@ class Room(wireframe.Blueprint):
         self.detach('actor_changed', actor.room_update)
 
     def arriving(self, actor, direction = ""):
-        self.actors.append(actor)
+        if not actor in self.actors:
+            self.actors.append(actor)
         actor.room = self.name
         self.attach('actor_changed', actor.room_update)
     
@@ -274,7 +275,8 @@ class Area(wireframe.Blueprint):
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
             for m in room.mobs():
-                m.room = room.name
+                room.arriving(m)
+                m.start_room = room.name
 
     def __str__(self):
         return self.name
