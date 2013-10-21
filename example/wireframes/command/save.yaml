@@ -1,4 +1,4 @@
 !<u!command>
 name: save
 execute:
-    - actor.save()
+    - actor.save(args)
