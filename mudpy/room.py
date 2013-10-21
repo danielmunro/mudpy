@@ -27,6 +27,24 @@ def get(room_name, direction = ""):
 def area(area_name):
     return __AREAS__[area_name]
 
+def copy(start_room, direction):
+    global __ROOMS__
+
+    Area.auto_room_name = Area.auto_room_name + 1
+
+    # create new room
+    new_room = Room()
+    new_room.title = start_room.title
+    new_room.description = start_room.description
+    new_room.area = start_room.area
+    new_room.lit = start_room.lit
+    new_room.name = Area.auto_room_name
+    new_room.directions[Direction.get_reverse(direction)] = start_room.name
+    start_room.directions[direction] = new_room.name
+
+    __ROOMS__[new_room.name] = new_room
+    start_room.get_area().rooms.append(new_room)
+
 class Room(wireframe.Blueprint):
     """Basic space representation game configuration files. Has a name (title),
     description, a list of actors in the room, an inventory of items, and a
@@ -37,11 +55,11 @@ class Room(wireframe.Blueprint):
     yaml_tag = "u!room"
 
     def __init__(self):
-        self.name = ''
+        self.name = 0
         self.title = ''
         self.description = ''
         self.actors = []
-        self.inventory = []
+        self.inventory = item.Inventory()
         self.directions = {}
         self.area = ''
         self.lit = True
@@ -198,6 +216,12 @@ class Grid(Room):
 
 class Direction(object):
     name = ""
+
+    @staticmethod
+    def match(direction):
+        for _direction in ["north", "south", "east", "west", "up", "down"]:
+            if _direction.startswith(direction):
+                return _direction
     
     @staticmethod
     def get_random(allowedDirections = []):
@@ -235,6 +259,7 @@ class Down(Direction):
 class Area(wireframe.Blueprint):
 
     yaml_tag = "u!area"
+    auto_room_name = 0
 
     def __init__(self):
         self.name = ""
@@ -247,6 +272,7 @@ class Area(wireframe.Blueprint):
         for room in self.rooms:
             __ROOMS__[room.name] = room
             room.area = self.name
+            Area.auto_room_name = max(Area.auto_room_name, room.name)
             for m in room.mobs():
                 m.room = room.name
 

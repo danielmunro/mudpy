@@ -155,6 +155,40 @@ def flee(actor):
         look(actor)
     else:
         actor.notify(actor.last_command.messages['no_target'])
+
+def room(actor, args):
+
+    arg_len = len(args)
+
+    command = args[0] if arg_len > 0 else ""
+    prop = args[1] if arg_len > 1 else ""
+
+    if command == "copy":
+        direction = prop
+        if not direction:
+            actor.notify(actor.last_command.messages['room_need_dir'])
+            return
+        from . import room
+        direction = room.Direction.match(direction)
+        if direction:
+            room.copy(actor.get_room(), direction)
+            actor.notify(actor.last_command.messages['room_created'])
+        else:
+            actor.notify(actor.last_command.messages['room_bad_dir'])
+    elif command == "set":
+        if prop == "title":
+            actor.get_room().title = " ".join(args[2:])
+        elif prop == "description":
+            actor.get_room().description = " ".join(args[2:])
+        elif prop == "lit":
+            actor.get_room().lit = args[2]
+        else:
+            actor.notify(actor.last_command.messages['room_bad_property'])
+        actor.notify(actor.last_command.messages['room_property_set'] % prop)
+    else:
+        actor.notify(actor.last_command.messages['room_no_args'])
+
+
 """
 def _command_wear(self, _invoked_command, _args):
     ""Attempt to wear a piece of equipment or a weapon from the inventory.
