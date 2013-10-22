@@ -25,9 +25,15 @@ def log(message, status = "info"):
                                                          str(message)+'\n')
     fp.flush()
 
-    # better error visibility and testing
-    if status == 'error' or status == 'notice':
-        print message
+def notice(message):
+    log(message, "notice")
+    print message
+
+def error(message):
+    log(message, "error")
+    print message
+    import sys
+    sys.exit()
 
 class DebugException(Exception):
     """Raised when an error message is passed to the debugger. Error messages

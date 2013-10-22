@@ -20,11 +20,12 @@ def main():
 
 __mudpy__ = Mudpy()
 
-try:
-    __mudpy__.path = sys.argv[1]
-except KeyError:
-    debug.log("Needs path, ie python main.py example", "error")
-    raise
-
 if __name__ == "__main__":
+
+    # if mudpy is run directly, it needs a path from cli args to load the game
+    if len(sys.argv) > 1:
+        __mudpy__.path = sys.argv[1]
+    else:
+        debug.error("Needs path, ie python main.py example")
+
     main()
