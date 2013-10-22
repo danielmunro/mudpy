@@ -265,30 +265,6 @@ class Actor(wireframe.Blueprint):
         # calls attack rounds until target is removed
         server.__instance__.heartbeat.attach('pulse', self._do_regular_attacks)
     
-    def reward_kill(self, victim):
-        """Applies kill experience from the victim to the killer and checks
-        for a level up.
-
-        """
-
-        # calculate the kill experience
-        leveldiff = victim.level - self.level
-        experience = 200 + 30 * leveldiff
-        if leveldiff > 5:
-            experience *= 1 + random.randint(0, leveldiff*2) / 100
-        aligndiff = abs(victim.alignment - self.alignment) / 2000
-        if aligndiff > 0.5:
-            mod = random.randint(15, 35) / 100
-            experience *= 1 + aligndiff - mod
-        experience = int(round(random.uniform(experience * 0.8, experience * 1.2)))
-        experience = experience if experience > 0 else 0
-
-        # award experience and check for level change
-        self.experience += experience
-        self.notify("You gained "+str(experience)+" experience points.")
-        if self.qualifies_for_level():
-            self.notify(__config__.messages["qualifies_for_level"])
-
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
 
@@ -476,10 +452,10 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        if self.target:
-            if self.target.target is self:
-                self.target.set_target()
-            self.set_target()
+        for _actor in self.get_room().actors:
+            if _actor.target is self:
+                _actor.set_target()
+        self.set_target()
     
     def _die(self):
         """What happens when the user is killed (regardless of the method of
@@ -493,8 +469,24 @@ class Actor(wireframe.Blueprint):
             "all": "%s died!" % str(self).title()
         })
         if self.target:
-            self.target.reward_kill(self)
-        self._end_battle()
+            # calculate the kill experience
+            leveldiff = self.level - self.target.level
+            experience = 200 + 30 * leveldiff
+            if leveldiff > 5:
+                experience *= 1 + random.randint(0, leveldiff*2) / 100
+            aligndiff = abs(self.alignment - self.target.alignment) / 2000
+            if aligndiff > 0.5:
+                mod = random.randint(15, 35) / 100
+                experience *= 1 + aligndiff - mod
+            experience = int(round(random.uniform(experience * 0.8, experience * 1.2)))
+            experience = experience if experience > 0 else 0
+
+            # award experience and check for level change
+            self.target.experience += experience
+            self.target.notify("You gained "+str(experience)+" experience points.")
+            if self.target.qualifies_for_level():
+                self.target.notify(__config__.messages["qualifies_for_level"])
+            self._end_battle()
         self.disposition = Disposition.LAYING
         self.curhp = 1
         corpse = item.Corpse()
@@ -563,6 +555,7 @@ class Mob(Actor):
         self.respawn_timer -= 1
         if self.respawn_timer < 0:
             server.__instance__.heartbeat.detach('tick', self._respawn)
+            self.disposition = Disposition.STANDING
             self.curhp = self.get_attribute('hp')
             self.curmana = self.get_attribute('mana')
             self.curmovement = self.get_attribute('movement')
