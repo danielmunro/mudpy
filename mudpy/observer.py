@@ -9,7 +9,7 @@ class Observer(object):
 
     """
 
-    def init(self):
+    def __init__(self):
         self.observers = {}
 
     def attach(self, event, func):

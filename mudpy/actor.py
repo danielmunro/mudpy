@@ -11,13 +11,9 @@ from . import debug, room, server, item, collection, calendar, wireframe, \
 # Needed for creating these things from wireframes -- hacky
 from . import command, affect
 
-class Proxy(observer.Observer):
-    def __init__(self):
-        self.observers = {}
-
 __SAVE_DIR__ = 'data'
 __config__ = None
-__proxy__ = Proxy()
+__proxy__ = observer.Observer()
 
 if '__mudpy__' in __main__.__dict__:
 
