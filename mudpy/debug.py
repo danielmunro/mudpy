@@ -32,13 +32,3 @@ def notice(message):
 def error(message):
     log(message, "error")
     print message
-    import sys
-    sys.exit()
-
-class DebugException(Exception):
-    """Raised when an error message is passed to the debugger. Error messages
-    do not kill execution (ie sys.exit()) for easier testability.
-
-    """
-
-    pass
