@@ -1,0 +1,15 @@
+!<u!area>
+location: nether
+name: administrata
+rooms:
+- !<u!room>
+  actors: []
+  area: administrata
+  description: How did you get here?
+  directions: {}
+  inventory: !<u!inventory>
+    item_count: {}
+    items: []
+  lit: true
+  name: purgatory
+  title: Purgatory
