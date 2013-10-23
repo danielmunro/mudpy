@@ -27,5 +27,6 @@ if __name__ == "__main__":
         __mudpy__.path = sys.argv[1]
     else:
         debug.error("Needs path, ie python main.py example")
+        sys.exit()
 
     main()
