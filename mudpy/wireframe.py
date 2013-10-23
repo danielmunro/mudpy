@@ -93,8 +93,8 @@ def create(name, subdirectory = "wireframes"):
         with open(wireframe_path, "r") as fp:
             return yaml.load(fp)
     except IOError:
-        pass
-    raise WireframeException("wireframe does not exist: "+name)
+        debug.error("wireframe does not exist: "+name)
+        raise
 
 def save(thing, subdirectory = "areas"):
     
