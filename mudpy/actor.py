@@ -84,7 +84,7 @@ class Actor(wireframe.Blueprint):
         self.curmana = self.attributes['mana']
         self.curmovement = self.attributes['movement']
         self.sex = "neutral"
-        self.room = None
+        self.room = 1
         self.abilities = []
         self.affects = []
         self.target = None
@@ -314,7 +314,7 @@ class Actor(wireframe.Blueprint):
         self.disposition = Disposition.SLEEPING
 
     def has_affect(self, name):
-        return collection.find("glow", self.get_affects())
+        return collection.find(name, self.get_affects())
 
     def get_affects(self):
         """Returns all affects currently applied to the actor, including base
@@ -334,14 +334,12 @@ class Actor(wireframe.Blueprint):
             self.notify(__config__.messages['move_failed_incapacitated'])
             return True
 
-    def _end_affect(self, args):
+    def _end_affect(self, affect):
         """Called when an affect ends."""
 
-        server.__instance__.heartbeat.detach('tick',
-                                args['affect'].countdown_timeout)
-        self.affects.remove(args['affect'])
+        self.affects.remove(affect)
         try:
-            self.dispatch('changed', args['affect'], self, args['affect'].messages['end']['all'] % self)
+            self.dispatch('changed', affect, self, affect.messages['end']['all'] % self)
         except KeyError:
             pass
 
@@ -601,9 +599,9 @@ class User(Actor):
         super(User, self).add_affect(aff)
         self.notify(aff.messages['start']['self'])
 
-    def _end_affect(self, args):
-        super(User, self)._end_affect(args)
-        self.notify(args['affect'].messages['end']['self'])
+    def _end_affect(self, affect):
+        super(User, self)._end_affect(affect)
+        self.notify(affect.messages['end']['self'])
     
     def _tick(self):
         super(User, self)._tick()
@@ -667,10 +665,6 @@ class User(Actor):
         server.__instance__.heartbeat.attach('stat', self.stat)
         server.__instance__.heartbeat.attach('cycle', self._update_delay)
 
-        # set the room
-        if not self.room:
-            self.room = 'room.1'#room.__START_ROOM__
-
         self.get_room().arriving(self)
 
         command.look(self)
@@ -685,14 +679,14 @@ class User(Actor):
         for ability in self.get_abilities():
             ability.attach('perform', self.perform_ability)
             if ability.hook == 'input':
-                def check_input(args):
+                def check_input(user, args):
                     """Checks if the user is trying to perform an ability with
                     a given input.
 
                     """
 
-                    if ability.name.startswith(args['args'][0]):
-                        ability.try_perform(self, args['args'][:2])
+                    if ability.name.startswith(args[0]):
+                        ability.try_perform(self, args[1:])
                         return True
                 self.client.attach('input', check_input)
 
@@ -860,8 +854,9 @@ class Ability(wireframe.Blueprint):
 
         """
 
-        args = args[0]
+        receiver = None
         try:
+            args = args[0]
             receiver = invoker.get_room().get_actor(args[-1])
         except IndexError:
             pass
@@ -873,7 +868,7 @@ class Ability(wireframe.Blueprint):
             if success:
                 self.perform(receiver)
             else:
-                self.notify('failed')
+                invoker.notify('failed')
         else:
             invoker.notify(__config__.messages['apply_cost_fail'])
 
@@ -930,9 +925,9 @@ class Race(wireframe.Blueprint):
         self.affects = []
 
     def get_attribute(self, attribute):
-        try:
+        if attribute in self.attributes:
             return self.attributes[attribute]
-        except KeyError:
+        else:
             return 0
     
     @classmethod

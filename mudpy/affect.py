@@ -17,10 +17,7 @@ class Affect(wireframe.Blueprint):
         self.messages = {}
 
     def get_attribute(self, attr):
-        try:
-            return self.attributes[attr]
-        except KeyError:
-            return 0
+        return self.attributes[attr] if attr in self.attributes else 0
     
     def countdown_timeout(self):
         """Count down the affect timer."""

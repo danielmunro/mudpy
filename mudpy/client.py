@@ -139,7 +139,6 @@ class Login:
             else:
                 raise LoginException(__config__.messages["creation_alignment_not_valid"])
             self.client.user = self.newuser
-            self.newuser.set_experience_per_level()
             self.newuser.loggedin()
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))
