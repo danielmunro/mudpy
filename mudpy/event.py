@@ -9,13 +9,15 @@ class Event(wireframe.Blueprint):
         self.observers = {}
         self.events = {}
 
-    def setup_events(self, publisher):
+    def attach_events(self, publisher):
         self.publisher = publisher
         for e in self.events:
-            self.publisher.attach(e, self.attach_event)
+            for listeners in self.events[e]:
+                fn = getattr(self, listeners['method'])
+                self.publisher.attach(e, fn)
 
-    def attach_event(self, event, subscriber):
-        event_names = self.events[event]
-        for event_name in event_names:
-            fn = getattr(subscriber, event_name)
-            self.publisher.attach(event_name, fn)
+    def register_subscriber_to_publisher(self, event, subscriber):
+        for e in self.events[event]:
+            subscriber_callback = e['subscriber_callback']
+            fn = getattr(subscriber, subscriber_callback)
+            self.publisher.attach(subscriber_callback, fn)
