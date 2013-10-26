@@ -13,33 +13,31 @@ __instance__ = None
 
 if '__mudpy__' in __main__.__dict__:
 
+    m = __main__.__mudpy__
+
     def initialize_server():
         global __instance__, __config__
 
-        __instance__ = Instance()
+        __instance__ = Instance(m)
         __config__ = wireframe.create("config.server")
 
     def start_server():
         from . import client
         __instance__.start_listening(client.ClientFactory())
 
-    def actor_created(actor):
-        __instance__.heartbeat.attach('tick', actor._tick)
-
-    m = __main__.__mudpy__
     m.attach('initialize', initialize_server)
     m.attach('start', start_server)
-    m.attach('actor_created', actor_created)
 
 class Instance:
     """Information about the implementation of this mud.py server."""
     
-    def __init__(self):
+    def __init__(self, mudpy):
         # initialize heartbeat, which records the time of initialization and
         # keeps track of its own reference to the reactor. Heartbeat uses
         # reactor to call functions in the game thread from the thread
         # listening to the network
-        self.heartbeat = Heartbeat()
+        self.heartbeat = Heartbeat(mudpy)
+        self.mudpy = mudpy
 
     def start_listening(self, client_factory):
         """Takes a client_factory (twisted Factory implementation), and set it
@@ -49,27 +47,10 @@ class Instance:
 
         """
 
-        def set_client_poll(client):
-            """Called when the client_factory reports that a client is
-            created.
-
-            """
-
-            __instance__.heartbeat.attach("cycle", client.poll)
-
-        def unset_client_poll(client):
-            """Called when the client_factory reports that a client has been
-            destroyed.
-
-            """
-
-            __instance__.heartbeat.detach("cycle", client.poll)
-
-
         # call set_client_poll whenever client_factory creates a new client,
         # and call unset_client_poll when clients are destroyed
-        client_factory.attach("created", set_client_poll)
-        client_factory.attach("destroyed", unset_client_poll) 
+        client_factory.attach("created", self._set_client_poll)
+        client_factory.attach("destroyed", self._unset_client_poll) 
 
         # define an endpoint for the reactor in mud.py's ClientFactory, an
         # implementation of twisted's Factory
@@ -82,6 +63,19 @@ class Instance:
 
         # start the twisted client listener thread
         reactor.run()
+
+    def _set_client_poll(self, client):
+        """Called when the client_factory reports that a client is created."""
+
+        self.mudpy.attach("cycle", client.poll)
+
+    def _unset_client_poll(self, client):
+        """Called when the client_factory reports that a client has been
+        destroyed.
+
+        """
+
+        self.mudpy.detach("cycle", client.poll)
     
     def __str__(self):
         return str(__config__)
@@ -99,7 +93,8 @@ class Heartbeat(observer.Observer):
 
     PULSE_SECONDS = 1
 
-    def __init__(self):
+    def __init__(self, mudpy):
+        self.mudpy = mudpy
         self.observers = {}
         self.stopwatch = Stopwatch()
         super(Heartbeat, self).__init__()
@@ -117,16 +112,17 @@ class Heartbeat(observer.Observer):
                                         Heartbeat.TICK_LOWBOUND_SECONDS, \
                                         Heartbeat.TICK_HIGHBOUND_SECONDS)
         while(1):
-            self.dispatch('cycle')
+            self.mudpy.dispatch('cycle')
             if time.time() >= next_pulse:
                 next_pulse += Heartbeat.PULSE_SECONDS
-                self.dispatch('pulse', 'stat')
+                self.mudpy.dispatch('pulse')
+                self.mudpy.dispatch('stat')
             if time.time() >= next_tick:
                 next_tick = time.time()+random.randint(
                                         Heartbeat.TICK_LOWBOUND_SECONDS, \
                                         Heartbeat.TICK_HIGHBOUND_SECONDS)
                 _stop = Stopwatch()
-                self.dispatch('tick')
+                self.mudpy.dispatch('tick')
                 debug.log('dispatched tick ['+str(_stop)+'s elapsed in tick]'+ \
                             ' ['+str(self.stopwatch)+'s elapsed since start]')
 

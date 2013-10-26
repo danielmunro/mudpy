@@ -37,4 +37,10 @@ class Observer(object):
                 if handled:
                     break
 
+        if "__any__" in self.observers:
+            for func in self.observers["__any__"]:
+                handled = func(event, *args)
+                if handled:
+                    break
+
         return handled

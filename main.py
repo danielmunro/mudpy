@@ -14,9 +14,9 @@ class Mudpy(observer.Observer):
         self.path = ""
 
 def main():
-    from mudpy import wireframe, server, calendar, client, actor
-    __mudpy__.dispatch('initialize')
-    __mudpy__.dispatch('start')
+    from mudpy import game, wireframe, server, calendar, client, actor
+    __mudpy__.dispatch("initialize")
+    __mudpy__.dispatch("start")
 
 __mudpy__ = Mudpy()
 

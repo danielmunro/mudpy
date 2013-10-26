@@ -15,16 +15,16 @@ __SAVE_DIR__ = 'data'
 __config__ = None
 __proxy__ = observer.Observer()
 
+def broadcast_to_mudpy(*args):
+    __main__.__mudpy__.dispatch(args[0], *args)
+
 if '__mudpy__' in __main__.__dict__:
 
     def initialize_actor():
         global __config__
         __config__ = wireframe.create('config.actor')
 
-    def actor_created(actor):
-        __main__.__mudpy__.dispatch('actor_created', actor)
-
-    __proxy__.attach('actor_created', actor_created)
+    __proxy__.attach('__any__', broadcast_to_mudpy)
     __main__.__mudpy__.attach('initialize', initialize_actor)
     
 def get_damage_verb(dam_roll):
@@ -98,8 +98,6 @@ class Actor(wireframe.Blueprint):
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
             'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
             'wield0', 'wield1', 'float'])
-
-        __proxy__.dispatch('actor_created', self)
 
     def get_room(self, direction = ""):
         """Returns the current room the actor is in."""
@@ -241,7 +239,7 @@ class Actor(wireframe.Blueprint):
                 aff.attributes[attr] = self.get_attribute(attr) * modifier
 
         if aff.timeout > -1:
-            server.__instance__.heartbeat.attach('tick', aff.countdown_timeout)
+            __main__.__mudpy__.attach('tick', aff.countdown_timeout)
             aff.attach('end', self._end_affect)
 
     def set_target(self, target = None):
@@ -259,7 +257,7 @@ class Actor(wireframe.Blueprint):
         self.target.attach('attack_resolution', self._normalize_stats)
 
         # calls attack rounds until target is removed
-        server.__instance__.heartbeat.attach('pulse', self._do_regular_attacks)
+        __main__.__mudpy__.attach('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
@@ -438,7 +436,7 @@ class Actor(wireframe.Blueprint):
                 except IndexError:
                     pass
         else:
-            server.__instance__.heartbeat.detach('pulse', self._do_regular_attacks)
+            __main__.__mudpy__.detach('pulse', self._do_regular_attacks)
 
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are
@@ -543,12 +541,12 @@ class Mob(Actor):
         super(Mob, self)._die()
         self.get_room().move_actor(self)
         room.get(room.__PURGATORY__).arriving(self)
-        server.__instance__.heartbeat.attach('tick', self._respawn)
+        __main__.__mudpy__.attach('tick', self._respawn)
 
     def _respawn(self):
         self.respawn_timer -= 1
         if self.respawn_timer < 0:
-            server.__instance__.heartbeat.detach('tick', self._respawn)
+            __main__.__mudpy__.detach('tick', self._respawn)
             self.disposition = Disposition.STANDING
             self.curhp = self.get_attribute('hp')
             self.curmana = self.get_attribute('mana')
@@ -630,13 +628,13 @@ class User(Actor):
 
         if self.delay_counter > 0:
             if not self.last_delay:
-                server.__instance__.heartbeat.detach('cycle', self.client.poll)
+                __main__.__mudpy__.detach('cycle', self.client.poll)
             currenttime = int(time.time())
             if currenttime > self.last_delay:
                 self.delay_counter -= 1
                 self.last_delay = currenttime
         elif self.last_delay:
-            server.__instance__.heartbeat.attach('cycle', self.client.poll)
+            __main__.__mudpy__.attach('cycle', self.client.poll)
             self.last_delay = 0
     
     def level_up(self):
@@ -656,10 +654,11 @@ class User(Actor):
         from . import command
 
         self.attach('action', self._check_if_incapacitated)
+        __proxy__.dispatch("actor_enters_realm", self)
 
         # attach server events
-        server.__instance__.heartbeat.attach('stat', self.stat)
-        server.__instance__.heartbeat.attach('cycle', self._update_delay)
+        __main__.__mudpy__.attach('stat', self.stat)
+        __main__.__mudpy__.attach('cycle', self._update_delay)
 
         self.get_room().arriving(self)
 

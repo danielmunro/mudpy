@@ -269,14 +269,16 @@ class Area(wireframe.Blueprint):
         self.rooms = []
 
     def done_init(self):
+        from . import actor
         __AREAS__[self.name] = self
         for room in self.rooms:
             __ROOMS__[room.name] = room
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
-            for m in room.mobs():
-                room.arriving(m)
-                m.start_room = room.name
+            for mob in room.mobs():
+                actor.__proxy__.dispatch("actor_enters_realm", mob)
+                room.arriving(mob)
+                mob.start_room = room.name
 
     def __str__(self):
         return self.name
