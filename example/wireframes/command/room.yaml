@@ -1,0 +1,28 @@
+!<u!command>
+name: room
+messages:
+    room_no_args: >
+                Room help menu.
+
+
+                Arguments
+
+                =========
+
+                copy <direction> - copy the current room to the direction specified.
+
+                title <string> - Sets the room title.
+
+                description <string> - Sets the room description.
+
+                lit - Sets whether the room has a light source.
+
+    room_bad_dir: "That's not a valid direction."
+    room_bad_property: "That's not a valid property."
+    room_property_set: "Ok."
+    room_created: Room created.
+required:
+    - {property: yaml_tag, value: u!user}
+    - {property: role, value: immortal}
+execute:
+    - room(actor, args)
