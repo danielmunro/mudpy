@@ -4,21 +4,15 @@ server, calendar, and areas.
 
 """
 
-from mudpy import observer, debug
+from mudpy import mudpy, debug
 import sys
 
-class Mudpy(observer.Observer):
-    """Mudpy object is used to attach initialization and start events."""
-    def __init__(self):
-        self.observers = {}
-        self.path = ""
-
 def main():
-    from mudpy import game, wireframe, server, calendar, client, actor
+    from mudpy import wireframe, server, calendar, client, actor
     __mudpy__.dispatch("initialize")
     __mudpy__.dispatch("start")
 
-__mudpy__ = Mudpy()
+__mudpy__ = mudpy.Mudpy()
 
 if __name__ == "__main__":
 

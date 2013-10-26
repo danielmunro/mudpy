@@ -1,20 +1,9 @@
 from . import wireframe
-import importlib, __main__
+import __main__
 
-__instance__ = None
+class Event(wireframe.Blueprint):
 
-if '__mudpy__' in __main__.__dict__:
-
-    def initialize():
-        global __instance__
-        __instance__ = wireframe.create("game")
-        __instance__.setup_events()
-
-    __main__.__mudpy__.attach("initialize", initialize)
-
-class Game(wireframe.Blueprint):
-
-    yaml_tag = "u!game"
+    yaml_tag = "u!event"
 
     def __init__(self):
         self.observers = {}
