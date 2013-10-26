@@ -16,6 +16,10 @@ __config__ = None
 __proxy__ = observer.Observer()
 
 def broadcast_to_mudpy(*args):
+    """This function is used as a callback to proxy messages from actors to the
+    main game object, if it exists.
+    
+    """
     __main__.__mudpy__.dispatch(args[0], *args)
 
 if '__mudpy__' in __main__.__dict__:
@@ -321,6 +325,24 @@ class Actor(wireframe.Blueprint):
             if equipment:
                 affects += equipment.affects
         return affects
+    
+    def tick(self):
+        """Called on the actor by the server, part of a series of "heartbeats".
+        Responsible for regening the actor's hp, mana, and movement.
+        
+        """
+
+        modifier = random.uniform(0.05, 0.125)
+        if self.disposition == Disposition.INCAPACITATED:
+            modifier = -modifier
+        elif self.disposition == Disposition.LAYING:
+            modifier += random.uniform(0.01, 0.05)
+        elif self.disposition == Disposition.SLEEPING:
+            modifier += random.uniform(0.05, 0.1)
+        self.curhp += self.get_attribute('hp') * modifier
+        self.curmana += self.get_attribute('mana') * modifier
+        self.curmovement += self.get_attribute('movement') * modifier
+        self._normalize_stats()
 
     def _check_if_incapacitated(self, action):
 
@@ -339,24 +361,6 @@ class Actor(wireframe.Blueprint):
 
     def _attribute(self, attr):
         return self.attributes[attr] if attr in self.attributes else 0
-    
-    def _tick(self):
-        """Called on the actor by the server, part of a series of "heartbeats".
-        Responsible for regening the actor's hp, mana, and movement.
-        
-        """
-
-        modifier = random.uniform(0.05, 0.125)
-        if self.disposition == Disposition.INCAPACITATED:
-            modifier = -modifier
-        elif self.disposition == Disposition.LAYING:
-            modifier += random.uniform(0.01, 0.05)
-        elif self.disposition == Disposition.SLEEPING:
-            modifier += random.uniform(0.05, 0.1)
-        self.curhp += self.get_attribute('hp') * modifier
-        self.curmana += self.get_attribute('mana') * modifier
-        self.curmovement += self.get_attribute('movement') * modifier
-        self._normalize_stats()
     
     def _get_proficiencies(self):
         """Returns all actor's proficiencies, including known ones and ones
@@ -513,6 +517,11 @@ class Mob(Actor):
 
         pass
     
+    def tick(self):
+        super(Mob, self).tick()
+        if self.movement:
+            self._decrement_movement_timer()
+    
     def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from
         their current room to a new one. They cannot move to new areas however.
@@ -526,11 +535,6 @@ class Mob(Actor):
                 _room.area == self.get_room().area])
             self.move(direction)
             self.movement_timer = self.movement
-    
-    def _tick(self):
-        super(Mob, self)._tick()
-        if self.movement:
-            self._decrement_movement_timer()
     
     def _normalize_stats(self, _args = None):
         if self.curhp < 0:
@@ -592,14 +596,14 @@ class User(Actor):
     def add_affect(self, aff):
         super(User, self).add_affect(aff)
         self.notify(aff.messages['start']['self'])
+    
+    def tick(self):
+        super(User, self).tick()
+        self.notify()
 
     def _end_affect(self, affect):
         super(User, self)._end_affect(affect)
         self.notify(affect.messages['end']['self'])
-    
-    def _tick(self):
-        super(User, self)._tick()
-        self.notify()
     
     def _normalize_stats(self, _args = None):
         if self.curhp < -9:

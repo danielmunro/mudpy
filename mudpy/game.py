@@ -27,5 +27,5 @@ class Game(wireframe.Blueprint):
     def attach_event(self, event, observer):
         event_names = self.events[event]
         for event_name in event_names:
-            fn = getattr(observer, event_name[1])
-            __main__.__mudpy__.attach(event_name[0], fn)
+            fn = getattr(observer, event_name)
+            __main__.__mudpy__.attach(event_name, fn)

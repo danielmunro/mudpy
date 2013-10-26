@@ -1,4 +1,4 @@
 !<u!game>
 events:
   actor_enters_realm:
-     - [tick, _tick]
+     - tick
