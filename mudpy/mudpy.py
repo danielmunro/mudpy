@@ -11,4 +11,4 @@ class Mudpy(observer.Observer):
     def load_events(self):
         from . import wireframe, event
         self.events = wireframe.create("event.mudpy")
-        self.events.setup_events()
+        self.events.setup_events(self)

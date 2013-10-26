@@ -9,12 +9,13 @@ class Event(wireframe.Blueprint):
         self.observers = {}
         self.events = {}
 
-    def setup_events(self):
+    def setup_events(self, publisher):
+        self.publisher = publisher
         for e in self.events:
-            __main__.__mudpy__.attach(e, self.attach_event)
+            self.publisher.attach(e, self.attach_event)
 
-    def attach_event(self, event, observer):
+    def attach_event(self, event, subscriber):
         event_names = self.events[event]
         for event_name in event_names:
-            fn = getattr(observer, event_name)
-            __main__.__mudpy__.attach(event_name, fn)
+            fn = getattr(subscriber, event_name)
+            self.publisher.attach(event_name, fn)
