@@ -29,7 +29,7 @@ class Client(observer.Observer, Protocol):
         super(Client, self).__init__()
         self.events = wireframe.create("event.client")
         self.events.on_events(self)
-        Login(self)
+        self.on("input", Login().step)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"])
@@ -70,11 +70,10 @@ class Client(observer.Observer, Protocol):
 class Login:
     """Login class, encapsulates relatively procedural login steps."""
 
-    def __init__(self, client):
+    def __init__(self):
         self.todo = ["login", "race", "alignment"]
         self.done = []
         self.newuser = None
-        client.on("input", self.step)
     
     def step(self, _event, client, data):
         """Called for each successive step of the login/alt creation
