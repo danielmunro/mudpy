@@ -4,7 +4,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import debug, observer, actor, wireframe
+from . import debug, observer, actor, wireframe, event
 import __main__
 
 __config__ = None
@@ -23,12 +23,13 @@ class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
 
     def __init__(self):
-        self.commandbuffer = []
+        self.input_buffer = []
         self.client_factory = None
         self.user = None
         self.login = Login(self)
-        self.observers = {}
         super(Client, self).__init__()
+        self.events = wireframe.create("event.client")
+        self.events.on_events(self)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"])
@@ -47,38 +48,35 @@ class Client(observer.Observer, Protocol):
         self.transport.loseConnection()
     
     def dataReceived(self, data):
-        self.commandbuffer.append(data.strip())
+        self.input_buffer.append(data.strip())
 
-    def get_new_user(self):
-        """Returns a user of the type defined in the configs."""
-
-        return actor.User()
-    
     def poll(self, _event = None):
-        """Listener for game cycle, checks the command buffer for new input.
-        If a user is logged in fire an input event, which will notify
-        command, ability, and other listeners. Otherwise, attempt to continue
-        the login process.
+        """Game cycle listener, will pop off input and send it off to get
+        processed.
 
         """
 
-        try:
-            data = self.commandbuffer.pop(0)
-        except IndexError:
-            return
-    
-        if not self.user:
-            return self.login.step(data)
-        elif data:
-            args = data.split(" ")
-            handled = self.fire("input", self.user, args)
-            if not handled:
-                self.user.notify(__config__.messages["input_not_handled"])
+        if self.input_buffer:
+            data = self.input_buffer.pop(0)
+            if data:
+                return self._process_input_from_buffer(data)
     
     def write(self, message):
         """Send a message from the game to the client."""
 
         self.transport.write(str(message)+" ")
+
+    def _process_input_from_buffer(self, data):
+        """Uses input from the client to either progress user login or send
+        input to a logged in user.
+
+        """
+
+        if self.user:
+            args = data.split(" ")
+            handled = self.fire("input", self.user, args)
+        else:
+            return self.login.step(data)
     
 class Login:
     """Login class, encapsulates relatively procedural login steps."""
@@ -112,7 +110,7 @@ class Login:
                 self.client.user = user
                 user.loggedin()
                 return
-            self.newuser = self.client.get_new_user()
+            self.newuser = actor.User()
             self.newuser.client = self.client
             self.newuser.name = data
             self.client.write(__config__.messages["creation_race_query"])

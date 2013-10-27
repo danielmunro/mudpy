@@ -26,3 +26,8 @@ class Event(wireframe.Blueprint):
                 subscriber_callback = e['remove_subscriber_callback']
                 fn = getattr(subscriber, subscriber_callback)
                 self.publisher.off(e['event'], fn)
+
+    def subscriber_execute(self, event, subscriber, *_args):
+        for e in self.events[event]:
+            if e['method'] == 'subscriber_execute':
+                eval('subscriber.'+e['execute'])

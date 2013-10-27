@@ -1,0 +1,5 @@
+!<u!event>
+events:
+    input.__unhandled__: 
+        - {method: subscriber_execute,
+            execute: "notify('What was that?')"}
