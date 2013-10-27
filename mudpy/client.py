@@ -26,10 +26,10 @@ class Client(observer.Observer, Protocol):
         self.input_buffer = []
         self.client_factory = None
         self.user = None
-        self.login = Login(self)
         super(Client, self).__init__()
         self.events = wireframe.create("event.client")
         self.events.on_events(self)
+        Login(self)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"])
@@ -51,32 +51,21 @@ class Client(observer.Observer, Protocol):
         self.input_buffer.append(data.strip())
 
     def poll(self, _event = None):
-        """Game cycle listener, will pop off input and send it off to get
-        processed.
+        """Game cycle listener, will pop off input from the client's command
+        buffer and trigger an input event on the client object.
 
         """
 
         if self.input_buffer:
             data = self.input_buffer.pop(0)
             if data:
-                return self._process_input_from_buffer(data)
+                sender = self.user if self.user else self
+                return self.fire("input", sender, data.split(" "))
     
     def write(self, message):
         """Send a message from the game to the client."""
 
         self.transport.write(str(message)+" ")
-
-    def _process_input_from_buffer(self, data):
-        """Uses input from the client to either progress user login or send
-        input to a logged in user.
-
-        """
-
-        if self.user:
-            args = data.split(" ")
-            handled = self.fire("input", self.user, args)
-        else:
-            return self.login.step(data)
     
 class Login:
     """Login class, encapsulates relatively procedural login steps."""
@@ -84,14 +73,16 @@ class Login:
     def __init__(self, client):
         self.todo = ["login", "race", "alignment"]
         self.done = []
-        self.client = client
         self.newuser = None
+        client.on("input", self.step)
     
-    def step(self, data):
+    def step(self, _event, client, data):
         """Called for each successive step of the login/alt creation
         process.
 
         """
+
+        data = " ".join(data)
 
         def login(data):
             """First step of login process. Check if requested alt exists or
@@ -106,14 +97,15 @@ class Login:
 
             user = actor.User.load(data)
             if user:
-                user.client = self.client
-                self.client.user = user
+                user.client = client
+                client.user = user
+                client.off("input", self.step)
                 user.loggedin()
-                return
+                return True
             self.newuser = actor.User()
-            self.newuser.client = self.client
+            self.newuser.client = client
             self.newuser.name = data
-            self.client.write(__config__.messages["creation_race_query"])
+            client.write(__config__.messages["creation_race_query"])
 
         def race(data):
             """If a new alt, have them select a race."""
@@ -123,7 +115,7 @@ class Login:
             except KeyError:
                 raise LoginException(__config__.messages["creation_race_not_valid"])
 
-            self.client.write(__config__.messages["creation_alignment_query"])
+            client.write(__config__.messages["creation_alignment_query"])
         
         def alignment(data):
             """New alts need an alignment."""
@@ -136,7 +128,8 @@ class Login:
                 self.newuser.alignment = -1000
             else:
                 raise LoginException(__config__.messages["creation_alignment_not_valid"])
-            self.client.user = self.newuser
+            client.user = self.newuser
+            client.off("input", self.step)
             self.newuser.loggedin()
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))
@@ -146,8 +139,9 @@ class Login:
         try:
             locals()[step](data)
             self.done.append(step)
+            return True
         except LoginException as error:
-            self.client.write(error)
+            client.write(error)
             self.todo.insert(0, step)
 
 class ClientFactory(tFactory, observer.Observer):
