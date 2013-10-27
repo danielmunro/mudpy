@@ -15,13 +15,13 @@ if '__mudpy__' in __main__.__dict__:
 
     m = __main__.__mudpy__
 
-    def initialize_server():
+    def initialize_server(_event = None):
         global __instance__, __config__
 
         __instance__ = Instance(m)
         __config__ = wireframe.create("config.server")
 
-    def start_server():
+    def start_server(_event = None):
         from . import client
         __instance__.start_listening(client.ClientFactory())
 
@@ -64,12 +64,12 @@ class Instance:
         # start the twisted client listener thread
         reactor.run()
 
-    def _set_client_poll(self, client):
+    def _set_client_poll(self, _event, client):
         """Called when the client_factory reports that a client is created."""
 
         self.mudpy.attach("cycle", client.poll)
 
-    def _unset_client_poll(self, client):
+    def _unset_client_poll(self, _event, client):
         """Called when the client_factory reports that a client has been
         destroyed.
 

@@ -8,7 +8,7 @@ __instance__ = None
 
 if '__mudpy__' in __main__.__dict__:
 
-    def initialize_calendar():
+    def initialize_calendar(_event = None):
 
         global __instance__, __config__
 

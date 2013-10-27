@@ -2,4 +2,5 @@
 events:
     actor_enters_realm: 
         - {method: register_subscriber_to_publisher,
-            subscriber_callback: tick}
+            event: tick,
+            add_subscriber_callback: tick}

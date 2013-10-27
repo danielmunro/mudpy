@@ -10,13 +10,13 @@ if '__mudpy__' in __main__.__dict__:
 
     m = __main__.__mudpy__
 
-    def load_wireframes():
+    def load_wireframes(_event = None):
         global path
 
         path = m.path
         preload()
 
-    def start_wireframes():
+    def start_wireframes(_event = None):
         load_areas()
 
     m.attach('initialize', load_wireframes)

@@ -20,11 +20,11 @@ def broadcast_to_mudpy(*args):
     main game object, if it exists.
     
     """
-    __main__.__mudpy__.dispatch(args[0], *args)
+    __main__.__mudpy__.dispatch(*args)
 
 if '__mudpy__' in __main__.__dict__:
 
-    def initialize_actor():
+    def initialize_actor(_event = None):
         global __config__
         __config__ = wireframe.create('config.actor')
 
@@ -326,7 +326,7 @@ class Actor(wireframe.Blueprint):
                 affects += equipment.affects
         return affects
     
-    def tick(self):
+    def tick(self, _event = None):
         """Called on the actor by the server, part of a series of "heartbeats".
         Responsible for regening the actor's hp, mana, and movement.
         
@@ -344,7 +344,7 @@ class Actor(wireframe.Blueprint):
         self.curmovement += self.get_attribute('movement') * modifier
         self._normalize_stats()
 
-    def _check_if_incapacitated(self, action):
+    def _check_if_incapacitated(self, _event, action):
 
         if self.is_incapacitated():
             self.notify(__config__.messages['move_failed_incapacitated'])
@@ -512,12 +512,12 @@ class Mob(Actor):
         self.start_room = None
         super(Mob, self).__init__()
 
-    def room_update(self, actor):
+    def room_update(self, _event, actor, message = ""):
         """Event listener for when the room update fires."""
 
         pass
     
-    def tick(self):
+    def tick(self, _event = None):
         super(Mob, self).tick()
         if self.movement:
             self._decrement_movement_timer()
@@ -584,7 +584,7 @@ class User(Actor):
             self.client.write(str(message)+"\n"+(self.prompt() if add_prompt \
                     else ""))
     
-    def stat(self):
+    def stat(self, _event = None):
         """Notifies the user of the target's status (if any) and supplies a
         fresh prompt.
 
@@ -597,7 +597,7 @@ class User(Actor):
         super(User, self).add_affect(aff)
         self.notify(aff.messages['start']['self'])
     
-    def tick(self):
+    def tick(self, _event = None):
         super(User, self).tick()
         self.notify()
 
@@ -624,7 +624,7 @@ class User(Actor):
         self.get_room().arriving(self)
         self.notify(__config__.messages['died'])
     
-    def _update_delay(self):
+    def _update_delay(self, _event = None):
         """Removes the client from polling for input if the user has a delay
         applied to it.
 
@@ -678,7 +678,7 @@ class User(Actor):
         for ability in self.get_abilities():
             ability.attach('perform', self.perform_ability)
             if ability.hook == 'input':
-                def check_input(user, args):
+                def check_input(user, _event, args):
                     """Checks if the user is trying to perform an ability with
                     a given input.
 
@@ -699,14 +699,13 @@ class User(Actor):
 
         self.notify(changed)
 
-    def room_update(self, actor):
+    def room_update(self, _event, actor, message = ""):
         """Event listener for when the room update fires."""
 
-        if actor is self:
-            if 'self' in actor.last_command.messages:
-                self.notify(actor.last_command.messages['self'])
-        elif self.can_see():
-            if 'all' in actor.last_command.messages:
+        if actor is not self and self.can_see():
+            if message:
+                self.notify(message)
+            elif 'all' in actor.last_command.messages:
                 self.notify(actor.last_command.messages['all'] % str(actor).title())
 
     @classmethod

@@ -8,7 +8,7 @@ class Mudpy(observer.Observer):
         self.events = None
         self.attach("start", self.load_events)
 
-    def load_events(self):
+    def load_events(self, _event = None):
         from . import wireframe, event
         self.events = wireframe.create("event.mudpy")
         self.events.attach_events(self)

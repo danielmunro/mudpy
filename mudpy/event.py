@@ -18,6 +18,11 @@ class Event(wireframe.Blueprint):
 
     def register_subscriber_to_publisher(self, event, subscriber):
         for e in self.events[event]:
-            subscriber_callback = e['subscriber_callback']
-            fn = getattr(subscriber, subscriber_callback)
-            self.publisher.attach(subscriber_callback, fn)
+            if 'add_subscriber_callback' in e:
+                subscriber_callback = e['add_subscriber_callback']
+                fn = getattr(subscriber, subscriber_callback)
+                self.publisher.attach(e['event'], fn)
+            elif 'remove_subscriber_callback' in e:
+                subscriber_callback = e['remove_subscriber_callback']
+                fn = getattr(subscriber, subscriber_callback)
+                self.publisher.detach(e['event'], fn)

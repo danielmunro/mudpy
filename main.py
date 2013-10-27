@@ -8,7 +8,7 @@ from mudpy import mudpy, debug
 import sys
 
 def main():
-    from mudpy import wireframe, server, calendar, client, actor
+    from mudpy import wireframe, server, calendar, client, actor, room
     __mudpy__.dispatch("initialize")
     __mudpy__.dispatch("start")
 

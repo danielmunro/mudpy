@@ -4,8 +4,8 @@ dungeons, and more.
 
 """
 
-from . import item, observer, wireframe, collection
-import random
+from . import item, observer, wireframe, collection, event
+import random, __main__
 
 __START_ROOM__ = 1
 __PURGATORY__ = "purgatory"
@@ -64,6 +64,8 @@ class Room(wireframe.Blueprint):
         self.area = ''
         self.lit = True
         self.observers = {}
+        self.events = wireframe.create("event.room")
+        self.events.attach_events(self)
 
     def get_area(self):
         return area(self.area)
@@ -117,14 +119,16 @@ class Room(wireframe.Blueprint):
                 new_room.arriving(actor, Direction.get_reverse(direction))
 
     def leaving(self, actor, direction = ""):
-        self.actors.remove(actor)
-        self.detach('actor_changed', actor.room_update)
+        handled = self.dispatch("leaving", actor)
+        if not handled:
+            self.actors.remove(actor)
 
     def arriving(self, actor, direction = ""):
-        if not actor in self.actors:
-            self.actors.append(actor)
-        actor.room = self.name
-        self.attach('actor_changed', actor.room_update)
+        handled = self.dispatch("arriving", actor)
+        if not handled:
+            if not actor in self.actors:
+                self.actors.append(actor)
+            actor.room = self.name
     
     @classmethod
     def to_yaml(self, dumper, thing):
@@ -135,7 +139,7 @@ class Room(wireframe.Blueprint):
         return super(Room, self).to_yaml(dumper, persist)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 class Randomhall(Room):
     def __init__(self):
@@ -275,6 +279,8 @@ class Area(wireframe.Blueprint):
             __ROOMS__[room.name] = room
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
+            room.events = wireframe.create("event.room")
+            room.events.attach_events(room)
             for mob in room.mobs():
                 actor.__proxy__.dispatch("actor_enters_realm", mob)
                 room.arriving(mob)

@@ -11,7 +11,7 @@ __config__ = None
 
 if '__mudpy__' in __main__.__dict__:
 
-    def initialize_client():
+    def initialize_client(_event = None):
 
         global __config__
 
@@ -54,7 +54,7 @@ class Client(observer.Observer, Protocol):
 
         return actor.User()
     
-    def poll(self):
+    def poll(self, _event = None):
         """Listener for game cycle, checks the command buffer for new input.
         If a user is logged in dispatch an input event, which will notify
         command, ability, and other listeners. Otherwise, attempt to continue

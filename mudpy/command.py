@@ -1,7 +1,7 @@
 from . import wireframe
 import random
 
-def check_input(user, args):
+def check_input(_event, user, args):
 
     command = args[0]
     params = args[1:]
@@ -340,6 +340,7 @@ class Command(wireframe.Blueprint):
         self.required = []
         self.messages = {}
         self.dispatches = {}
+        self.post_dispatches = {}
         self.execute = []
 
     def run(self, actor, args):
@@ -355,11 +356,12 @@ class Command(wireframe.Blueprint):
         handled = actor.dispatch('action', self.action)
         if not handled:
             actor.last_command = self
-            handled = self._dispatch_chain(actor)
+            handled = self._dispatch_chain(actor, self.dispatches)
             if handled:
                 return
             for e in self.execute:
                 eval(e)
+            self._dispatch_chain(actor, self.post_dispatches)
 
     def _required_chain(self, actor):
         for req in self.required:
@@ -370,9 +372,10 @@ class Command(wireframe.Blueprint):
                 self._fail(actor, req_value, req['fail'] if 'fail' in req else '')
                 return True
 
-    def _dispatch_chain(self, actor):
-        for d in self.dispatches:
-            call = d['object']+".dispatch('"+d['event']+"', actor)"
+    def _dispatch_chain(self, actor, dispatches):
+        for d in dispatches:
+            msg = ", '"+d['message'] % actor+"'" if "message" in d else ""
+            call = d['object']+".dispatch('"+d['event']+"', actor"+msg+")"
             handled = eval("actor."+call)
             if handled:
                 return True

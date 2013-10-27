@@ -33,7 +33,7 @@ class Observer(object):
 
         if event in self.observers:
             for func in self.observers[event]:
-                handled = func(*args)
+                handled = func(event, *args)
                 if handled:
                     break
 
