@@ -705,8 +705,6 @@ class User(Actor):
         if actor is not self and self.can_see():
             if message:
                 self.notify(message)
-            elif 'all' in actor.last_command.messages:
-                self.notify(actor.last_command.messages['all'] % str(actor).title())
 
     @classmethod
     def to_yaml(self, dumper, thing):
