@@ -344,6 +344,11 @@ class Actor(wireframe.Blueprint):
         self.curmovement += self.get_attribute('movement') * modifier
         self._normalize_stats()
 
+    def room_update(self, _event, actor, message = ""):
+        """Event listener for when the room update fires."""
+
+        pass
+
     def _check_if_incapacitated(self, _event, action):
 
         if self.is_incapacitated():
@@ -511,11 +516,6 @@ class Mob(Actor):
         self.auto_flee = False
         self.start_room = None
         super(Mob, self).__init__()
-
-    def room_update(self, _event, actor, message = ""):
-        """Event listener for when the room update fires."""
-
-        pass
     
     def tick(self, _event = None):
         super(Mob, self).tick()
@@ -533,7 +533,7 @@ class Mob(Actor):
             direction = random.choice([direction for direction, _room in 
                 self.get_room().directions.iteritems() if _room and 
                 _room.area == self.get_room().area])
-            self.move(direction)
+            command.move(self, direction)
             self.movement_timer = self.movement
     
     def _normalize_stats(self, _args = None):

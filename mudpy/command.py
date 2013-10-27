@@ -15,14 +15,8 @@ def check_input(_event, user, args):
 
     return True
 
-def move(actor, direction = None):
+def move(actor, direction):
     """Try to move the actor in the given direction."""
-
-    from . import room
-
-    if not direction:
-        direction = random.choice([direction for direction, _room 
-            in actor.get_room().directions.iteritems() if _room])
 
     actor.curmovement -= actor._get_movement_cost()
     actor.get_room().move_actor(actor, direction)
