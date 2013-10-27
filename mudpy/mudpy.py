@@ -6,9 +6,9 @@ class Mudpy(observer.Observer):
         self.observers = {}
         self.path = ""
         self.events = None
-        self.attach("start", self.load_events)
+        self.on("start", self.load_events)
 
     def load_events(self, _event = None):
         from . import wireframe, event
         self.events = wireframe.create("event.mudpy")
-        self.events.attach_events(self)
+        self.events.on_events(self)

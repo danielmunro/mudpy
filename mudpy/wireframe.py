@@ -19,8 +19,8 @@ if '__mudpy__' in __main__.__dict__:
     def start_wireframes(_event = None):
         load_areas()
 
-    m.attach('initialize', load_wireframes)
-    m.attach('start', start_wireframes)
+    m.on('initialize', load_wireframes)
+    m.on('start', start_wireframes)
 
 def load_areas():
     from . import room, actor

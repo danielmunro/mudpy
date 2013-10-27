@@ -12,7 +12,7 @@ class Observer(object):
     def __init__(self):
         self.observers = {}
 
-    def attach(self, event, fn):
+    def on(self, event, fn):
         """Attach a new listener function to a named event."""
 
         if not event in self.observers:
@@ -20,13 +20,13 @@ class Observer(object):
 
         self.observers[event].append(fn)
     
-    def detach(self, event, fn):
+    def off(self, event, fn):
         """Remove a listener function from a named event."""
 
         if event in self.observers:
             self.observers[event].remove(fn)
     
-    def dispatch(self, event, *args):
+    def fire(self, event, *args):
         """Fire off an event, calling any found listeners."""
 
         handled = None

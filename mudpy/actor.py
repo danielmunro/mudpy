@@ -20,7 +20,7 @@ def broadcast_to_mudpy(*args):
     main game object, if it exists.
     
     """
-    __main__.__mudpy__.dispatch(*args)
+    __main__.__mudpy__.fire(*args)
 
 if '__mudpy__' in __main__.__dict__:
 
@@ -28,8 +28,8 @@ if '__mudpy__' in __main__.__dict__:
         global __config__
         __config__ = wireframe.create('config.actor')
 
-    __proxy__.attach('__any__', broadcast_to_mudpy)
-    __main__.__mudpy__.attach('initialize', initialize_actor)
+    __proxy__.on('__any__', broadcast_to_mudpy)
+    __main__.__mudpy__.on('initialize', initialize_actor)
     
 def get_damage_verb(dam_roll):
     """A string representation of the severity of damage dam_roll will cause.
@@ -229,7 +229,7 @@ class Actor(wireframe.Blueprint):
         """Apply an affect to the actor."""
 
         try:
-            self.dispatch('changed', aff, self, aff.messages['start']['all'] % self)
+            self.fire('changed', aff, self, aff.messages['start']['all'] % self)
         except KeyError:
             pass
 
@@ -243,14 +243,14 @@ class Actor(wireframe.Blueprint):
                 aff.attributes[attr] = self.get_attribute(attr) * modifier
 
         if aff.timeout > -1:
-            __main__.__mudpy__.attach('tick', aff.countdown_timeout)
-            aff.attach('end', self._end_affect)
+            __main__.__mudpy__.on('tick', aff.countdown_timeout)
+            aff.on('end', self._end_affect)
 
     def set_target(self, target = None):
         """Sets up a new target for the actor."""
 
         if not target:
-            self.target.detach('attack_resolution', self._normalize_stats)
+            self.target.off('attack_resolution', self._normalize_stats)
             self.target = None
             return
         
@@ -258,10 +258,10 @@ class Actor(wireframe.Blueprint):
         self.target = target
 
         # handles above 100% hp/mana/mv and below 0% hp/mana/mv
-        self.target.attach('attack_resolution', self._normalize_stats)
+        self.target.on('attack_resolution', self._normalize_stats)
 
         # calls attack rounds until target is removed
-        __main__.__mudpy__.attach('pulse', self._do_regular_attacks)
+        __main__.__mudpy__.on('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
@@ -360,7 +360,7 @@ class Actor(wireframe.Blueprint):
 
         self.affects.remove(affect)
         try:
-            self.dispatch('changed', affect, self, affect.messages['end']['all'] % self)
+            self.fire('changed', affect, self, affect.messages['end']['all'] % self)
         except KeyError:
             pass
 
@@ -445,7 +445,7 @@ class Actor(wireframe.Blueprint):
                 except IndexError:
                     pass
         else:
-            __main__.__mudpy__.detach('pulse', self._do_regular_attacks)
+            __main__.__mudpy__.off('pulse', self._do_regular_attacks)
 
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are
@@ -460,7 +460,7 @@ class Actor(wireframe.Blueprint):
     
     def _die(self):
         """What happens when the user is killed (regardless of the method of
-        death). Does basic things such as creating the corpse and dispatching
+        death). Does basic things such as creating the corpse and fireing
         a disposition change event.
         
         """
@@ -545,12 +545,12 @@ class Mob(Actor):
         super(Mob, self)._die()
         self.get_room().move_actor(self)
         room.get(room.__PURGATORY__).arriving(self)
-        __main__.__mudpy__.attach('tick', self._respawn)
+        __main__.__mudpy__.on('tick', self._respawn)
 
     def _respawn(self):
         self.respawn_timer -= 1
         if self.respawn_timer < 0:
-            __main__.__mudpy__.detach('tick', self._respawn)
+            __main__.__mudpy__.off('tick', self._respawn)
             self.disposition = Disposition.STANDING
             self.curhp = self.get_attribute('hp')
             self.curmana = self.get_attribute('mana')
@@ -617,26 +617,26 @@ class User(Actor):
 
         from . import command
 
-        self.attach('action', self._check_if_incapacitated)
-        __proxy__.dispatch("actor_enters_realm", self)
+        self.on('action', self._check_if_incapacitated)
+        __proxy__.fire("actor_enters_realm", self)
 
-        # attach server events
-        __main__.__mudpy__.attach('stat', self.stat)
-        __main__.__mudpy__.attach('cycle', self._update_delay)
+        # on server events
+        __main__.__mudpy__.on('stat', self.stat)
+        __main__.__mudpy__.on('cycle', self._update_delay)
 
         self.get_room().arriving(self)
 
         command.look(self)
 
         # listener for client input to trigger commands in the game
-        self.client.attach('input', command.check_input)
+        self.client.on('input', command.check_input)
 
         # listeners for calendar events (sunrise, sunset) 
         calendar.__instance__.setup_listeners_for(self.calendar_changed)
 
-        # attach listeners to client input for abilities
+        # on listeners to client input for abilities
         for ability in self.get_abilities():
-            ability.attach('perform', self.perform_ability)
+            ability.on('perform', self.perform_ability)
             if ability.hook == 'input':
                 def check_input(user, _event, args):
                     """Checks if the user is trying to perform an ability with
@@ -647,7 +647,7 @@ class User(Actor):
                     if ability.name.startswith(args[0]):
                         ability.try_perform(self, args[1:])
                         return True
-                self.client.attach('input', check_input)
+                self.client.on('input', check_input)
 
         debug.log('client logged in as '+str(self))
 
@@ -705,13 +705,13 @@ class User(Actor):
 
         if self.delay_counter > 0:
             if not self.last_delay:
-                __main__.__mudpy__.detach('cycle', self.client.poll)
+                __main__.__mudpy__.off('cycle', self.client.poll)
             currenttime = int(time.time())
             if currenttime > self.last_delay:
                 self.delay_counter -= 1
                 self.last_delay = currenttime
         elif self.last_delay:
-            __main__.__mudpy__.attach('cycle', self.client.poll)
+            __main__.__mudpy__.on('cycle', self.client.poll)
             self.last_delay = 0
 
     @classmethod
@@ -772,7 +772,7 @@ class Attack:
         self.damroll = 0
         self.defroll = 0
 
-        handled = self.aggressor.dispatch('attack_start', self)
+        handled = self.aggressor.fire('attack_start', self)
         if handled:
             return
 
@@ -794,7 +794,7 @@ class Attack:
         except AttributeError:
             ac = 0
 
-        self.aggressor.dispatch('attackmodifier', self)
+        self.aggressor.fire('attackmodifier', self)
 
         # roll the dice and determine if the attack was successful
         roll = random.uniform(hit_roll/2, hit_roll) - random.uniform(def_roll/2, def_roll) - ac
@@ -822,7 +822,7 @@ class Attack:
         if roll > 0: 
             aggressor.target.curhp -= dam_roll
 
-        aggressor.dispatch('attack_resolution', self)
+        aggressor.fire('attack_resolution', self)
 
 class Ability(wireframe.Blueprint):
     """Represents something cool an actor can do. Invoked when the hook is

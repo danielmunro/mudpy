@@ -9,20 +9,20 @@ class Event(wireframe.Blueprint):
         self.observers = {}
         self.events = {}
 
-    def attach_events(self, publisher):
+    def on_events(self, publisher):
         self.publisher = publisher
         for e in self.events:
             for listeners in self.events[e]:
                 fn = getattr(self, listeners['method'])
-                self.publisher.attach(e, fn)
+                self.publisher.on(e, fn)
 
     def register_subscriber_to_publisher(self, event, subscriber):
         for e in self.events[event]:
             if 'add_subscriber_callback' in e:
                 subscriber_callback = e['add_subscriber_callback']
                 fn = getattr(subscriber, subscriber_callback)
-                self.publisher.attach(e['event'], fn)
+                self.publisher.on(e['event'], fn)
             elif 'remove_subscriber_callback' in e:
                 subscriber_callback = e['remove_subscriber_callback']
                 fn = getattr(subscriber, subscriber_callback)
-                self.publisher.detach(e['event'], fn)
+                self.publisher.off(e['event'], fn)

@@ -25,8 +25,8 @@ class Affect(wireframe.Blueprint):
 
         self.timeout -= 1
         if self.timeout < 0:
-            __main__.__mudpy__.detach('tick', self.countdown_timeout)
-            self.dispatch('end', self)
+            __main__.__mudpy__.off('tick', self.countdown_timeout)
+            self.fire('end', self)
 
     def __str__(self):
         return self.name

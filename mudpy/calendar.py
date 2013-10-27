@@ -19,9 +19,9 @@ if '__mudpy__' in __main__.__dict__:
         except wireframe.WireframeException:
             __instance__ = Instance()
 
-        server.__instance__.heartbeat.attach("tick", __instance__.tick)
+        server.__instance__.heartbeat.on("tick", __instance__.tick)
 
-    __main__.__mudpy__.attach('initialize', initialize_calendar)
+    __main__.__mudpy__.on('initialize', initialize_calendar)
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
@@ -52,10 +52,10 @@ class Instance(wireframe.Blueprint):
         self.elapsed_time += 1
         self.hour += 1
         if self.hour == __config__.months[self.month]['sunrise']:
-            self.dispatch('sunrise', self, "The sun begins to rise.")
+            self.fire('sunrise', self, "The sun begins to rise.")
             self.daylight = True
         elif self.hour == __config__.months[self.month]['sunset']:
-            self.dispatch('sunset', self, "The sun begins to set.")
+            self.fire('sunset', self, "The sun begins to set.")
             self.daylight = False
         if self.hour == __config__.hours_in_day:
             self.hour = 0
@@ -85,10 +85,10 @@ class Instance(wireframe.Blueprint):
 
     def setup_listeners_for(self, func):
         """Binds function to calendar related events."""
-        self.attach('sunrise', func)
-        self.attach('sunset', func)
+        self.on('sunrise', func)
+        self.on('sunset', func)
 
     def teardown_listeners_for(self, func):
         """Removes function from calendar related events."""
-        self.detach('sunrise', func)
-        self.detach('sunset', func)
+        self.off('sunrise', func)
+        self.off('sunset', func)

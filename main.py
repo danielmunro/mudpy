@@ -9,8 +9,8 @@ import sys
 
 def main():
     from mudpy import wireframe, server, calendar, client, actor, room
-    __mudpy__.dispatch("initialize")
-    __mudpy__.dispatch("start")
+    __mudpy__.fire("initialize")
+    __mudpy__.fire("start")
 
 __mudpy__ = mudpy.Mudpy()
 

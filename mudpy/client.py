@@ -17,7 +17,7 @@ if '__mudpy__' in __main__.__dict__:
 
         __config__ = wireframe.create("config.client")
 
-    __main__.__mudpy__.attach('initialize', initialize_client)
+    __main__.__mudpy__.on('initialize', initialize_client)
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
@@ -41,7 +41,7 @@ class Client(observer.Observer, Protocol):
     def disconnect(self):
         """Called when a client loses their connection."""
 
-        self.client_factory.dispatch("destroyed", self)
+        self.client_factory.fire("destroyed", self)
         self.client_factory.clients.remove(self)
         self.user.get_room().move_actor(self.user)
         self.transport.loseConnection()
@@ -56,7 +56,7 @@ class Client(observer.Observer, Protocol):
     
     def poll(self, _event = None):
         """Listener for game cycle, checks the command buffer for new input.
-        If a user is logged in dispatch an input event, which will notify
+        If a user is logged in fire an input event, which will notify
         command, ability, and other listeners. Otherwise, attempt to continue
         the login process.
 
@@ -71,7 +71,7 @@ class Client(observer.Observer, Protocol):
             return self.login.step(data)
         elif data:
             args = data.split(" ")
-            handled = self.dispatch("input", self.user, args)
+            handled = self.fire("input", self.user, args)
             if not handled:
                 self.user.notify(__config__.messages["input_not_handled"])
     
@@ -173,7 +173,7 @@ class ClientFactory(tFactory, observer.Observer):
 
         client = Client()
         client.client_factory = self
-        self.dispatch("created", client)
+        self.fire("created", client)
         self.clients.append(client)
         return client
 

@@ -347,15 +347,15 @@ class Command(wireframe.Blueprint):
         self._execute_chain(actor, args)
 
     def _execute_chain(self, actor, args):
-        handled = actor.dispatch('action', self.action)
+        handled = actor.fire('action', self.action)
         if not handled:
             actor.last_command = self
-            handled = self._dispatch_chain(actor, self.dispatches)
+            handled = self._fire_chain(actor, self.dispatches)
             if handled:
                 return
             for e in self.execute:
                 eval(e)
-            self._dispatch_chain(actor, self.post_dispatches)
+            self._fire_chain(actor, self.post_dispatches)
 
     def _required_chain(self, actor):
         for req in self.required:
@@ -366,10 +366,10 @@ class Command(wireframe.Blueprint):
                 self._fail(actor, req_value, req['fail'] if 'fail' in req else '')
                 return True
 
-    def _dispatch_chain(self, actor, dispatches):
+    def _fire_chain(self, actor, dispatches):
         for d in dispatches:
             msg = ", '"+d['message'] % actor+"'" if "message" in d else ""
-            call = d['object']+".dispatch('"+d['event']+"', actor"+msg+")"
+            call = d['object']+".fire('"+d['event']+"', actor"+msg+")"
             handled = eval("actor."+call)
             if handled:
                 return True

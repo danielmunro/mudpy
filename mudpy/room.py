@@ -65,7 +65,7 @@ class Room(wireframe.Blueprint):
         self.lit = True
         self.observers = {}
         self.events = wireframe.create("event.room")
-        self.events.attach_events(self)
+        self.events.on_events(self)
 
     def get_area(self):
         return area(self.area)
@@ -119,12 +119,12 @@ class Room(wireframe.Blueprint):
                 new_room.arriving(actor, Direction.get_reverse(direction))
 
     def leaving(self, actor, direction = ""):
-        handled = self.dispatch("leaving", actor)
+        handled = self.fire("leaving", actor)
         if not handled:
             self.actors.remove(actor)
 
     def arriving(self, actor, direction = ""):
-        handled = self.dispatch("arriving", actor)
+        handled = self.fire("arriving", actor)
         if not handled:
             if not actor in self.actors:
                 self.actors.append(actor)
@@ -280,9 +280,9 @@ class Area(wireframe.Blueprint):
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
             room.events = wireframe.create("event.room")
-            room.events.attach_events(room)
+            room.events.on_events(room)
             for mob in room.mobs():
-                actor.__proxy__.dispatch("actor_enters_realm", mob)
+                actor.__proxy__.fire("actor_enters_realm", mob)
                 room.arriving(mob)
                 mob.start_room = room.name
 

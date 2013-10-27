@@ -25,8 +25,8 @@ if '__mudpy__' in __main__.__dict__:
         from . import client
         __instance__.start_listening(client.ClientFactory())
 
-    m.attach('initialize', initialize_server)
-    m.attach('start', start_server)
+    m.on('initialize', initialize_server)
+    m.on('start', start_server)
 
 class Instance:
     """Information about the implementation of this mud.py server."""
@@ -49,8 +49,8 @@ class Instance:
 
         # call set_client_poll whenever client_factory creates a new client,
         # and call unset_client_poll when clients are destroyed
-        client_factory.attach("created", self._set_client_poll)
-        client_factory.attach("destroyed", self._unset_client_poll) 
+        client_factory.on("created", self._set_client_poll)
+        client_factory.on("destroyed", self._unset_client_poll) 
 
         # define an endpoint for the reactor in mud.py's ClientFactory, an
         # implementation of twisted's Factory
@@ -67,7 +67,7 @@ class Instance:
     def _set_client_poll(self, _event, client):
         """Called when the client_factory reports that a client is created."""
 
-        self.mudpy.attach("cycle", client.poll)
+        self.mudpy.on("cycle", client.poll)
 
     def _unset_client_poll(self, _event, client):
         """Called when the client_factory reports that a client has been
@@ -75,7 +75,7 @@ class Instance:
 
         """
 
-        self.mudpy.detach("cycle", client.poll)
+        self.mudpy.off("cycle", client.poll)
     
     def __str__(self):
         return str(__config__)
@@ -112,22 +112,22 @@ class Heartbeat(observer.Observer):
                                         Heartbeat.TICK_LOWBOUND_SECONDS, \
                                         Heartbeat.TICK_HIGHBOUND_SECONDS)
         while(1):
-            self.mudpy.dispatch('cycle')
+            self.mudpy.fire('cycle')
             if time.time() >= next_pulse:
                 next_pulse += Heartbeat.PULSE_SECONDS
-                self.mudpy.dispatch('pulse')
-                self.mudpy.dispatch('stat')
+                self.mudpy.fire('pulse')
+                self.mudpy.fire('stat')
             if time.time() >= next_tick:
                 next_tick = time.time()+random.randint(
                                         Heartbeat.TICK_LOWBOUND_SECONDS, \
                                         Heartbeat.TICK_HIGHBOUND_SECONDS)
                 _stop = Stopwatch()
-                self.mudpy.dispatch('tick')
-                debug.log('dispatched tick ['+str(_stop)+'s elapsed in tick]'+ \
+                self.mudpy.fire('tick')
+                debug.log('fireed tick ['+str(_stop)+'s elapsed in tick]'+ \
                             ' ['+str(self.stopwatch)+'s elapsed since start]')
 
-    def dispatch(self, *eventlist, **events):
-        """Custom dispatch method for the heartbeat. Instead of calling the
+    def fire(self, *eventlist, **events):
+        """Custom fire method for the heartbeat. Instead of calling the
         functions directly, we need to tell the twisted reactor to call them
         in the main thread.
 
