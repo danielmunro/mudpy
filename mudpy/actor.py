@@ -350,7 +350,7 @@ class Actor(wireframe.Blueprint):
             self.notify(__config__.messages['move_failed_incapacitated'])
             return True
 
-    def _end_affect(self, affect):
+    def _end_affect(self, _event, affect):
         """Called when an affect ends."""
 
         self.affects.remove(affect)
@@ -601,8 +601,8 @@ class User(Actor):
         super(User, self).tick()
         self.notify()
 
-    def _end_affect(self, affect):
-        super(User, self)._end_affect(affect)
+    def _end_affect(self, _event, affect):
+        super(User, self)._end_affect(_event, affect)
         self.notify(affect.messages['end']['self'])
     
     def _normalize_stats(self, _args = None):

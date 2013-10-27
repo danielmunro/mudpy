@@ -3,6 +3,7 @@ name: sneak
 messages:
     start:
         self: "You silently fade into the shadows."
+        all: "%s fades into the shadows."
     end:
         self: "You no longer move silently."
         all: "%s appears from the shadows."
