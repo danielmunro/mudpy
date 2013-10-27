@@ -43,4 +43,7 @@ class Observer(object):
                 if handled:
                     break
 
-        return handled
+        if not handled and not event.endswith("__unhandled__"):
+            return self.fire(event+".__unhandled__", *args)
+        else:
+            return handled
