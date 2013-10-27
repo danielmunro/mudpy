@@ -600,46 +600,6 @@ class User(Actor):
     def tick(self, _event = None):
         super(User, self).tick()
         self.notify()
-
-    def _end_affect(self, _event, affect):
-        super(User, self)._end_affect(_event, affect)
-        self.notify(affect.messages['end']['self'])
-    
-    def _normalize_stats(self, _args = None):
-        if self.curhp < -9:
-            self._die()
-        elif self.curhp <= 0:
-            self.disposition = Disposition.INCAPACITATED
-            self.notify(__config__.messages['incapacitated'])
-        elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
-            self.disposition = Disposition.LAYING
-            self.notify(__config__.messages['recover_from_incapacitation'])
-        super(User, self)._normalize_stats()
-    
-    def _die(self):
-        super(User, self)._die()
-        self.get_room()
-        curroom.leaving(self)
-        self.room = room.__START_ROOM__
-        self.get_room().arriving(self)
-        self.notify(__config__.messages['died'])
-    
-    def _update_delay(self, _event = None):
-        """Removes the client from polling for input if the user has a delay
-        applied to it.
-
-        """
-
-        if self.delay_counter > 0:
-            if not self.last_delay:
-                __main__.__mudpy__.detach('cycle', self.client.poll)
-            currenttime = int(time.time())
-            if currenttime > self.last_delay:
-                self.delay_counter -= 1
-                self.last_delay = currenttime
-        elif self.last_delay:
-            __main__.__mudpy__.attach('cycle', self.client.poll)
-            self.last_delay = 0
     
     def level_up(self):
         super(User, self).level_up()
@@ -706,13 +666,6 @@ class User(Actor):
             if message:
                 self.notify(message)
 
-    @classmethod
-    def to_yaml(self, dumper, thing):
-        import copy
-        persist = copy.copy(thing)
-        del persist.client
-        return super(User, self).to_yaml(dumper, persist)
-
     def save(self, args = []):
         """Persisting stuff."""
 
@@ -720,6 +673,53 @@ class User(Actor):
             wireframe.save(self.get_room().get_area())
         else:
             wireframe.save(self, "data.users")
+
+    def _end_affect(self, _event, affect):
+        super(User, self)._end_affect(_event, affect)
+        self.notify(affect.messages['end']['self'])
+    
+    def _normalize_stats(self, _args = None):
+        if self.curhp < -9:
+            self._die()
+        elif self.curhp <= 0:
+            self.disposition = Disposition.INCAPACITATED
+            self.notify(__config__.messages['incapacitated'])
+        elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
+            self.disposition = Disposition.LAYING
+            self.notify(__config__.messages['recover_from_incapacitation'])
+        super(User, self)._normalize_stats()
+    
+    def _die(self):
+        super(User, self)._die()
+        self.get_room()
+        curroom.leaving(self)
+        self.room = room.__START_ROOM__
+        self.get_room().arriving(self)
+        self.notify(__config__.messages['died'])
+    
+    def _update_delay(self, _event = None):
+        """Removes the client from polling for input if the user has a delay
+        applied to it.
+
+        """
+
+        if self.delay_counter > 0:
+            if not self.last_delay:
+                __main__.__mudpy__.detach('cycle', self.client.poll)
+            currenttime = int(time.time())
+            if currenttime > self.last_delay:
+                self.delay_counter -= 1
+                self.last_delay = currenttime
+        elif self.last_delay:
+            __main__.__mudpy__.attach('cycle', self.client.poll)
+            self.last_delay = 0
+
+    @classmethod
+    def to_yaml(self, dumper, thing):
+        import copy
+        persist = copy.copy(thing)
+        del persist.client
+        return super(User, self).to_yaml(dumper, persist)
 
     @staticmethod
     def load(name):
