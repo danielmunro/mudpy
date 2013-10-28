@@ -26,10 +26,12 @@ class Client(observer.Observer, Protocol):
         self.input_buffer = []
         self.client_factory = None
         self.user = None
-        super(Client, self).__init__()
+        self.observers = {}
         self.events = wireframe.create("event.client")
         self.events.on_events(self)
-        self.on("input", Login().step)
+        login = Login()
+        self.on("input", login.step)
+        self.on("loggedin", self._unset_login)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"])
@@ -66,14 +68,18 @@ class Client(observer.Observer, Protocol):
         """Send a message from the game to the client."""
 
         self.transport.write(str(message)+" ")
+
+    def _unset_login(self, _event, login):
+        self.off("input", login.step)
     
-class Login:
+class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""
 
     def __init__(self):
         self.todo = ["login", "race", "alignment"]
         self.done = []
         self.newuser = None
+        super(Login, self).__init__()
     
     def step(self, _event, client, data):
         """Called for each successive step of the login/alt creation
@@ -96,13 +102,12 @@ class Login:
 
             user = actor.User.load(data)
             if user:
-                user.client = client
+                user.set_client(client)
                 client.user = user
-                client.off("input", self.step)
-                user.loggedin()
+                client.fire("loggedin", self)
                 return True
             self.newuser = actor.User()
-            self.newuser.client = client
+            self.newuser.set_client(client)
             self.newuser.name = data
             client.write(__config__.messages["creation_race_query"])
 
@@ -128,8 +133,7 @@ class Login:
             else:
                 raise LoginException(__config__.messages["creation_alignment_not_valid"])
             client.user = self.newuser
-            client.off("input", self.step)
-            self.newuser.loggedin()
+            client.fire("loggedin", self)
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))
 

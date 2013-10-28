@@ -573,6 +573,10 @@ class User(Actor):
         self.role = 'player'
         super(User, self).__init__()
 
+    def set_client(self, client):
+        self.client = client
+        client.on("loggedin", self._loggedin)
+
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
         and movement. Not yet configurable."""
@@ -609,11 +613,13 @@ class User(Actor):
         """Applies delay to the user when performing an ability."""
         self.delay_counter += ability.delay+1
 
-    def loggedin(self):
+    def _loggedin(self, _event, login):
         """Miscellaneous setup tasks for when a user logs in. Nothing too
         exciting.
 
         """
+
+        self.client.off("loggedin", self._loggedin)
 
         from . import command
 
