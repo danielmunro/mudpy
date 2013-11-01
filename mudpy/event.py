@@ -31,3 +31,11 @@ class Event(wireframe.Blueprint):
         for e in self.events[event]:
             if e['method'] == 'subscriber_execute':
                 eval('subscriber.'+e['execute'])
+
+    def proxy(self, event, subscriber, *args):
+        success = False
+        for e in self.events[event]:
+            if e['method'] == 'proxy':
+                callback = eval('self.publisher.'+e['callback'])
+                success = callback(event, subscriber, *args)
+        return success

@@ -27,11 +27,9 @@ class Client(observer.Observer, Protocol):
         self.client_factory = None
         self.user = None
         self.observers = {}
+        self.login = Login()
         self.events = wireframe.create("event.client")
         self.events.on_events(self)
-        login = Login()
-        self.on("input", login.step)
-        self.on("loggedin", self._unset_login)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"])
@@ -69,8 +67,8 @@ class Client(observer.Observer, Protocol):
 
         self.transport.write(str(message)+" ")
 
-    def _unset_login(self, _event, login):
-        self.off("input", login.step)
+    def _loggedin(self, _event, login):
+        self.off("input", self.events.proxy)
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""
@@ -105,7 +103,7 @@ class Login(observer.Observer):
                 user.set_client(client)
                 client.user = user
                 client.fire("loggedin", self)
-                return True
+                return
             self.newuser = actor.User()
             self.newuser.set_client(client)
             self.newuser.name = data
