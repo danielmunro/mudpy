@@ -28,8 +28,7 @@ class Client(observer.Observer, Protocol):
         self.user = None
         self.observers = {}
         self.login = Login()
-        self.events = wireframe.create("event.client")
-        self.events.on_events(self)
+        self.events = wireframe.create("event.client").setup(self)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"])
@@ -67,8 +66,8 @@ class Client(observer.Observer, Protocol):
 
         self.transport.write(str(message)+" ")
 
-    def input_not_handled(self):
-        self.write("What was that?")
+    def input_not_handled(self, _event = None, _subscriber = None, _arg = None):
+        self.user.notify(__config__.messages["input_not_handled"])
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""

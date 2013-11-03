@@ -64,8 +64,7 @@ class Room(wireframe.Blueprint):
         self.area = ''
         self.lit = True
         self.observers = {}
-        self.events = wireframe.create("event.room")
-        self.events.on_events(self)
+        self.events = wireframe.create("event.room").setup(self)
 
     def get_area(self):
         return area(self.area)
@@ -279,8 +278,7 @@ class Area(wireframe.Blueprint):
             __ROOMS__[room.name] = room
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
-            room.events = wireframe.create("event.room")
-            room.events.on_events(room)
+            room.events = wireframe.create("event.room").setup(self)
             for mob in room.mobs():
                 actor.__proxy__.fire("actor_enters_realm", mob)
                 room.arriving(mob)
