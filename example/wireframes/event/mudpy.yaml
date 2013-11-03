@@ -1,6 +1,6 @@
 !<u!event>
 events:
     actor_enters_realm: 
-        - {method: register_subscriber_to_publisher,
+        - {method: events.register_subscriber_to_publisher,
             event: tick,
             add_subscriber_callback: tick}

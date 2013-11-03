@@ -66,9 +66,6 @@ class Client(observer.Observer, Protocol):
         """Send a message from the game to the client."""
 
         self.transport.write(str(message)+" ")
-
-    def _loggedin(self, _event, login):
-        self.off("input", self.events.proxy)
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""
@@ -102,7 +99,7 @@ class Login(observer.Observer):
             if user:
                 user.set_client(client)
                 client.user = user
-                client.fire("loggedin", self)
+                client.fire("loggedin", client)
                 return
             self.newuser = actor.User()
             self.newuser.set_client(client)
@@ -131,7 +128,7 @@ class Login(observer.Observer):
             else:
                 raise LoginException(__config__.messages["creation_alignment_not_valid"])
             client.user = self.newuser
-            client.fire("loggedin", self)
+            client.fire("loggedin", client)
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))
 

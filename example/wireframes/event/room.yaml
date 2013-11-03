@@ -1,10 +1,10 @@
 !<u!event>
 events:
     arriving:
-        - {method: register_subscriber_to_publisher,
+        - {method: events.register_subscriber_to_publisher,
             event: actor_changed,
             add_subscriber_callback: room_update}
     leaving:
-        - {method: register_subscriber_to_publisher,
+        - {method: events.register_subscriber_to_publisher,
             event: actor_changed,
             remove_subscriber_callback: room_update}

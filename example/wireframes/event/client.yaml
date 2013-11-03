@@ -1,11 +1,12 @@
 !<u!event>
 events:
     input:
-        - {method: proxy,
-            callback: "login.step"}
+        - {method: events.proxy,
+            callback: login.step}
     loggedin:
-        - {method: proxy,
-            callback: "_loggedin"}
+        - {method: events.off,
+            event: input,
+            callback: events.proxy}
     input.__unhandled__: 
-        - {method: subscriber_execute,
+        - {method: events.subscriber_execute,
             execute: "user.notify('What was that?')"}
