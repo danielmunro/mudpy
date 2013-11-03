@@ -1,9 +1,8 @@
 !<u!event>
 events:
     input:
-        - {proxy: login.step}
+        proxy: login.step
     loggedin:
-        - {"off": input}
-    input.__unhandled__: 
-        - {method: events.execute,
-            execute: "notify('What was that?')"}
+        'off': input
+    input.__unhandled__:
+        proxy: input_not_handled

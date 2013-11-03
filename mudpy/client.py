@@ -66,6 +66,9 @@ class Client(observer.Observer, Protocol):
         """Send a message from the game to the client."""
 
         self.transport.write(str(message)+" ")
+
+    def input_not_handled(self):
+        self.write("What was that?")
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""

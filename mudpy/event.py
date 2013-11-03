@@ -19,20 +19,18 @@ class Event(wireframe.Blueprint):
                     self.publisher.on(e, self.off)
                 elif 'execute' in listeners:
                     self.publisher.on(e, self.execute)
-                else:
-                    fn = eval('self.publisher.'+listeners['method'])
-                    self.publisher.on(e, fn)
+                elif 'unregister' in listeners:
+                    self.publisher.on(e, self.unregister)
+                elif 'register' in listeners:
+                    self.publisher.on(e, self.register)
 
-    def register_subscriber_to_publisher(self, event, subscriber):
-        for e in self.events[event]:
-            if 'add_subscriber_callback' in e:
-                subscriber_callback = e['add_subscriber_callback']
-                fn = getattr(subscriber, subscriber_callback)
-                self.publisher.on(e['event'], fn)
-            elif 'remove_subscriber_callback' in e:
-                subscriber_callback = e['remove_subscriber_callback']
-                fn = getattr(subscriber, subscriber_callback)
-                self.publisher.off(e['event'], fn)
+    def register(self, event, subscriber):
+        fn = self.events[event]['register']
+        self.publisher.on(fn, getattr(subscriber, fn))
+
+    def unregister(self, event, subscriber):
+        fn = self.events[event]['unregister']
+        self.publisher.off(fn, getattr(subscriber, fn))
 
     def execute(self, event, subscriber, *_args):
         for e in self.events[event]:
@@ -40,16 +38,11 @@ class Event(wireframe.Blueprint):
                 eval('subscriber.'+e['execute'])
 
     def proxy(self, event, subscriber, *args):
-        success = False
-        for e in self.events[event]:
-            if 'proxy' in e:
-                callback = eval('self.publisher.'+e['proxy'])
-                success = callback(event, subscriber, *args)
-        return success
+        callback = eval('self.publisher.'+self.events[event]['proxy'])
+        return callback(event, subscriber, *args)
 
     def off(self, event, subscriber, *args):
-        for e in self.events[event]:
-            if 'off' in e:
-                for inner_e in self.events[e['off']]:
-                    if 'proxy' in inner_e:
-                        subscriber.off(e['off'], self.proxy)
+        e_off = self.events[event]['off']
+        for key in self.events[e_off]:
+            if key == 'proxy':
+                self.publisher.off(e_off, self.proxy)

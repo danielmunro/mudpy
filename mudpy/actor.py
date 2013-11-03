@@ -344,7 +344,7 @@ class Actor(wireframe.Blueprint):
         self.curmovement += self.get_attribute('movement') * modifier
         self._normalize_stats()
 
-    def room_update(self, _event, actor, message = ""):
+    def actor_changed(self, _event, actor, message = ""):
         """Event listener for when the room update fires."""
 
         pass
@@ -665,7 +665,7 @@ class User(Actor):
 
         self.notify(changed)
 
-    def room_update(self, _event, actor, message = ""):
+    def actor_changed(self, _event, actor, message = ""):
         """Event listener for when the room update fires."""
 
         if actor is not self and self.can_see():
