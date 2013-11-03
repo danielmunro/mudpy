@@ -13,8 +13,15 @@ class Event(wireframe.Blueprint):
         self.publisher = publisher
         for e in self.events:
             for listeners in self.events[e]:
-                fn = eval('self.publisher.'+listeners['method'])
-                self.publisher.on(e, fn)
+                if 'proxy' in listeners:
+                    self.publisher.on(e, self.proxy)
+                elif 'off' in listeners:
+                    self.publisher.on(e, self.off)
+                elif 'execute' in listeners:
+                    self.publisher.on(e, self.execute)
+                else:
+                    fn = eval('self.publisher.'+listeners['method'])
+                    self.publisher.on(e, fn)
 
     def register_subscriber_to_publisher(self, event, subscriber):
         for e in self.events[event]:
@@ -27,20 +34,22 @@ class Event(wireframe.Blueprint):
                 fn = getattr(subscriber, subscriber_callback)
                 self.publisher.off(e['event'], fn)
 
-    def subscriber_execute(self, event, subscriber, *_args):
+    def execute(self, event, subscriber, *_args):
         for e in self.events[event]:
-            if e['method'] == 'events.subscriber_execute':
+            if 'execute' in e:
                 eval('subscriber.'+e['execute'])
 
     def proxy(self, event, subscriber, *args):
         success = False
         for e in self.events[event]:
-            if e['method'] == 'events.proxy':
-                callback = eval('self.publisher.'+e['callback'])
+            if 'proxy' in e:
+                callback = eval('self.publisher.'+e['proxy'])
                 success = callback(event, subscriber, *args)
         return success
 
     def off(self, event, subscriber, *args):
         for e in self.events[event]:
-            if e['method'] == 'events.off':
-                subscriber.off(e['event'], eval("subscriber."+e['callback']))
+            if 'off' in e:
+                for inner_e in self.events[e['off']]:
+                    if 'proxy' in inner_e:
+                        subscriber.off(e['off'], self.proxy)
