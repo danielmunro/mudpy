@@ -77,7 +77,6 @@ class Actor(wireframe.Blueprint):
         self.description = ""
         self.level = 0
         self.experience = 0
-        self.experience_per_level = 1000
         self.alignment = 0
         self.attributes = get_default_attributes()
         self.curhp = self.attributes['hp']
@@ -166,7 +165,7 @@ class Actor(wireframe.Blueprint):
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
 
-        racial_attr = self.race.get_attribute(attribute_name)
+        racial_attr = self.race._attribute(attribute_name)
         return min(
                 self._attribute(attribute_name) + racial_attr + 4, 
                 racial_attr + 8)
@@ -284,7 +283,7 @@ class Actor(wireframe.Blueprint):
         return _room.lit
 
     def qualifies_for_level(self):
-        return self.experience / self.experience_per_level > self.level
+        return self.experience / self._experience_per_level() > self.level
 
     def level_up(self):
         """Increase the actor's level."""
@@ -348,6 +347,9 @@ class Actor(wireframe.Blueprint):
         """Event listener for when the room update fires."""
 
         pass
+
+    def _experience_per_level(self):
+        return self.race.experience
 
     def _check_if_incapacitated(self, _event, action):
 
@@ -426,7 +428,7 @@ class Actor(wireframe.Blueprint):
         """
 
         return self._attribute(attribute_name) + \
-                self.race.get_attribute(attribute_name)
+                self.race._attribute(attribute_name)
     
     def _do_regular_attacks(self, recursed_attack_index = 0):
         """Recurse through the attacks the user is able to make for a round of
@@ -919,12 +921,10 @@ class Race(wireframe.Blueprint):
         self.attributes = {}
         self.abilities = []
         self.affects = []
+        self.experience = 1000;
 
-    def get_attribute(self, attribute):
-        if attribute in self.attributes:
-            return self.attributes[attribute]
-        else:
-            return 0
+    def _attribute(self, attribute):
+        return self.attributes[attribute] if attribute in self.attributes else 0
     
     @classmethod
     def to_yaml(self, dumper, thing):
