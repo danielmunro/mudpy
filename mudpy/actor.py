@@ -573,9 +573,9 @@ class User(Actor):
         self.role = 'player'
         super(User, self).__init__()
 
-    def set_client(self, client):
-        self.client = client
-        client.on("loggedin", self._loggedin)
+        # listeners for calendar events (sunrise, sunset) 
+        calendar.__instance__.setup_listeners_for(self.calendar_changed)
+        self.on('action', self._check_if_incapacitated)
 
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -613,17 +613,17 @@ class User(Actor):
         """Applies delay to the user when performing an ability."""
         self.delay_counter += ability.delay+1
 
-    def _loggedin(self, _event, login):
+    def input(self, event, subscriber, args):
+        return command.check_input(event, subscriber, args)
+
+    def loggedin(self, _event, user):
         """Miscellaneous setup tasks for when a user logs in. Nothing too
         exciting.
 
         """
 
-        self.client.off("loggedin", self._loggedin)
-
         from . import command
 
-        self.on('action', self._check_if_incapacitated)
         __proxy__.fire("actor_enters_realm", self)
 
         # on server events
@@ -633,12 +633,6 @@ class User(Actor):
         self.get_room().arriving(self)
 
         command.look(self)
-
-        # listener for client input to trigger commands in the game
-        self.client.on('input', command.check_input)
-
-        # listeners for calendar events (sunrise, sunset) 
-        calendar.__instance__.setup_listeners_for(self.calendar_changed)
 
         # on listeners to client input for abilities
         for ability in self.get_abilities():
@@ -655,7 +649,7 @@ class User(Actor):
                         return True
                 self.client.on('input', check_input)
 
-        debug.log('client logged in as '+str(self))
+        debug.log('user logged in as '+str(self))
 
     def calendar_changed(self, calendar, changed):
         """Notifies the user when a calendar event happens, such as the sun

@@ -67,7 +67,8 @@ class Client(observer.Observer, Protocol):
         self.transport.write(str(message)+" ")
 
     def input_not_handled(self, _event = None, _subscriber = None, _arg = None):
-        self.user.notify(__config__.messages["input_not_handled"])
+        if self.user:
+            self.user.notify(__config__.messages["input_not_handled"])
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""
@@ -99,12 +100,12 @@ class Login(observer.Observer):
 
             user = actor.User.load(data)
             if user:
-                user.set_client(client)
+                user.client = client
                 client.user = user
-                client.fire("loggedin", client)
+                client.fire("loggedin", user)
                 return
             self.newuser = actor.User()
-            self.newuser.set_client(client)
+            self.newuser.client = client
             self.newuser.name = data
             client.write(__config__.messages["creation_race_query"])
 
@@ -130,7 +131,7 @@ class Login(observer.Observer):
             else:
                 raise LoginException(__config__.messages["creation_alignment_not_valid"])
             client.user = self.newuser
-            client.fire("loggedin", client)
+            client.fire("loggedin", client.user)
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))
 
