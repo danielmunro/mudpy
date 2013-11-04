@@ -4,11 +4,12 @@ server, calendar, and areas.
 
 """
 
-from mudpy import mudpy, debug
+from mudpy.sys import mudpy, debug
 import sys
 
 def main():
-    from mudpy import wireframe, server, calendar, client, actor, room
+    from mudpy.sys import wireframe, server, calendar, client
+    from mudpy.game import actor, room
     __mudpy__.fire("initialize")
     __mudpy__.fire("start")
 

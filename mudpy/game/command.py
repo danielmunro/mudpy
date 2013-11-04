@@ -1,4 +1,4 @@
-from . import wireframe
+from ..sys import wireframe
 import random
 
 def check_input(_event, user, args):

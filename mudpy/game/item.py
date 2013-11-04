@@ -4,7 +4,7 @@ different ways.
 
 """
 
-from . import wireframe
+from ..sys import wireframe
 
 class Inventory(wireframe.Blueprint):
     """A bucket of items."""

@@ -3,7 +3,7 @@ to be used to apply attribute changes to an actor or item.
 
 """
 
-from . import wireframe
+from ..sys import wireframe
 import __main__
 
 class Affect(wireframe.Blueprint):

@@ -4,7 +4,8 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import debug, observer, actor, wireframe, event
+from . import debug, observer, wireframe, event
+from ..game import actor
 import __main__
 
 __config__ = None
@@ -92,8 +93,6 @@ class Login(observer.Observer):
             is a new alt.
 
             """
-
-            from . import actor
 
             if not actor.User.is_valid_name(data):
                 raise LoginException(__config__.messages["creation_name_not_valid"])

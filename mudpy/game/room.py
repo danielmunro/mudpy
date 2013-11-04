@@ -4,7 +4,8 @@ dungeons, and more.
 
 """
 
-from . import item, observer, wireframe, collection, event
+from ..sys import wireframe, collection, event
+from . import item
 import random, __main__
 
 __START_ROOM__ = 1

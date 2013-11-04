@@ -1,5 +1,6 @@
 """Wireframes module."""
 
+from ..game import *
 from . import debug, observer
 import os, yaml, __main__
 
@@ -23,7 +24,6 @@ if '__mudpy__' in __main__.__dict__:
     m.on('start', start_wireframes)
 
 def load_areas():
-    from . import room, actor
     recurse(os.path.join(path, "areas"))
 
 def preload(examine_path = "wireframes"):

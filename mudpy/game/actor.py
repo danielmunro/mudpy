@@ -5,8 +5,8 @@
 from __future__ import division
 import time, random, __main__
 
-from . import debug, room, server, item, collection, calendar, wireframe, \
-        observer
+from ..sys import debug, server, collection, calendar, wireframe, observer
+from . import room, item
 
 # Needed for creating these things from wireframes -- hacky
 from . import command, affect
