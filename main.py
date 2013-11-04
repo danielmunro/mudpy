@@ -4,18 +4,18 @@ server, calendar, and areas.
 
 """
 
-from mudpy.sys import mudpy, debug
+from mudpy.sys import mudpy
 import sys
 
 def main():
-    from mudpy.sys import wireframe, server, calendar, client
-    from mudpy.game import actor, room
     __mudpy__.fire("initialize")
     __mudpy__.fire("start")
 
 __mudpy__ = mudpy.Mudpy()
 
 if __name__ == "__main__":
+
+    from mudpy.sys import *
 
     # if mudpy is run directly, it needs a path from cli args to load the game
     if len(sys.argv) > 1:
