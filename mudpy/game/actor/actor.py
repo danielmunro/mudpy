@@ -3,9 +3,9 @@
 """
 
 from __future__ import division
-import time, random, __main__
+import random, __main__
 
-from ...sys import debug, server, collection, calendar, wireframe, observer
+from ...sys import collection, calendar, wireframe, observer
 from .. import room, item
 from .  import disposition
 
@@ -13,17 +13,23 @@ __SAVE_DIR__ = 'data'
 __config__ = None
 __proxy__ = observer.Observer()
 
-def broadcast_to_mudpy(*args):
-    """This function is used as a callback to proxy messages from actors to the
-    main game object, if it exists.
-    
-    """
-    __main__.__mudpy__.fire(*args)
-
 if '__mudpy__' in __main__.__dict__:
 
+    def broadcast_to_mudpy(*args):
+        """This function is used as a callback to proxy messages from actors to the
+        main game object, if it exists.
+        
+        """
+
+        __main__.__mudpy__.fire(*args)
+
     def initialize_actor(_event = None):
+        """Sets up the module level configuration object for this mud instance.
+        
+        """
+
         global __config__
+
         __config__ = wireframe.create('config.actor')
 
     __proxy__.on('__any__', broadcast_to_mudpy)
@@ -93,7 +99,7 @@ class Actor(wireframe.Blueprint):
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
-        self.observers = {}
+        super(Actor, self).__init__()
         
         self.equipped = dict((position, None) for position in ['light',
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
@@ -296,9 +302,6 @@ class Actor(wireframe.Blueprint):
         self.attributes['mana'] += random.randint(wis*.5, wis*1.5)
         self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
 
-    def is_incapacitated(self):
-        return self.disposition == disposition.__incapacitated__
-
     def sit(self):
         self.disposition = disposition.__sitting__
 
@@ -349,9 +352,9 @@ class Actor(wireframe.Blueprint):
     def _experience_per_level(self):
         return self.race.experience
 
-    def _check_if_incapacitated(self, _event, action):
+    def _check_if_incapacitated(self, _event, _action):
 
-        if self.is_incapacitated():
+        if self.disposition == disposition.__incapacitated__:
             self.notify(__config__.messages['move_failed_incapacitated'])
             return True
 
