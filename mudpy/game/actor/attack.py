@@ -19,7 +19,7 @@ def get_attr_mod(actor, attribute_name):
 
     return (actor.get_attribute(attribute_name) / actor.MAX_STAT) * 4
 
-def round(aggressor, attackname):
+def round(aggressor, index = 0):
     """One attack object is created for each aggressor during an attack round
     to resolve all of that aggressor's attacks. The aggressor automatically
     targets the actor stored in aggressor.target.
@@ -30,6 +30,10 @@ def round(aggressor, attackname):
     hitroll = 0
     damroll = 0
     defroll = 0
+    if index < len(aggressor.attacks):
+        attackname = aggressor.attacks[index]
+    else:
+        return
 
     handled = aggressor.fire('attack_start')
     if handled:
@@ -82,3 +86,4 @@ def round(aggressor, attackname):
         aggressor.target.curhp -= dam_roll
 
     aggressor.fire('attack_resolution')
+    round(aggressor, index+1)

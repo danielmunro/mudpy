@@ -412,7 +412,7 @@ class Actor(wireframe.Blueprint):
         return self._attribute(attribute_name) + \
                 self.race._attribute(attribute_name)
     
-    def _do_regular_attacks(self, _event, recursed_attack_index = 0):
+    def _do_regular_attacks(self, _event):
         """Recurse through the attacks the user is able to make for a round of
         battle.
 
@@ -423,11 +423,7 @@ class Actor(wireframe.Blueprint):
                 self.target.set_target(self)
 
             if self.disposition != disposition.__incapacitated__:
-                try:
-                    attack.round(self, self.attacks[recursed_attack_index])
-                    self._do_regular_attacks(_event, recursed_attack_index + 1)
-                except IndexError:
-                    pass
+                attack.round(self)
         else:
             __main__.__mudpy__.off('pulse', self._do_regular_attacks)
 
