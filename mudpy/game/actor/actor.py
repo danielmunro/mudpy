@@ -418,12 +418,10 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        if self.target:
+        if self.target and not self.disposition is disposition.__incapacitated__:
             if not self.target.target:
                 self.target.set_target(self)
-
-            if self.disposition != disposition.__incapacitated__:
-                attack.round(self)
+            attack.round(self)
         else:
             __main__.__mudpy__.off('pulse', self._do_regular_attacks)
 
