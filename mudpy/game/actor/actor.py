@@ -5,11 +5,9 @@
 from __future__ import division
 import time, random, __main__
 
-from ..sys import debug, server, collection, calendar, wireframe, observer
-from . import room, item
-
-# Needed for creating these things from wireframes -- hacky
-from . import command, affect
+from ...sys import debug, server, collection, calendar, wireframe, observer
+from .. import room, item
+from .  import disposition
 
 __SAVE_DIR__ = 'data'
 __config__ = None
@@ -91,7 +89,7 @@ class Actor(wireframe.Blueprint):
         self.race = None
         self.trains = 0
         self.practices = 0
-        self.disposition = Disposition.STANDING
+        self.disposition = disposition.__standing__
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
@@ -268,7 +266,7 @@ class Actor(wireframe.Blueprint):
     def can_see(self):
         """Can the user see?"""
 
-        if self.disposition is Disposition.SLEEPING:
+        if self.disposition is disposition.__sleeping__:
             return False
 
         _room = self.get_room()
@@ -299,16 +297,16 @@ class Actor(wireframe.Blueprint):
         self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
 
     def is_incapacitated(self):
-        return self.disposition == Disposition.INCAPACITATED
+        return self.disposition == disposition.__incapacitated__
 
     def sit(self):
-        self.disposition = Disposition.SITTING
+        self.disposition = disposition.__sitting__
 
     def wake(self):
-        self.disposition = Disposition.STANDING
+        self.disposition = disposition.__standing__
     
     def sleep(self):
-        self.disposition = Disposition.SLEEPING
+        self.disposition = disposition.__sleeping__
 
     def has_affect(self, name):
         return collection.find(name, self.get_affects())
@@ -332,11 +330,11 @@ class Actor(wireframe.Blueprint):
         """
 
         modifier = random.uniform(0.05, 0.125)
-        if self.disposition == Disposition.INCAPACITATED:
+        if self.disposition == disposition.__incapacitated__:
             modifier = -modifier
-        elif self.disposition == Disposition.LAYING:
+        elif self.disposition == disposition.__laying__:
             modifier += random.uniform(0.01, 0.05)
-        elif self.disposition == Disposition.SLEEPING:
+        elif self.disposition == disposition.__sleeping__:
             modifier += random.uniform(0.05, 0.1)
         self.curhp += self.get_attribute('hp') * modifier
         self.curmana += self.get_attribute('mana') * modifier
@@ -440,7 +438,7 @@ class Actor(wireframe.Blueprint):
             if not self.target.target:
                 self.target.set_target(self)
 
-            if self.disposition != Disposition.INCAPACITATED:
+            if self.disposition != disposition.__incapacitated__:
                 try:
                     Attack(self, self.attacks[recursed_attack_index])
                     self._do_regular_attacks(recursed_attack_index + 1)
@@ -490,7 +488,7 @@ class Actor(wireframe.Blueprint):
             if self.target.qualifies_for_level():
                 self.target.notify(__config__.messages["qualifies_for_level"])
             self._end_battle()
-        self.disposition = Disposition.LAYING
+        self.disposition = disposition.__laying__
         self.curhp = 1
         corpse = item.Corpse()
         corpse.name = "the corpse of "+str(self)
@@ -501,437 +499,3 @@ class Actor(wireframe.Blueprint):
             self.inventory.remove(i)
             corpse.inventory.append(i)
         self.get_room().inventory.append(corpse)
-
-class Mob(Actor):
-    """NPCs of the game, mobs are the inhabitants of the mud world."""
-
-    ROLE_TRAINER = 'trainer'
-    ROLE_ACOLYTE = 'acolyte'
-
-    yaml_tag = "u!mob"
-
-    def __init__(self):
-        self.movement = 0
-        self.movement_timer = self.movement
-        self.respawn = 1
-        self.respawn_timer = self.respawn
-        self.auto_flee = False
-        self.start_room = None
-        super(Mob, self).__init__()
-    
-    def tick(self, _event = None):
-        super(Mob, self).tick()
-        if self.movement:
-            self._decrement_movement_timer()
-    
-    def _decrement_movement_timer(self):
-        """Counts down to 0, at which point the mob will attempt to move from
-        their current room to a new one. They cannot move to new areas however.
-
-        """
-
-        self.movement_timer -= 1
-        if self.movement_timer < 0:
-            direction = random.choice([direction for direction, _room in 
-                self.get_room().directions.iteritems() if _room and 
-                _room.area == self.get_room().area])
-            command.move(self, direction)
-            self.movement_timer = self.movement
-    
-    def _normalize_stats(self, _args = None):
-        if self.curhp < 0:
-            self._die()
-        super(Mob, self)._normalize_stats()
-    
-    def _die(self):
-        super(Mob, self)._die()
-        self.get_room().move_actor(self)
-        room.get(room.__PURGATORY__).arriving(self)
-        __main__.__mudpy__.on('tick', self._respawn)
-
-    def _respawn(self):
-        self.respawn_timer -= 1
-        if self.respawn_timer < 0:
-            __main__.__mudpy__.off('tick', self._respawn)
-            self.disposition = Disposition.STANDING
-            self.curhp = self.get_attribute('hp')
-            self.curmana = self.get_attribute('mana')
-            self.curmovement = self.get_attribute('movement')
-            self.get_room().move_actor(self)
-            room.get(self.start_room).arriving(self)
-    
-class User(Actor):
-    """The actor controlled by a client connected by the server."""
-
-    yaml_tag = "u!user"
-
-    def __init__(self):
-        self.delay_counter = 0
-        self.last_delay = 0
-        self.trains = 5
-        self.practices = 5
-        self.client = None
-        self.observers = {}
-        self.role = 'player'
-        super(User, self).__init__()
-
-        # listeners for calendar events (sunrise, sunset) 
-        calendar.__instance__.setup_listeners_for(self.calendar_changed)
-        self.on('action', self._check_if_incapacitated)
-
-    def prompt(self):
-        """The status prompt for a user. By default, shows current hp, mana,
-        and movement. Not yet configurable."""
-
-        return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
-    
-    def notify(self, message = "", add_prompt = True):
-        if self.client.user:
-            self.client.write(str(message)+"\n"+(self.prompt() if add_prompt \
-                    else ""))
-    
-    def stat(self, _event = None):
-        """Notifies the user of the target's status (if any) and supplies a
-        fresh prompt.
-
-        """
-
-        if self.target:
-            self.notify(self.target.status()+"\n")
-
-    def add_affect(self, aff):
-        super(User, self).add_affect(aff)
-        self.notify(aff.messages['start']['self'])
-    
-    def tick(self, _event = None):
-        super(User, self).tick()
-        self.notify()
-    
-    def level_up(self):
-        super(User, self).level_up()
-        self.notify(__config__.messages['level_up'])
-
-    def perform_ability(self, ability):
-        """Applies delay to the user when performing an ability."""
-        self.delay_counter += ability.delay+1
-
-    def input(self, event, subscriber, args):
-        return command.check_input(event, subscriber, args)
-
-    def loggedin(self, _event, user):
-        """Miscellaneous setup tasks for when a user logs in. Nothing too
-        exciting.
-
-        """
-
-        from . import command
-
-        __proxy__.fire("actor_enters_realm", self)
-
-        # on server events
-        __main__.__mudpy__.on('stat', self.stat)
-        __main__.__mudpy__.on('cycle', self._update_delay)
-
-        self.get_room().arriving(self)
-
-        command.look(self)
-
-        # on listeners to client input for abilities
-        for ability in self.get_abilities():
-            ability.on('perform', self.perform_ability)
-            if ability.hook == 'input':
-                def check_input(user, _event, args):
-                    """Checks if the user is trying to perform an ability with
-                    a given input.
-
-                    """
-
-                    if ability.name.startswith(args[0]):
-                        ability.try_perform(self, args[1:])
-                        return True
-                self.client.on('input', check_input)
-
-        debug.log('user logged in as '+str(self))
-
-    def calendar_changed(self, calendar, changed):
-        """Notifies the user when a calendar event happens, such as the sun
-        rises.
-
-        """
-
-        self.notify(changed)
-
-    def actor_changed(self, _event, actor, message = ""):
-        """Event listener for when the room update fires."""
-
-        if actor is not self and self.can_see():
-            if message:
-                self.notify(message)
-
-    def save(self, args = []):
-        """Persisting stuff."""
-
-        if "area" in args:
-            wireframe.save(self.get_room().get_area())
-        else:
-            wireframe.save(self, "data.users")
-
-    def _end_affect(self, _event, affect):
-        super(User, self)._end_affect(_event, affect)
-        self.notify(affect.messages['end']['self'])
-    
-    def _normalize_stats(self, _args = None):
-        if self.curhp < -9:
-            self._die()
-        elif self.curhp <= 0:
-            self.disposition = Disposition.INCAPACITATED
-            self.notify(__config__.messages['incapacitated'])
-        elif self.disposition == Disposition.INCAPACITATED and self.curhp > 0:
-            self.disposition = Disposition.LAYING
-            self.notify(__config__.messages['recover_from_incapacitation'])
-        super(User, self)._normalize_stats()
-    
-    def _die(self):
-        super(User, self)._die()
-        self.get_room()
-        curroom.leaving(self)
-        self.room = room.__START_ROOM__
-        self.get_room().arriving(self)
-        self.notify(__config__.messages['died'])
-    
-    def _update_delay(self, _event = None):
-        """Removes the client from polling for input if the user has a delay
-        applied to it.
-
-        """
-
-        if self.delay_counter > 0:
-            if not self.last_delay:
-                __main__.__mudpy__.off('cycle', self.client.poll)
-            currenttime = int(time.time())
-            if currenttime > self.last_delay:
-                self.delay_counter -= 1
-                self.last_delay = currenttime
-        elif self.last_delay:
-            __main__.__mudpy__.on('cycle', self.client.poll)
-            self.last_delay = 0
-
-    @classmethod
-    def to_yaml(self, dumper, thing):
-        import copy
-        persist = copy.copy(thing)
-        del persist.client
-        return super(User, self).to_yaml(dumper, persist)
-
-    @staticmethod
-    def load(name):
-        """Attempts to load a user from the user save file. If the file does
-        not exist, the client is trying to create a new user.
-
-        """
-
-        try:
-            return wireframe.create(name.capitalize(), "data.users")
-        except wireframe.WireframeException:
-            pass
-
-    @staticmethod
-    def is_valid_name(name):
-        """Check if a user name is a valid format."""
-
-        name_len = len(name)
-        return name.isalpha() and name_len > 2 and name_len < 12
-
-    def __str__(self):
-        return self.name.title()
-
-class Disposition:
-    """Dispositions are physical stances the actor can have. They define which
-    commands are available to the actor, and affect regen rates.
-
-    """
-
-    def __init__(self):
-        pass
-
-    STANDING = 'standing'
-    SITTING = 'sitting'
-    LAYING = 'laying'
-    SLEEPING = 'sleeping'
-    INCAPACITATED = 'incapacitated'
-
-class Attack:
-    """One attack object is created for each aggressor during an attack round
-    to resolve all of that aggressor's attacks. The aggressor automatically
-    targets the actor stored in aggressor.target.
-    
-    """
-
-    def __init__(self, aggressor, attackname):
-        self.aggressor = aggressor
-        self.success = False
-        self.hitroll = 0
-        self.damroll = 0
-        self.defroll = 0
-
-        handled = self.aggressor.fire('attack_start', self)
-        if handled:
-            return
-
-        # initial rolls for attack/defense
-        hit_roll = aggressor.get_attribute('hit') + get_attr_mod(aggressor, 'dex')
-        def_roll = get_attr_mod(aggressor.target, 'dex') / 2
-        def_roll += 5 - aggressor.target.race.size
-
-        # determine dam type from weapon
-        weapons = aggressor.get_wielded_weapons()
-        try:
-            dam_type = weapons[0].damage_type
-        except IndexError:
-            dam_type = aggressor.race.dam_type
-
-        # get the ac bonus from the damage type
-        try:
-            ac = aggressor.target.get_attribute('ac_'+dam_type) / 100
-        except AttributeError:
-            ac = 0
-
-        self.aggressor.fire('attackmodifier', self)
-
-        # roll the dice and determine if the attack was successful
-        roll = random.uniform(hit_roll/2, hit_roll) - random.uniform(def_roll/2, def_roll) - ac
-
-        self.success = roll > 0
-        if self.success:
-            is_hit = "hits"
-            dam_roll = aggressor.get_attribute('dam') + get_attr_mod(aggressor, 'str')
-            dam_roll = random.uniform(dam_roll/2, dam_roll)
-        else:
-            is_hit = "misses"
-            dam_roll = 0
-
-        # update the room on the attack progress
-        verb = get_damage_verb(dam_roll)
-        ucname = str(aggressor).title()
-        tarname = str(aggressor.target)
-        aggressor.get_room().announce({
-            aggressor: "("+attackname+") Your "+verb+" attack "+is_hit+" "+tarname+".",
-            aggressor.target: ucname+"'s "+verb+" attack "+is_hit+" you.",
-            "all": ucname+"'s "+verb+" attack "+is_hit+" "+tarname+"."
-        }, add_prompt = False)
-
-        #need to do this check again here, can't have the actor dead before the hit message
-        if roll > 0: 
-            aggressor.target.curhp -= dam_roll
-
-        aggressor.fire('attack_resolution', self)
-
-class Ability(wireframe.Blueprint):
-    """Represents something cool an actor can do. Invoked when the hook is
-    triggered on the parent actor. Applies costs in the costs dict, and affects
-    in the affects list.
-    
-    """
-
-    yaml_tag = "u!ability"
-
-    def __init__(self):
-        self.name = "an ability"
-        self.level = 0
-        self.affects = []
-        self.costs = {}
-        self.delay = 0
-        self.type = "" # skill or spell
-        self.hook = ""
-        self.aggro = False
-        self.messages = {}
-    
-    def try_perform(self, invoker, args):
-        """Parses the user input, finds a target, applies the ability cost,
-        and invokes the ability.
-
-        """
-
-        receiver = None
-        try:
-            args = args[0]
-            receiver = invoker.get_room().get_actor(args[-1])
-        except IndexError:
-            pass
-        if not receiver:
-            receiver = invoker
-        if self.apply_cost(invoker):
-            invoker.delay_counter += self.delay + 1
-            success = random.randint(0, 1)
-            if success:
-                self.perform(receiver)
-            else:
-                invoker.notify('failed')
-        else:
-            invoker.notify(__config__.messages['apply_cost_fail'])
-
-    def perform(self, receiver):
-        """Initialize all the affects associated with this ability."""
-
-        for affectname in self.affects:
-            receiver.add_affect(wireframe.create(affectname))
-    
-    def apply_cost(self, invoker):
-        """Iterates over the cost property, checks that all requirements are
-        met, applies each cost, then returns true. If costs cannot be met by
-        the invoking actor, this method will return false.
-
-        """
-
-        for attr, cost in self.costs.iteritems():
-            curattr = getattr(invoker, 'cur'+attr)
-            cost *= curattr if cost > 0 and cost < 1 else 1
-            if curattr < cost:
-                return False
-        for attr, cost in self.costs.iteritems():
-            curattr = getattr(invoker, 'cur'+attr)
-            cost *= curattr if cost > 0 and cost < 1 else 1
-            setattr(invoker, 'cur'+attr, curattr-cost)
-        return True
-    
-    def __str__(self):
-        return self.name
-
-class Race(wireframe.Blueprint):
-    """Gives various properties to an actor that have far reaching affects
-    throughout the game.
-
-    """
-
-    yaml_tag = "u!race"
-
-    SIZE_TINY = 1
-    SIZE_SMALL = 2
-    SIZE_NORMAL = 3
-    SIZE_LARGE = 4
-    SIZE_GIGANTIC = 5
-
-    def __init__(self):
-        self.name = "critter"
-        self.size = self.SIZE_NORMAL
-        self.movement_cost = 1
-        self.is_playable = False
-        self.dam_type = "bash"
-        self.proficiencies = {}
-        self.attributes = {}
-        self.abilities = []
-        self.affects = []
-        self.experience = 1000;
-
-    def _attribute(self, attribute):
-        return self.attributes[attribute] if attribute in self.attributes else 0
-    
-    @classmethod
-    def to_yaml(self, dumper, thing):
-        import copy
-        persist = copy.copy(thing)
-        persist.__dict__ = {'wireframe': 'race.'+str(persist)}
-        return super(Race, self).to_yaml(dumper, persist)
-
-    def __str__(self):
-        return self.name

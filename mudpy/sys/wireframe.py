@@ -1,6 +1,5 @@
 """Wireframes module."""
 
-from ..game import *
 from . import debug, observer
 import os, yaml, __main__
 
@@ -59,6 +58,9 @@ def run(path):
             _object.done_init()
 
 def create_from_match(search):
+    from ..game import *
+    from ..game.actor import mob
+
     parts = search.split('.')
     _file = parts[-1]
     _path = os.path.join(*[path, "wireframes"]+parts[0:-1])
@@ -85,6 +87,8 @@ def create(name, subdirectory = "wireframes"):
     race = create("gnome") # returns a new gnome race to assign to an actor
     
     """
+    from ..game import *
+    from ..game.actor import mob
 
     wireframe_path = os.path.join(*[path]+subdirectory.split('.')+name.split('.'))+".yaml"
     if wireframe_path in wireframes:

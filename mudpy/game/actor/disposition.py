@@ -1,0 +1,5 @@
+__standing__ = 'standing'
+__sitting__ = 'sitting'
+__laying__ = 'laying'
+__sleeping__ = 'sleeping'
+__incapacitated__ = 'incapacitated'

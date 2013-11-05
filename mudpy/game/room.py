@@ -94,7 +94,7 @@ class Room(wireframe.Blueprint):
                 actor.notify(generalMessage, add_prompt)
     
     def mobs(self):
-        from actor import Mob
+        from actor.mob import Mob
         return list(actor for actor in self.actors if isinstance(actor, Mob))
 
     def copy(self, newRoom):
@@ -273,7 +273,7 @@ class Area(wireframe.Blueprint):
         self.rooms = []
 
     def done_init(self):
-        from . import actor
+        from actor import actor
         __AREAS__[self.name] = self
         for room in self.rooms:
             __ROOMS__[room.name] = room

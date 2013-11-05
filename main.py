@@ -16,6 +16,8 @@ __mudpy__ = mudpy.Mudpy()
 if __name__ == "__main__":
 
     from mudpy.sys import *
+    from mudpy.game import room
+    from mudpy.game.actor import *
 
     # if mudpy is run directly, it needs a path from cli args to load the game
     if len(sys.argv) > 1:

@@ -6,6 +6,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, observer, wireframe, event
 from ..game import actor
+from ..game.actor import user
 import __main__
 
 __config__ = None
@@ -94,10 +95,10 @@ class Login(observer.Observer):
 
             """
 
-            if not actor.User.is_valid_name(data):
+            if not actor.user.is_valid_name(data):
                 raise LoginException(__config__.messages["creation_name_not_valid"])
 
-            user = actor.User.load(data)
+            user = actor.user.load(data)
             if user:
                 user.client = client
                 client.user = user
