@@ -3,7 +3,7 @@
 """
 
 from __future__ import division
-import random, __main__
+import random
 
 from ...sys import collection, calendar, wireframe, observer
 from .. import room, item
@@ -12,28 +12,27 @@ from .  import disposition, attack
 __SAVE_DIR__ = 'data'
 __config__ = None
 __proxy__ = observer.Observer()
+__mudpy__ = None
 
-if '__mudpy__' in __main__.__dict__:
+def broadcast_to_mudpy(*args):
+    """This function is used as a callback to proxy messages from actors to the
+    main game object, if it exists.
+    
+    """
 
-    def broadcast_to_mudpy(*args):
-        """This function is used as a callback to proxy messages from actors to the
-        main game object, if it exists.
-        
-        """
+    __mudpy__.fire(*args)
 
-        __main__.__mudpy__.fire(*args)
+def initialize(mudpy):
+    """Sets up the module level configuration object for this mud instance.
+    
+    """
 
-    def initialize_actor(_event = None):
-        """Sets up the module level configuration object for this mud instance.
-        
-        """
+    global __config__, __mudpy__
 
-        global __config__
+    __config__ = wireframe.create('config.actor')
+    __mudpy__ = mudpy
 
-        __config__ = wireframe.create('config.actor')
-
-    __proxy__.on('__any__', broadcast_to_mudpy)
-    __main__.__mudpy__.on('initialize', initialize_actor)
+__proxy__.on('__any__', broadcast_to_mudpy)
 
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
@@ -227,7 +226,7 @@ class Actor(wireframe.Blueprint):
                 aff.attributes[attr] = self.get_attribute(attr) * modifier
 
         if aff.timeout > -1:
-            __main__.__mudpy__.on('tick', aff.countdown_timeout)
+            __mudpy__.on('tick', aff.countdown_timeout)
             aff.on('end', self._end_affect)
 
     def set_target(self, target = None):
@@ -245,7 +244,7 @@ class Actor(wireframe.Blueprint):
         self.target.on('attack_resolution', self._normalize_stats)
 
         # calls attack rounds until target is removed
-        __main__.__mudpy__.on('pulse', self._do_regular_attacks)
+        __mudpy__.on('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
@@ -423,7 +422,7 @@ class Actor(wireframe.Blueprint):
                 self.target.set_target(self)
             attack.round(self)
         else:
-            __main__.__mudpy__.off('pulse', self._do_regular_attacks)
+            __mudpy__.off('pulse', self._do_regular_attacks)
 
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are

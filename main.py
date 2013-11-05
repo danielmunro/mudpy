@@ -9,10 +9,12 @@ import sys
 
 def main(mudpy):
     from mudpy.sys import calendar, client, server, wireframe
+    from mudpy.game.actor import actor
 
     wireframe.initialize(mudpy)
     server.initialize(mudpy)
     calendar.initialize(mudpy)
+    actor.initialize(mudpy)
     client.initialize()
     wireframe.start()
     server.start()
