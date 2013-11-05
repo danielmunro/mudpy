@@ -424,7 +424,7 @@ class Actor(wireframe.Blueprint):
 
             if self.disposition != disposition.__incapacitated__:
                 try:
-                    attack.Attack(self, self.attacks[recursed_attack_index])
+                    attack.round(self, self.attacks[recursed_attack_index])
                     self._do_regular_attacks(_event, recursed_attack_index + 1)
                 except IndexError:
                     pass
