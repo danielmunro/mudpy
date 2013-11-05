@@ -7,7 +7,7 @@ import random, __main__
 
 from ...sys import collection, calendar, wireframe, observer
 from .. import room, item
-from .  import disposition
+from .  import disposition, attack
 
 __SAVE_DIR__ = 'data'
 __config__ = None
@@ -34,20 +34,6 @@ if '__mudpy__' in __main__.__dict__:
 
     __proxy__.on('__any__', broadcast_to_mudpy)
     __main__.__mudpy__.on('initialize', initialize_actor)
-    
-def get_damage_verb(dam_roll):
-    """A string representation of the severity of damage dam_roll will cause.
-
-    """
-
-    if dam_roll < 5:
-        return "clumsy"
-    elif dam_roll < 10:
-        return "amateur"
-    elif dam_roll < 15:
-        return "competent"
-    else:
-        return "skillful"
 
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
@@ -63,11 +49,6 @@ def get_default_attributes():
     attr['hit'] = 1
     attr['dam'] = 1
     return attr
-
-def get_attr_mod(actor, attribute_name):
-    """Returns a small integer to be used in fight calculations."""
-
-    return (actor.get_attribute(attribute_name) / Actor.MAX_STAT) * 4
 
 class Actor(wireframe.Blueprint):
     """Abstract 'person' in the game, base object for users and mobs."""
@@ -410,7 +391,7 @@ class Actor(wireframe.Blueprint):
                 return True
         return False
     
-    def _normalize_stats(self, _args = None):
+    def _normalize_stats(self, _event = None, _args = None):
         """Ensures hp, mana, and movement do not exceed their maxes during a
         tick.
 
@@ -431,7 +412,7 @@ class Actor(wireframe.Blueprint):
         return self._attribute(attribute_name) + \
                 self.race._attribute(attribute_name)
     
-    def _do_regular_attacks(self, recursed_attack_index = 0):
+    def _do_regular_attacks(self, _event, recursed_attack_index = 0):
         """Recurse through the attacks the user is able to make for a round of
         battle.
 
@@ -443,8 +424,8 @@ class Actor(wireframe.Blueprint):
 
             if self.disposition != disposition.__incapacitated__:
                 try:
-                    Attack(self, self.attacks[recursed_attack_index])
-                    self._do_regular_attacks(recursed_attack_index + 1)
+                    attack.Attack(self, self.attacks[recursed_attack_index])
+                    self._do_regular_attacks(_event, recursed_attack_index + 1)
                 except IndexError:
                     pass
         else:
@@ -463,7 +444,7 @@ class Actor(wireframe.Blueprint):
     
     def _die(self):
         """What happens when the user is killed (regardless of the method of
-        death). Does basic things such as creating the corpse and fireing
+        death). Does basic things such as creating the corpse and firing
         a disposition change event.
         
         """

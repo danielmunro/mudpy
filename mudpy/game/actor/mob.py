@@ -39,7 +39,7 @@ class Mob(actor.Actor):
             command.move(self, direction)
             self.movement_timer = self.movement
     
-    def _normalize_stats(self, _args = None):
+    def _normalize_stats(self, _event = None, _args = None):
         if self.curhp < 0:
             self._die()
         super(Mob, self)._normalize_stats()

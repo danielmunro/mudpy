@@ -1,3 +1,24 @@
+import random
+    
+def get_damage_verb(dam_roll):
+    """A string representation of the severity of damage dam_roll will cause.
+
+    """
+
+    if dam_roll < 5:
+        return "clumsy"
+    elif dam_roll < 10:
+        return "amateur"
+    elif dam_roll < 15:
+        return "competent"
+    else:
+        return "skillful"
+
+def get_attr_mod(actor, attribute_name):
+    """Returns a small integer to be used in fight calculations."""
+
+    return (actor.get_attribute(attribute_name) / actor.MAX_STAT) * 4
+
 class Attack:
     """One attack object is created for each aggressor during an attack round
     to resolve all of that aggressor's attacks. The aggressor automatically
