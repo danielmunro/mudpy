@@ -46,7 +46,7 @@ def run(path):
 
     debug.log("running "+path)
     with open(path, "r") as fp:
-        _object = yaml.load(fp)
+        _object = load_yaml(fp)
         if 'done_init' in dir(_object) and callable(getattr(_object, 'done_init')):
             _object.done_init()
 
@@ -61,7 +61,7 @@ def create_from_match(search):
             if infile.startswith(_file):
                 i = os.path.join(_path, infile)
                 if i in wireframes:
-                    result = yaml.load(wireframes[i])
+                    result = load_yaml(wireframes[i])
                     priority = result.priority if 'priority' in result.__dict__ else 0
                     matches[priority] = result
     except OSError:
@@ -81,10 +81,10 @@ def create(name, subdirectory = "wireframes"):
 
     wireframe_path = os.path.join(*[path]+subdirectory.split('.')+name.split('.'))+".yaml"
     if wireframe_path in wireframes:
-        return yaml.load(wireframes[wireframe_path])
+        return load_yaml(wireframes[wireframe_path])
     try:
         with open(wireframe_path, "r") as fp:
-            return yaml.load(fp)
+            return load_yaml(fp)
     except IOError:
         raise WireframeException
 
@@ -96,6 +96,11 @@ def save(thing, subdirectory = "areas"):
         fp.write(thing_yaml)
     if subdirectory == "wireframes":
         wireframes[wireframe_path] = thing_yaml
+
+def load_yaml(fp):
+    from ..game import room, item
+    from ..game.actor import mob, race, ability
+    return yaml.load(fp)
 
 class Blueprint(observer.Observer, yaml.YAMLObject):
 

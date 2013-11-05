@@ -1,11 +1,7 @@
 import __main__
 from . import actor, disposition
-from .. import room
+from .. import room, command
 from ...sys import wireframe, debug
-
-# wireframe import hack -- figure out how to remove later
-from . import ability
-from .. import command
 
 def load(name):
     """Attempts to load a user from the user save file. If the file does
