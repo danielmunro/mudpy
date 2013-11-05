@@ -6,22 +6,17 @@ import __main__
 __config__ = None
 __instance__ = None
 
-if '__mudpy__' in __main__.__dict__:
+def initialize(mudpy):
+    global __instance__, __config__
 
-    def initialize_calendar(_event = None):
+    __config__ = wireframe.create('config.calendar')
 
-        global __instance__, __config__
+    try:
+        __instance__ = wireframe.create("calendar", "data")
+    except wireframe.WireframeException:
+        __instance__ = Instance()
 
-        __config__ = wireframe.create('config.calendar')
-
-        try:
-            __instance__ = wireframe.create("calendar", "data")
-        except wireframe.WireframeException:
-            __instance__ = Instance()
-
-        server.__instance__.heartbeat.on("tick", __instance__.tick)
-
-    __main__.__mudpy__.on('initialize', initialize_calendar)
+    mudpy.on("tick", __instance__.tick)
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""

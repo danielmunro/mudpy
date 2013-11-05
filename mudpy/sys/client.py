@@ -7,19 +7,13 @@ from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, observer, wireframe, event
 from ..game import actor
 from ..game.actor import user
-import __main__
 
 __config__ = None
 
-if '__mudpy__' in __main__.__dict__:
+def initialize():
+    global __config__
 
-    def initialize_client(_event = None):
-
-        global __config__
-
-        __config__ = wireframe.create("config.client")
-
-    __main__.__mudpy__.on('initialize', initialize_client)
+    __config__ = wireframe.create("config.client")
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""

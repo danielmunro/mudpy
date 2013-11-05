@@ -1,26 +1,19 @@
 """Wireframes module."""
 
 from . import debug, observer
-import os, yaml, __main__
+import os, yaml
 
 path = None
 wireframes = {}
 
-if '__mudpy__' in __main__.__dict__:
+def initialize(mudpy):
+    global path
 
-    m = __main__.__mudpy__
+    path = mudpy.path
+    preload()
 
-    def load_wireframes(_event = None):
-        global path
-
-        path = m.path
-        preload()
-
-    def start_wireframes(_event = None):
-        load_areas()
-
-    m.on('initialize', load_wireframes)
-    m.on('start', start_wireframes)
+def start():
+    load_areas()
 
 def load_areas():
     recurse(os.path.join(path, "areas"))
@@ -58,8 +51,6 @@ def run(path):
             _object.done_init()
 
 def create_from_match(search):
-    from ..game import *
-    from ..game.actor import mob
 
     parts = search.split('.')
     _file = parts[-1]
@@ -87,8 +78,6 @@ def create(name, subdirectory = "wireframes"):
     race = create("gnome") # returns a new gnome race to assign to an actor
     
     """
-    from ..game import *
-    from ..game.actor import mob
 
     wireframe_path = os.path.join(*[path]+subdirectory.split('.')+name.split('.'))+".yaml"
     if wireframe_path in wireframes:

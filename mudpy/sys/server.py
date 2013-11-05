@@ -5,30 +5,27 @@ user defined scripts.
 
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
-import random, time, __main__
+import random, time
 from . import debug, observer, wireframe, config
 
 __config__ = None
 __instance__ = None
 
-if '__mudpy__' in __main__.__dict__:
+def proxy(_event):
+    __instance__.mudpy.fire("tick")
 
-    m = __main__.__mudpy__
+def initialize(mudpy):
+    global __instance__, __config__
 
-    def initialize_server(_event = None):
-        global __instance__, __config__
+    __instance__ = Instance(mudpy)
+    __config__ = wireframe.create("config.server")
+    __instance__.on("tick", proxy)
 
-        __instance__ = Instance(m)
-        __config__ = wireframe.create("config.server")
+def start():
+    from . import client
+    __instance__.start_listening(client.ClientFactory())
 
-    def start_server(_event = None):
-        from . import client
-        __instance__.start_listening(client.ClientFactory())
-
-    m.on('initialize', initialize_server)
-    m.on('start', start_server)
-
-class Instance:
+class Instance(observer.Observer):
     """Information about the implementation of this mud.py server."""
     
     def __init__(self, mudpy):
@@ -38,6 +35,7 @@ class Instance:
         # listening to the network
         self.heartbeat = Heartbeat(mudpy)
         self.mudpy = mudpy
+        super(Instance, self).__init__()
 
     def start_listening(self, client_factory):
         """Takes a client_factory (twisted Factory implementation), and set it
