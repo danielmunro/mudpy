@@ -11,3 +11,11 @@ class Mudpy(observer.Observer):
     def load_events(self, _event = None):
         from . import wireframe, event
         self.events = wireframe.create("event.mudpy").setup(self)
+
+    def proxy(self, *args):
+        """This function is used as a callback to proxy messages from game
+        objects to mudpy.
+        
+        """
+
+        self.fire(*args)

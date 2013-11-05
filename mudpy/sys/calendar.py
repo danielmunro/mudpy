@@ -36,7 +36,7 @@ class Instance(wireframe.Blueprint):
         self.month = 1
         self.year = 0
         self.daylight = True
-        self.observers = {}
+        super(Instance, self).__init__()
 
     def tick(self, _event = None):
         """Tick event listener function, increments the hour and checks for

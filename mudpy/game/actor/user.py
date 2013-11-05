@@ -113,7 +113,7 @@ class User(actor.Actor):
 
         debug.log('user logged in as '+str(self))
 
-    def calendar_changed(self, calendar, changed):
+    def calendar_changed(self, _event, _calendar, changed):
         """Notifies the user when a calendar event happens, such as the sun
         rises.
 

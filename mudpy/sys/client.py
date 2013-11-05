@@ -27,7 +27,7 @@ class Client(observer.Observer, Protocol):
         self.events = wireframe.create("event.client").setup(self)
 
     def connectionMade(self):
-        self.write(__config__.messages["connection_made"])
+        self.write(__config__.messages["connection_made"]+" ")
         debug.log("new client connected")
     
     def connectionLost(self, reason):
@@ -60,7 +60,7 @@ class Client(observer.Observer, Protocol):
     def write(self, message):
         """Send a message from the game to the client."""
 
-        self.transport.write(str(message)+" ")
+        self.transport.write(str(message))
 
     def input_not_handled(self, _event = None, _subscriber = None, _arg = None):
         if self.user:
@@ -101,7 +101,7 @@ class Login(observer.Observer):
             self.newuser = actor.User()
             self.newuser.client = client
             self.newuser.name = data
-            client.write(__config__.messages["creation_race_query"])
+            client.write(__config__.messages["creation_race_query"]+" ")
 
         def race(data):
             """If a new alt, have them select a race."""
@@ -111,7 +111,7 @@ class Login(observer.Observer):
             except KeyError:
                 raise LoginException(__config__.messages["creation_race_not_valid"])
 
-            client.write(__config__.messages["creation_alignment_query"])
+            client.write(__config__.messages["creation_alignment_query"]+" ")
         
         def alignment(data):
             """New alts need an alignment."""
@@ -136,7 +136,7 @@ class Login(observer.Observer):
             self.done.append(step)
             return True
         except LoginException as error:
-            client.write(error)
+            client.write(error+" ")
             self.todo.insert(0, step)
 
 class ClientFactory(tFactory, observer.Observer):

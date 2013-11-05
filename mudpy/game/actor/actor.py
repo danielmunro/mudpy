@@ -11,16 +11,9 @@ from .  import disposition, attack
 
 __SAVE_DIR__ = 'data'
 __config__ = None
-__proxy__ = observer.Observer()
 __mudpy__ = None
 
-def broadcast_to_mudpy(*args):
-    """This function is used as a callback to proxy messages from actors to the
-    main game object, if it exists.
-    
-    """
-
-    __mudpy__.fire(*args)
+__proxy__ = observer.Observer()
 
 def initialize(mudpy):
     """Sets up the module level configuration object for this mud instance.
@@ -31,8 +24,7 @@ def initialize(mudpy):
 
     __config__ = wireframe.create('config.actor')
     __mudpy__ = mudpy
-
-__proxy__.on('__any__', broadcast_to_mudpy)
+    __proxy__.on('__any__', __mudpy__.proxy)
 
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
@@ -417,12 +409,14 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        if self.target and not self.disposition is disposition.__incapacitated__:
+        if self.target:
             if not self.target.target:
                 self.target.set_target(self)
-            attack.round(self)
+            if not self.disposition is disposition.__incapacitated__:
+                attack.round(self)
         else:
             __mudpy__.off('pulse', self._do_regular_attacks)
+            return True
 
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are
@@ -445,7 +439,7 @@ class Actor(wireframe.Blueprint):
         self.get_room().announce({
             self: "You died!!",
             "all": "%s died!" % str(self).title()
-        })
+        }, False)
         if self.target:
             # calculate the kill experience
             leveldiff = self.level - self.target.level

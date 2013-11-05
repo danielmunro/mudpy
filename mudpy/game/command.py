@@ -111,13 +111,13 @@ def who(user):
 
 def date(user):
     """Notifies the user of the in-game date and time."""
-    from . import calendar
+    from ..sys import calendar
 
     user.notify(calendar.__instance__.get_game_time())
 
 def time(user):
     """Notifies the user of the in-game date and time."""
-    from . import calendar
+    from ..sys import calendar
 
     user.notify(calendar.__instance__.get_game_time())
 
