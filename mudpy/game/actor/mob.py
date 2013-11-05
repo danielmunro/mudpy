@@ -1,4 +1,7 @@
-from . import actor
+"""Mobs are creatures in the game."""
+from . import actor, disposition
+from .. import command, room
+import random, __main__
 
 class Mob(actor.Actor):
     """NPCs of the game, mobs are the inhabitants of the mud world."""
