@@ -9,10 +9,10 @@ rooms:
     affects: []
     alignment: 0
     attacks: [reg]
-    attributes: {ac_bash: 100, ac_magic: 100, ac_pierce: 100, ac_slash: 100, dam: 1,
-      hit: 1, hp: 20, mana: 100, movement: 100}
+    attributes: {ac_bash: 100, ac_magic: 100, ac_pierce: 100, ac_slash: 100, dam: 10,
+      hit: 5, hp: 200, mana: 100, movement: 100}
     auto_flee: false
-    curhp: 20
+    curhp: 200
     curmana: 100
     curmovement: 100
     description: Standing over 12 feet tall, Hassan the giant guards the temple.
