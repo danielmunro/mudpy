@@ -4,11 +4,11 @@ dungeons, and more.
 
 """
 
-from ..sys import wireframe, collection, event
+from ..sys import wireframe, collection
 from . import item
-import random, __main__
+import random
 
-__START_ROOM__ = 1
+__START_ROOM__ = 2
 __PURGATORY__ = "purgatory"
 __ROOMS__ = {}
 __AREAS__ = {}
