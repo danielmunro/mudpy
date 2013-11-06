@@ -154,7 +154,7 @@ class User(actor.Actor):
     def _die(self):
         super(User, self)._die()
         self.get_room().leaving(self)
-        self.room = room.__START_ROOM__
+        self.room = room.__config__.start_room
         self.get_room().arriving(self)
         self.notify(actor.__config__.messages['died'])
     

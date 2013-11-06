@@ -8,16 +8,18 @@ from ..sys import wireframe, collection
 from . import item
 import random
 
-__START_ROOM__ = 2
-__PURGATORY__ = "purgatory"
-__ROOMS__ = {}
-__AREAS__ = {}
+__rooms__ = {}
+__areas__ = {}
+__config__ = None
 
-__LAST_AREA__ = None
 __LOCATION_OUTSIDE__ = "outside"
 
+def initialize():
+    global __config__
+    __config__ = wireframe.create("config.room")
+
 def get(room_name, direction = ""):
-    _room = __ROOMS__[room_name]
+    _room = __rooms__[room_name]
     if direction:
         if direction in _room.directions:
             _room = _room.directions[direction]
@@ -26,10 +28,10 @@ def get(room_name, direction = ""):
     return _room
 
 def area(area_name):
-    return __AREAS__[area_name]
+    return __areas__[area_name]
 
 def copy(start_room, direction):
-    global __ROOMS__
+    global __rooms__
 
     Area.auto_room_name = Area.auto_room_name + 1
 
@@ -43,7 +45,7 @@ def copy(start_room, direction):
     new_room.directions[Direction.get_reverse(direction)] = start_room.name
     start_room.directions[direction] = new_room.name
 
-    __ROOMS__[new_room.name] = new_room
+    __rooms__[new_room.name] = new_room
     start_room.get_area().rooms.append(new_room)
 
 class Room(wireframe.Blueprint):
@@ -154,7 +156,7 @@ class Randomhall(Room):
                 for direction, room in self.directions.iteritems() if not room))
         if self.probabilities[direction] > random.random():
             if self.rooms < roomCount:
-                exit = __ROOMS__[self.area.name+":"+str(self.exit)]
+                exit = __rooms__[self.area.name+":"+str(self.exit)]
                 self.directions[direction] = exit
                 exit.directions[globals()[direction.title()]().reverse] = self
             else:
@@ -199,9 +201,9 @@ class Grid(Room):
             direction = Direction.get_random()
             if not grid[rand_y][rand_x].directions[direction]:
                 room_key = self.area.name+":"+str(exit)
-                grid[rand_y][rand_x].directions[direction] = __ROOMS__[room_key]
+                grid[rand_y][rand_x].directions[direction] = __rooms__[room_key]
                 class_name = direction.title()
-                __ROOMS__[room_key].directions[globals()[class_name].reverse]=\
+                __rooms__[room_key].directions[globals()[class_name].reverse]=\
                                                         grid[rand_y][rand_x]
                 exit = None
     
@@ -274,9 +276,9 @@ class Area(wireframe.Blueprint):
 
     def done_init(self):
         from actor import actor
-        __AREAS__[self.name] = self
+        __areas__[self.name] = self
         for room in self.rooms:
-            __ROOMS__[room.name] = room
+            __rooms__[room.name] = room
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
             room.events = wireframe.create("event.room").setup(self)

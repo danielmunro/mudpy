@@ -4,6 +4,7 @@ will proxy events to this object in order to share state.
 """
 
 from . import observer, wireframe, calendar, client, server
+from ..game import room
 from ..game.actor import actor
 
 class Mudpy(observer.Observer):
@@ -33,6 +34,7 @@ class Mudpy(observer.Observer):
         server.initialize(self)
         calendar.initialize(self)
         actor.initialize(self)
+        room.initialize()
         client.initialize()
         wireframe.start()
         server.start()

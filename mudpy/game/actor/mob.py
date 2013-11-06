@@ -47,7 +47,7 @@ class Mob(actor.Actor):
     def _die(self):
         super(Mob, self)._die()
         self.get_room().move_actor(self)
-        room.get(room.__PURGATORY__).arriving(self)
+        room.get(room.__config__.purgatory).arriving(self)
         __main__.__mudpy__.on('tick', self._respawn)
 
     def _respawn(self):
