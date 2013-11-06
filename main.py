@@ -8,16 +8,7 @@ from mudpy.sys import mudpy
 import sys
 
 def main(mudpy):
-    from mudpy.sys import calendar, client, server, wireframe
-    from mudpy.game.actor import actor
-
-    wireframe.initialize(mudpy)
-    server.initialize(mudpy)
-    calendar.initialize(mudpy)
-    actor.initialize(mudpy)
-    client.initialize()
-    wireframe.start()
-    server.start()
+    mudpy.start()
 
 __mudpy__ = mudpy.Mudpy()
 
@@ -29,6 +20,5 @@ if __name__ == "__main__":
     else:
         debug.error("Needs path, ie python main.py example")
         sys.exit()
-
 
     main(__mudpy__)
