@@ -12,10 +12,9 @@ def initialize(mudpy):
     path = mudpy.path
     preload()
 
-def start():
-    load_areas()
-
 def load_areas():
+    from ..game import room
+    from ..game.actor import mob, race
     recurse(os.path.join(path, "areas"))
 
 def preload(examine_path = "wireframes"):
@@ -98,8 +97,6 @@ def save(thing, subdirectory = "areas"):
         wireframes[wireframe_path] = thing_yaml
 
 def load_yaml(fp):
-    from ..game import room, item
-    from ..game.actor import mob, race, ability
     return yaml.load(fp)
 
 class Blueprint(observer.Observer, yaml.YAMLObject):

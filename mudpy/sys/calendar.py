@@ -3,13 +3,11 @@
 from . import wireframe, server
 import __main__
 
-__config__ = None
+__config__ = wireframe.create('config.calendar')
 __instance__ = None
 
 def initialize(mudpy):
-    global __instance__, __config__
-
-    __config__ = wireframe.create('config.calendar')
+    global __instance__
 
     try:
         __instance__ = wireframe.create("calendar", "data")

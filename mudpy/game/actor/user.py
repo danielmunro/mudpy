@@ -8,6 +8,7 @@ def load(name):
     not exist, the client is trying to create a new user.
 
     """
+    from . import ability
 
     try:
         return wireframe.create(name.capitalize(), "data.users")

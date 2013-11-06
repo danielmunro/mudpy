@@ -8,22 +8,7 @@ from twisted.internet import reactor
 import random, time
 from . import debug, observer, wireframe, config
 
-__config__ = None
-__instance__ = None
-
-def proxy(_event):
-    __instance__.mudpy.fire("tick")
-
-def initialize(mudpy):
-    global __instance__, __config__
-
-    __instance__ = Instance(mudpy)
-    __config__ = wireframe.create("config.server")
-    __instance__.on("tick", proxy)
-
-def start():
-    from . import client
-    __instance__.start_listening(client.ClientFactory())
+__config__ = wireframe.create("config.server")
 
 class Instance(observer.Observer):
     """Information about the implementation of this mud.py server."""
@@ -37,7 +22,7 @@ class Instance(observer.Observer):
         self.mudpy = mudpy
         super(Instance, self).__init__()
 
-    def start_listening(self, client_factory):
+    def start(self, client_factory):
         """Takes a client_factory (twisted Factory implementation), and set it
         for a tcp endpoint for the twisted reactor. Set the method for reactor
         to call in a new thread when it starts listening for clients. This 

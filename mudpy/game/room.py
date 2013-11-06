@@ -10,13 +10,9 @@ import random
 
 __rooms__ = {}
 __areas__ = {}
-__config__ = None
+__config__ = wireframe.create("config.room")
 
 __LOCATION_OUTSIDE__ = "outside"
-
-def initialize():
-    global __config__
-    __config__ = wireframe.create("config.room")
 
 def get(room_name, direction = ""):
     _room = __rooms__[room_name]

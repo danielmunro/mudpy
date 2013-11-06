@@ -8,12 +8,7 @@ from . import debug, observer, wireframe, event
 from ..game import actor
 from ..game.actor import user
 
-__config__ = None
-
-def initialize():
-    global __config__
-
-    __config__ = wireframe.create("config.client")
+__config__ = wireframe.create("config.client")
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""

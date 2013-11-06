@@ -10,7 +10,7 @@ from .. import room, item
 from .  import disposition, attack
 
 __SAVE_DIR__ = 'data'
-__config__ = None
+__config__ = wireframe.create('config.actor')
 __mudpy__ = None
 
 __proxy__ = observer.Observer()
@@ -20,9 +20,8 @@ def initialize(mudpy):
     
     """
 
-    global __config__, __mudpy__
+    global __mudpy__
 
-    __config__ = wireframe.create('config.actor')
     __mudpy__ = mudpy
     __proxy__.on('__any__', __mudpy__.proxy)
 

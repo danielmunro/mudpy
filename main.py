@@ -10,13 +10,10 @@ import sys
 def main(mudpy):
     mudpy.start()
 
-__mudpy__ = mudpy.Mudpy()
-
 if __name__ == "__main__":
 
-    # if mudpy is run directly, it needs a path from cli args to load the game
     if len(sys.argv) > 1:
-        __mudpy__.path = sys.argv[1]
+        __mudpy__ = mudpy.Mudpy(sys.argv[1])
     else:
         debug.error("Needs path, ie python main.py example")
         sys.exit()
