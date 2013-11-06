@@ -146,7 +146,7 @@ def flee(actor):
             actor: actor.last_command.messages['success_self'],
             'all': actor.last_command.messages['success_room'] % (str(actor).title())
         })
-        move(actor)
+        move(actor, random.choice(actor.get_room().directions.keys()))
         look(actor)
     else:
         actor.notify(actor.last_command.messages['no_target'])
