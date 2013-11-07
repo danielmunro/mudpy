@@ -1,8 +1,3 @@
-"""A server instance class, essentially a container class for config loaded
-user defined scripts.
-
-"""
-
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time
@@ -11,7 +6,6 @@ from . import debug, observer, wireframe, config
 __config__ = wireframe.create("config.server")
 
 class Instance(observer.Observer):
-    """Information about the implementation of this mud.py server."""
     
     def __init__(self, mudpy):
         # initialize heartbeat, which records the time of initialization and
