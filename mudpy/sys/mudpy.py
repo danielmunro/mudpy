@@ -12,7 +12,6 @@ class Mudpy(observer.Observer):
         self.path = path
         wireframe.initialize(self)
         super(Mudpy, self).__init__()
-        self.events = wireframe.create("event.mudpy").setup(self)
 
     def proxy(self, *args):
         """This function is used as a callback to proxy messages from objects
@@ -32,7 +31,8 @@ class Mudpy(observer.Observer):
         from ..game.actor import actor
 
         server_instance = server.Instance(self)
-        calendar.initialize(self)
-        actor.initialize(self)
+        calendar_instance = calendar.initialize()
+        self.on('__any__', calendar.proxy)
+        self.on('__any__', actor.proxy)
         wireframe.load_areas()
         server_instance.start(client.ClientFactory())

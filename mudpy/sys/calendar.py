@@ -1,20 +1,23 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
-from . import wireframe, server
-import __main__
+from . import wireframe, observer, config
 
 __config__ = wireframe.create('config.calendar')
 __instance__ = None
+__proxy__ = observer.Observer()
 
-def initialize(mudpy):
+def proxy(*args):
+    __proxy__.fire(*args)
+
+def initialize():
     global __instance__
 
     try:
         __instance__ = wireframe.create("calendar", "data")
     except wireframe.WireframeException:
-        __instance__ = Instance()
+        __instance__ = Calendar()
 
-    mudpy.on("tick", __instance__.tick)
+    return __instance__
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
@@ -22,7 +25,7 @@ def suffix(dec):
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
-class Instance(wireframe.Blueprint):
+class Calendar(wireframe.Blueprint):
     """Calendar instance, keeps track of the date in the game."""
 
     yaml_tag = "u!calendar"
@@ -34,7 +37,7 @@ class Instance(wireframe.Blueprint):
         self.month = 1
         self.year = 0
         self.daylight = True
-        super(Instance, self).__init__()
+        super(Calendar, self).__init__()
 
     def tick(self, _event = None):
         """Tick event listener function, increments the hour and checks for
@@ -45,10 +48,10 @@ class Instance(wireframe.Blueprint):
         self.elapsed_time += 1
         self.hour += 1
         if self.hour == __config__.months[self.month]['sunrise']:
-            self.fire('sunrise', self, "The sun begins to rise.")
+            __proxy__.fire('sunrise', self, "The sun begins to rise.")
             self.daylight = True
         elif self.hour == __config__.months[self.month]['sunset']:
-            self.fire('sunset', self, "The sun begins to set.")
+            __proxy__.fire('sunset', self, "The sun begins to set.")
             self.daylight = False
         if self.hour == __config__.hours_in_day:
             self.hour = 0

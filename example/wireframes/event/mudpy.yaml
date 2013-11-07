@@ -1,4 +1,0 @@
-!<u!event>
-events:
-    actor_enters_realm: 
-        register: tick

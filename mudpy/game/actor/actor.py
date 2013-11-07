@@ -11,19 +11,10 @@ from .  import disposition, attack
 
 __SAVE_DIR__ = 'data'
 __config__ = wireframe.create('config.actor')
-__mudpy__ = None
-
 __proxy__ = observer.Observer()
 
-def initialize(mudpy):
-    """Sets up the module level configuration object for this mud instance.
-    
-    """
-
-    global __mudpy__
-
-    __mudpy__ = mudpy
-    __proxy__.on('__any__', __mudpy__.proxy)
+def proxy(*args):
+    __proxy__.fire(*args)
 
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
@@ -70,6 +61,7 @@ class Actor(wireframe.Blueprint):
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
+        __proxy__.on('tick', self.tick)
         super(Actor, self).__init__()
         
         self.equipped = dict((position, None) for position in ['light',
@@ -217,7 +209,7 @@ class Actor(wireframe.Blueprint):
                 aff.attributes[attr] = self.get_attribute(attr) * modifier
 
         if aff.timeout > -1:
-            __mudpy__.on('tick', aff.countdown_timeout)
+            __proxy__.on('tick', aff.countdown_timeout)
             aff.on('end', self._end_affect)
 
     def set_target(self, target = None):
@@ -235,7 +227,7 @@ class Actor(wireframe.Blueprint):
         self.target.on('attack_resolution', self._normalize_stats)
 
         # calls attack rounds until target is removed
-        __mudpy__.on('pulse', self._do_regular_attacks)
+        __proxy__.on('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
@@ -414,7 +406,7 @@ class Actor(wireframe.Blueprint):
             if not self.disposition is disposition.__incapacitated__:
                 attack.round(self)
         else:
-            __mudpy__.off('pulse', self._do_regular_attacks)
+            __proxy__.off('pulse', self._do_regular_attacks)
             return True
 
     def _end_battle(self):
