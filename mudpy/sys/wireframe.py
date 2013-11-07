@@ -114,7 +114,7 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
 
     @classmethod
     def to_yaml(self, dumper, thing):
-        data = thing.__dict__
+        data = thing.__dict__.copy()
         if 'observers' in data:
             del data['observers']
         node = dumper.represent_mapping(thing.yaml_tag, data)
