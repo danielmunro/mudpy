@@ -27,8 +27,6 @@ def area(area_name):
     return __areas__[area_name]
 
 def copy(start_room, direction):
-    global __rooms__
-
     Area.auto_room_name = Area.auto_room_name + 1
 
     # create new room
@@ -62,7 +60,7 @@ class Room(wireframe.Blueprint):
         self.directions = {}
         self.area = ''
         self.lit = True
-        self.observers = {}
+        super(Room, self).__init__()
         self.events = wireframe.create("event.room").setup(self)
 
     def get_area(self):
@@ -227,8 +225,8 @@ class Direction(object):
                 return _direction
     
     @staticmethod
-    def get_random(allowedDirections = []):
-        return random.choice(allowedDirections if allowedDirections else \
+    def get_random(allowed_directions = []):
+        return random.choice(allowed_directions if allowed_directions else \
             list(direction.name for direction in Direction.__subclasses__()))
 
     @staticmethod
@@ -269,17 +267,17 @@ class Area(wireframe.Blueprint):
         self.terrain = ""
         self.location = ""
         self.rooms = []
+        super(Area, self).__init__()
 
     def done_init(self):
-        from actor import actor
+        from . import actor
         __areas__[self.name] = self
         for room in self.rooms:
             __rooms__[room.name] = room
             room.area = self.name
             Area.auto_room_name = max(Area.auto_room_name, room.name)
-            room.events = wireframe.create("event.room").setup(self)
             for mob in room.mobs():
-                actor.__proxy__.fire("actor_enters_realm", mob)
+                actor.actor.__proxy__.fire("actor_enters_realm", mob)
                 room.arriving(mob)
                 mob.start_room = room.name
 

@@ -3,13 +3,12 @@ will proxy events to this object in order to share state.
 
 """
 
-from . import observer, wireframe, event
+from . import observer, wireframe
 
 class Mudpy(observer.Observer):
     """Mudpy object is used to attach initialization and start events."""
 
     def __init__(self, path):
-        self.path = path
         wireframe.__path__ = path
         wireframe.preload()
         super(Mudpy, self).__init__()
