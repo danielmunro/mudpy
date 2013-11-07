@@ -1,4 +1,5 @@
 from ...sys import wireframe
+import random
 
 class Ability(wireframe.Blueprint):
     """Represents something cool an actor can do. Invoked when the hook is
@@ -46,6 +47,8 @@ class Ability(wireframe.Blueprint):
 
     def perform(self, receiver):
         """Initialize all the affects associated with this ability."""
+
+        from .. import affect
 
         for affectname in self.affects:
             receiver.add_affect(wireframe.create(affectname))
