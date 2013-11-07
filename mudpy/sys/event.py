@@ -23,9 +23,13 @@ class Event(wireframe.Blueprint):
         fn = self.events[event]['unregister']
         self.publisher.off(fn, getattr(subscriber, fn))
 
-    def proxy(self, event, subscriber, *args):
-        callback = eval('self.publisher.'+self.events[event]['proxy'])
-        return callback(event, subscriber, *args)
+    def proxy(self, event, *args):
+        if event in self.events:
+            publisher_callback = self.events[event]['proxy']
+        else:
+            publisher_callback = self.events['__any__']['proxy']
+        callback = eval('self.publisher.'+publisher_callback)
+        return callback(event, *args)
 
     def off(self, event, subscriber, *args):
         e_off = self.events[event]['off']
