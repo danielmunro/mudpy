@@ -3,23 +3,17 @@
 from . import debug, observer
 import os, yaml
 
-path = None
+__path__ = None
 wireframes = {}
-
-def initialize(mudpy):
-    global path
-
-    path = mudpy.path
-    preload()
 
 def load_areas():
     from ..game import room
     from ..game.actor import mob, race
-    recurse(os.path.join(path, "areas"))
+    recurse(os.path.join(__path__, "areas"))
 
 def preload(examine_path = "wireframes"):
     global wireframes
-    start_path = os.path.join(path, examine_path)
+    start_path = os.path.join(__path__, examine_path)
     if os.path.isdir(start_path):
         for p in os.listdir(start_path):
             preload(os.path.join(examine_path, p))
@@ -53,7 +47,7 @@ def create_from_match(search):
 
     parts = search.split('.')
     _file = parts[-1]
-    _path = os.path.join(*[path, "wireframes"]+parts[0:-1])
+    _path = os.path.join(*[__path__, "wireframes"]+parts[0:-1])
     matches = {}
     try:
         for infile in os.listdir(_path):
@@ -78,7 +72,7 @@ def create(name, subdirectory = "wireframes"):
     
     """
 
-    wireframe_path = os.path.join(*[path]+subdirectory.split('.')+name.split('.'))+".yaml"
+    wireframe_path = os.path.join(*[__path__]+subdirectory.split('.')+name.split('.'))+".yaml"
     if wireframe_path in wireframes:
         return load_yaml(wireframes[wireframe_path])
     try:
@@ -89,7 +83,7 @@ def create(name, subdirectory = "wireframes"):
 
 def save(thing, subdirectory = "areas"):
     
-    wireframe_path = os.path.join(*[path]+subdirectory.split('.')+[str(thing)])+".yaml"
+    wireframe_path = os.path.join(*[__path__]+subdirectory.split('.')+[str(thing)])+".yaml"
     thing_yaml = yaml.dump(thing)
     with open(wireframe_path, "w") as fp:
         fp.write(thing_yaml)

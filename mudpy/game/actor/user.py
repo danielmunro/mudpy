@@ -1,4 +1,4 @@
-import __main__
+import time
 from . import actor, disposition
 from .. import room, command
 from ...sys import wireframe, debug
@@ -90,8 +90,8 @@ class User(actor.Actor):
         actor.__proxy__.fire("actor_enters_realm", self)
 
         # on server events
-        __main__.__mudpy__.on('stat', self.stat)
-        __main__.__mudpy__.on('cycle', self._update_delay)
+        actor.__proxy__.on('stat', self.stat)
+        actor.__proxy__.on('cycle', self._update_delay)
 
         self.get_room().arriving(self)
 
@@ -167,13 +167,13 @@ class User(actor.Actor):
 
         if self.delay_counter > 0:
             if not self.last_delay:
-                __main__.__mudpy__.off('cycle', self.client.poll)
+                actor.__proxy__.off('cycle', self.client.poll)
             currenttime = int(time.time())
             if currenttime > self.last_delay:
                 self.delay_counter -= 1
                 self.last_delay = currenttime
         elif self.last_delay:
-            __main__.__mudpy__.on('cycle', self.client.poll)
+            actor.__proxy__.on('cycle', self.client.poll)
             self.last_delay = 0
 
     @classmethod

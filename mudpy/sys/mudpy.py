@@ -10,7 +10,8 @@ class Mudpy(observer.Observer):
 
     def __init__(self, path):
         self.path = path
-        wireframe.initialize(self)
+        wireframe.__path__ = path
+        wireframe.preload()
         super(Mudpy, self).__init__()
 
     def proxy(self, *args):
