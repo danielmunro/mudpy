@@ -1,21 +1,24 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
-from . import wireframe, observer, config
+from . import wireframe, observer, config, event
 
 __config__ = wireframe.create('config.calendar')
 __instance__ = None
 __proxy__ = observer.Observer()
+__mudpy__ = None
 
 def proxy(*args):
     __proxy__.fire(*args)
 
-def initialize():
-    global __instance__
+def initialize(mudpy):
+    global __instance__, __mudpy__
 
     try:
         __instance__ = wireframe.create("calendar", "data")
     except wireframe.WireframeException:
         __instance__ = Calendar()
+
+    __mudpy__ = mudpy
 
     return __instance__
 
@@ -38,8 +41,14 @@ class Calendar(wireframe.Blueprint):
         self.year = 0
         self.daylight = True
         super(Calendar, self).__init__()
+        __proxy__.on("tick", self._tick)
+        __proxy__.on("actor_enters_realm", self._on_actor_enters_realm)
 
-    def tick(self, _event = None):
+    def _on_actor_enters_realm(self, _event, actor):
+        __proxy__.on("sunrise", actor.sunrise)
+        __proxy__.on("sunset", actor.sunset)
+
+    def _tick(self, _event = None):
         """Tick event listener function, increments the hour and checks for
         changes in the date.
 
@@ -78,13 +87,3 @@ class Calendar(wireframe.Blueprint):
 
     def __str__(self):
         return "calendar"
-
-    def setup_listeners_for(self, func):
-        """Binds function to calendar related events."""
-        self.on('sunrise', func)
-        self.on('sunset', func)
-
-    def teardown_listeners_for(self, func):
-        """Removes function from calendar related events."""
-        self.off('sunrise', func)
-        self.off('sunset', func)

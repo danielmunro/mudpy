@@ -12,6 +12,11 @@ from .  import disposition, attack
 __SAVE_DIR__ = 'data'
 __config__ = wireframe.create('config.actor')
 __proxy__ = observer.Observer()
+__mudpy__ = None
+
+def initialize(mudpy):
+    global __mudpy__
+    __mudpy__ = mudpy
 
 def proxy(*args):
     __proxy__.fire(*args)

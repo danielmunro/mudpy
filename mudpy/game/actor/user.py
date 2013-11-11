@@ -36,11 +36,8 @@ class User(actor.Actor):
         self.role = 'player'
         super(User, self).__init__()
 
-        # listeners for calendar events (sunrise, sunset) 
-        # @todo remove tight coupling
-        from ...sys import calendar
-        calendar.__instance__.setup_listeners_for(self.calendar_changed)
         self.on('action', self._check_if_incapacitated)
+        actor.__mudpy__.fire('actor_enters_realm', self)
 
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -81,7 +78,7 @@ class User(actor.Actor):
     def input(self, event, subscriber, args):
         return command.check_input(event, subscriber, args)
 
-    def loggedin(self, _event, user):
+    def loggedin(self):
         """Miscellaneous setup tasks for when a user logs in. Nothing too
         exciting.
 
@@ -101,7 +98,7 @@ class User(actor.Actor):
         for ability in self.get_abilities():
             ability.on('perform', self.perform_ability)
             if ability.hook == 'input':
-                def check_input(user, _event, args):
+                def check_input(_event, user, args):
                     """Checks if the user is trying to perform an ability with
                     a given input.
 
@@ -114,11 +111,13 @@ class User(actor.Actor):
 
         debug.log('user logged in as '+str(self))
 
-    def calendar_changed(self, _event, _calendar, changed):
-        """Notifies the user when a calendar event happens, such as the sun
-        rises.
+    def sunset(self, _event, _calendar, changed):
+        """Notifies the user when a calendar event happens."""
 
-        """
+        self.notify(changed)
+
+    def sunrise(self, _event, _calendar, changed):
+        """Notifies the user when a calendar event happens."""
 
         self.notify(changed)
 

@@ -1,4 +1,0 @@
-!<u!event>
-events:
-    __any__:
-        proxy: _proxy_listeners

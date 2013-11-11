@@ -1,3 +1,0 @@
-!<u!mudpy>
-events:
-    - {actor_enters_realm: _tick}

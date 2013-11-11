@@ -1,6 +1,0 @@
-!<u!event>
-events:
-    arriving:
-        register: actor_changed
-    leaving:
-        unregister: actor_changed

@@ -15,11 +15,14 @@ class Client(observer.Observer, Protocol):
 
     def __init__(self):
         self.input_buffer = []
+        self.last_input = ""
         self.client_factory = None
         self.user = None
         self.observers = {}
         self.login = Login()
-        self.events = wireframe.create("event.client").setup(self)
+        self.on("loggedin", self._loggedin)
+        self.on("input", self.login.step)
+        self.on("input.__unhandled__", self._input_unhandled)
 
     def connectionMade(self):
         self.write(__config__.messages["connection_made"]+" ")
@@ -35,6 +38,7 @@ class Client(observer.Observer, Protocol):
         self.client_factory.fire("destroyed", self)
         self.client_factory.clients.remove(self)
         self.user.get_room().move_actor(self.user)
+        actor.proxy("actor_leaves_realm", self)
         self.transport.loseConnection()
     
     def dataReceived(self, data):
@@ -50,16 +54,24 @@ class Client(observer.Observer, Protocol):
             data = self.input_buffer.pop(0)
             if data:
                 sender = self.user if self.user else self
-                return self.fire("input", sender, data.split(" "))
+                self.last_input = data if not data == "!" else self.last_input
+                return self.fire("input", sender, self.last_input.split(" "))
     
     def write(self, message):
         """Send a message from the game to the client."""
 
         self.transport.write(str(message))
 
-    def input_not_handled(self, _event = None, _subscriber = None, _arg = None):
+    def _input_unhandled(self, _event = None, _subscriber = None, _arg = None):
         if self.user:
             self.user.notify(__config__.messages["input_not_handled"])
+
+    def _loggedin(self, _event, user):
+        self.off("input", self.login.step)
+        self.on("input", user.input)
+        self.user = user
+        self.user.client = self
+        user.loggedin()
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""
@@ -89,12 +101,11 @@ class Login(observer.Observer):
 
             user = actor.user.load(data)
             if user:
-                user.client = client
-                client.user = user
+                #user.client = client
                 client.fire("loggedin", user)
                 return
-            self.newuser = actor.User()
-            self.newuser.client = client
+            self.newuser = actor.user.User()
+            #self.newuser.client = client
             self.newuser.name = data
             client.write(__config__.messages["creation_race_query"]+" ")
 
@@ -119,8 +130,7 @@ class Login(observer.Observer):
                 self.newuser.alignment = -1000
             else:
                 raise LoginException(__config__.messages["creation_alignment_not_valid"])
-            client.user = self.newuser
-            client.fire("loggedin", client.user)
+            client.fire("loggedin", self.newuser)
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))
 

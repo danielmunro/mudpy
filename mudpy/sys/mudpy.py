@@ -3,16 +3,15 @@ will proxy events to this object in order to share state.
 
 """
 
-from . import observer, wireframe, event
+from . import observer, wireframe, event, calendar, server, client
+from ..game.actor import actor
 
 class Mudpy(observer.Observer):
     """Mudpy object is used to attach initialization and start events."""
 
-    def __init__(self, path):
-        wireframe.__path__ = path
-        wireframe.preload()
+    def __init__(self):
         super(Mudpy, self).__init__()
-        self.events = wireframe.create("event.mudpy").setup(self)
+        self.on("__any__", self._proxy_listeners)
 
     def proxy(self, *args):
         """This function is used as a callback to proxy messages from objects
@@ -28,16 +27,12 @@ class Mudpy(observer.Observer):
 
         """
 
-        from . import calendar, server, client
-        from ..game.actor import actor
-
         server_instance = server.Instance(self)
-        calendar_instance = calendar.initialize()
+        calendar_instance = calendar.initialize(self)
+        actor.initialize(self)
         wireframe.load_areas()
         server_instance.start(client.ClientFactory())
 
     def _proxy_listeners(self, *args):
-        from . import calendar
-        from ..game.actor import actor
         calendar.proxy(*args)
         actor.proxy(*args)

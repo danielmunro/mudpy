@@ -61,7 +61,6 @@ class Room(wireframe.Blueprint):
         self.area = ''
         self.lit = True
         super(Room, self).__init__()
-        self.events = wireframe.create("event.room").setup(self)
 
     def get_area(self):
         return area(self.area)
@@ -116,11 +115,13 @@ class Room(wireframe.Blueprint):
 
     def leaving(self, actor, direction = ""):
         handled = self.fire("leaving", actor)
+        self.off("actor_changed", actor.actor_changed)
         if not handled:
             self.actors.remove(actor)
 
     def arriving(self, actor, direction = ""):
         handled = self.fire("arriving", actor)
+        self.on("actor_changed", actor.actor_changed)
         if not handled:
             if not actor in self.actors:
                 self.actors.append(actor)

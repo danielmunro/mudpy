@@ -65,8 +65,8 @@ class Heartbeat(observer.Observer):
 
     """
 
-    TICK_LOWBOUND_SECONDS = 10
-    TICK_HIGHBOUND_SECONDS = 15
+    TICK_LOWBOUND_SECONDS = 5
+    TICK_HIGHBOUND_SECONDS = 10
 
     PULSE_SECONDS = 1
 
