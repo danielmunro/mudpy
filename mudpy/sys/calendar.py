@@ -1,6 +1,6 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
-from . import wireframe, observer, config, event
+from . import wireframe, observer
 
 __config__ = wireframe.create('config.calendar')
 __instance__ = None
@@ -8,9 +8,20 @@ __proxy__ = observer.Observer()
 __mudpy__ = None
 
 def proxy(*args):
+    """Messages can be passed into this module via the proxy. Listeners are
+    set up to catch events.
+
+    """
+
     __proxy__.fire(*args)
 
 def initialize(mudpy):
+    """Setup function for the module. Initializes a calendar instance from
+    either a previous save or creates a new one. Saves a local instance of the
+    main game thread for later reference.
+    
+    """
+
     global __instance__, __mudpy__
 
     try:
@@ -28,6 +39,10 @@ def suffix(dec):
     return 'th' if 11 <= dec <= 13 else {
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
+def on_actor_enters_realm(_event, actor):
+    __proxy__.on("sunrise", actor.sunrise)
+    __proxy__.on("sunset", actor.sunset)
+
 class Calendar(wireframe.Blueprint):
     """Calendar instance, keeps track of the date in the game."""
 
@@ -42,11 +57,7 @@ class Calendar(wireframe.Blueprint):
         self.daylight = True
         super(Calendar, self).__init__()
         __proxy__.on("tick", self._tick)
-        __proxy__.on("actor_enters_realm", self._on_actor_enters_realm)
-
-    def _on_actor_enters_realm(self, _event, actor):
-        __proxy__.on("sunrise", actor.sunrise)
-        __proxy__.on("sunset", actor.sunset)
+        __proxy__.on("actor_enters_realm", on_actor_enters_realm)
 
     def _tick(self, _event = None):
         """Tick event listener function, increments the hour and checks for
@@ -57,10 +68,10 @@ class Calendar(wireframe.Blueprint):
         self.elapsed_time += 1
         self.hour += 1
         if self.hour == __config__.months[self.month]['sunrise']:
-            __proxy__.fire('sunrise', self, "The sun begins to rise.")
+            __proxy__.fire("sunrise", "The sun begins to rise.")
             self.daylight = True
         elif self.hour == __config__.months[self.month]['sunset']:
-            __proxy__.fire('sunset', self, "The sun begins to set.")
+            __proxy__.fire("sunset", "The sun begins to set.")
             self.daylight = False
         if self.hour == __config__.hours_in_day:
             self.hour = 0

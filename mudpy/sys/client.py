@@ -38,7 +38,7 @@ class Client(observer.Observer, Protocol):
         self.client_factory.fire("destroyed", self)
         self.client_factory.clients.remove(self)
         self.user.get_room().move_actor(self.user)
-        actor.proxy("actor_leaves_realm", self)
+        actor.actor.proxy("actor_leaves_realm", self)
         self.transport.loseConnection()
     
     def dataReceived(self, data):

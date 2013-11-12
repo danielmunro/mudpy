@@ -111,12 +111,12 @@ class User(actor.Actor):
 
         debug.log('user logged in as '+str(self))
 
-    def sunset(self, _event, _calendar, changed):
+    def sunset(self, _event, changed):
         """Notifies the user when a calendar event happens."""
 
         self.notify(changed)
 
-    def sunrise(self, _event, _calendar, changed):
+    def sunrise(self, _event, changed):
         """Notifies the user when a calendar event happens."""
 
         self.notify(changed)
