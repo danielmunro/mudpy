@@ -39,10 +39,10 @@ def heartbeat():
             __proxy__.fire('tick')
 
 def start(client_factory):
-    """Takes a client_factory (twisted Factory implementation), and set it
-    for a tcp endpoint for the twisted reactor. Set the method for reactor
-    to call in a new thread when it starts listening for clients. This 
-    method will start the main game loop.
+    """Takes a client_factory (twisted Factory implementation), and set a tcp 
+    endpoint for the twisted reactor. Set the method for reactor to call in a
+    new thread when it starts listening for clients. This method will run the 
+    main game loop.
 
     """
 
