@@ -1,19 +1,25 @@
+"""Server interface for game. Mudpy runs in two threads, one with the game loop
+and the other with twisted listening in reactor.run(). This module coordinates
+communication between the threads.
+
+"""
+
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time
-from . import debug, observer, wireframe, config
+from . import observer, wireframe
 
 __config__ = wireframe.create("config.server")
 
 class Instance(observer.Observer):
+    """Runs the twisted reactor and provides a callback for the main game
+    thread.
+
+    """
     
     def __init__(self, mudpy):
-        # initialize heartbeat, which records the time of initialization and
-        # keeps track of its own reference to the reactor. Heartbeat uses
-        # reactor to call functions in the game thread from the thread
-        # listening to the network
-        self.heartbeat = Heartbeat(mudpy)
         self.mudpy = mudpy
+        self.starttime = time.time()
         super(Instance, self).__init__()
 
     def start(self, client_factory):
@@ -34,21 +40,44 @@ class Instance(observer.Observer):
         TCP4ServerEndpoint(reactor, __config__.port).listen(client_factory)
 
         # start running the game thread
-        reactor.callInThread(self.heartbeat.start)
-
-        debug.log(str(self)+" ready to accept clients on port "+str(__config__.port))
+        reactor.callInThread(self._heartbeat)
 
         # start the twisted client listener thread
         reactor.run()
 
+    def _heartbeat(self):
+        """Callback provided to twisted for communicating between game threads.
+
+        """
+
+        next_pulse = time.time()+__config__.intervals['pulse']
+        next_tick = time.time()+random.randint(
+            __config__.intervals['tick']['lowbound'], \
+            __config__.intervals['tick']['highbound'])
+        while(1):
+            self.mudpy.fire('cycle')
+            if time.time() >= next_pulse:
+                next_pulse += __config__.intervals['pulse']
+                self.mudpy.fire('pulse')
+                self.mudpy.fire('stat')
+            if time.time() >= next_tick:
+                next_tick = time.time()+random.randint(
+                    __config__.intervals['tick']['lowbound'], \
+                    __config__.intervals['tick']['highbound'])
+                self.mudpy.fire('tick')
+
     def _set_client_poll(self, _event, client):
-        """Called when the client_factory reports that a client is created."""
+        """Called when the client_factory reports that a client is created.
+        Sets a polling listener on the newly created client for each game
+        cycle.
+        
+        """
 
         self.mudpy.on("cycle", client.poll)
 
     def _unset_client_poll(self, _event, client):
         """Called when the client_factory reports that a client has been
-        destroyed.
+        destroyed. Removes the polling listener for that client.
 
         """
 
@@ -56,78 +85,3 @@ class Instance(observer.Observer):
     
     def __str__(self):
         return str(__config__)
-
-class Heartbeat(observer.Observer):
-    """The timekeeper for mud.py. Fires off game cycles for each loop within
-    the main game loop, as well as pulses every second, and ticks in random
-    higher intervals. Each of these events are used by different objects in
-    the game to keep internal time for various tasks.
-
-    """
-
-    TICK_LOWBOUND_SECONDS = 30
-    TICK_HIGHBOUND_SECONDS = 45
-
-    PULSE_SECONDS = 1
-
-    def __init__(self, mudpy):
-        self.mudpy = mudpy
-        self.observers = {}
-        self.stopwatch = Stopwatch()
-        super(Heartbeat, self).__init__()
-        debug.log('heartbeat created')
-    
-    def start(self):
-        """Start the server heartbeat, which will consume this thread with the
-        main game loop.
-
-        """
-
-        debug.log('heartbeat initialized')
-        next_pulse = time.time()+Heartbeat.PULSE_SECONDS
-        next_tick = time.time()+random.randint(
-                                        Heartbeat.TICK_LOWBOUND_SECONDS, \
-                                        Heartbeat.TICK_HIGHBOUND_SECONDS)
-        while(1):
-            self.mudpy.fire('cycle')
-            if time.time() >= next_pulse:
-                next_pulse += Heartbeat.PULSE_SECONDS
-                self.mudpy.fire('pulse')
-                self.mudpy.fire('stat')
-            if time.time() >= next_tick:
-                next_tick = time.time()+random.randint(
-                                        Heartbeat.TICK_LOWBOUND_SECONDS, \
-                                        Heartbeat.TICK_HIGHBOUND_SECONDS)
-                _stop = Stopwatch()
-                self.mudpy.fire('tick')
-                debug.log('fireed tick ['+str(_stop)+'s elapsed in tick]'+ \
-                            ' ['+str(self.stopwatch)+'s elapsed since start]')
-
-    def fire(self, *eventlist, **events):
-        """Custom fire method for the heartbeat. Instead of calling the
-        functions directly, we need to tell the twisted reactor to call them
-        in the main thread.
-
-        """
-
-        for event in eventlist:
-            try:
-                [reactor.callFromThread(func) for func in self.observers[event]]
-            except KeyError:
-                pass
-
-        for event, args in events.iteritems():
-            try:
-                [reactor.callFromThread(func, args) for func in \
-                                            self.observers[event]]
-            except KeyError:
-                pass
-
-class Stopwatch:
-    """Timekeeper, used for debugging mostly."""
-
-    def __init__(self):
-        self.starttime = time.time()
-    
-    def __str__(self):
-        return str(time.time()-self.starttime)
