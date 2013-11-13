@@ -7,6 +7,7 @@ rooms:
   - !<u!mob>
     abilities: []
     affects: []
+    aggressive: false
     alignment: 0
     attacks: [reg]
     attributes: {ac_bash: 100, ac_magic: 100, ac_pierce: 100, ac_slash: 100, dam: 10,
@@ -27,7 +28,7 @@ rooms:
       items: []
     last_command: null
     level: 0
-    long: 
+    long: null
     movement: 0
     movement_timer: 0
     name: hassan
@@ -35,8 +36,10 @@ rooms:
     proficiencies: {}
     race: !<u!race> {wireframe: race.giant}
     respawn: 1
+    respawn_timer: 1
     room: 1
     sex: neutral
+    start_room: 1
     target: null
     title: Hassan
     trained_attributes: {}
@@ -78,11 +81,33 @@ rooms:
   actors: []
   area: midgaard
   description: Markets and roads surround you.
-  directions: {north: 3}
+  directions: {down: 6, north: 3, south: 5}
   inventory: !<u!inventory>
     item_count: {}
     items: []
   lit: true
   name: 4
   title: The Market Square
+- !<u!room>
+  actors: []
+  area: midgaard
+  description: Markets and roads surround you.
+  directions: {north: 4}
+  inventory: !<u!inventory>
+    item_count: {}
+    items: []
+  lit: true
+  name: 5
+  title: The Common Square
+- !<u!room>
+  actors: []
+  area: midgaard
+  description: A dark and smelly sewer system lies before you.
+  directions: {up: 4}
+  inventory: !<u!inventory>
+    item_count: {}
+    items: []
+  lit: true
+  name: 6
+  title: Underneath the market square
 terrain: urban
