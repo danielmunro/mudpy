@@ -21,10 +21,14 @@ class Mob(actor.Actor):
         self.aggressive = False
         super(Mob, self).__init__()
     
-    def tick(self, _event = None):
+    def tick(self, _event):
         super(Mob, self).tick()
         if self.movement:
             self._decrement_movement_timer()
+        if self.aggressive:
+            for actor in self.get_room().actors:
+                if not actor is self:
+                    self.set_target(actor)
 
     def actor_changed(self, event, actor, message = ""):
         if self.aggressive and actor.last_command.action == "move" and self.get_room().get_actor(actor):
