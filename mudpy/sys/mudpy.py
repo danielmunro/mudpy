@@ -28,8 +28,9 @@ class Mudpy(observer.Observer):
 
         """
 
-        server_instance = server.Instance(self)
+        server_instance = server.initialize(self)
         calendar.initialize(self)
         actor.initialize(self)
+        client.initialize(self)
         wireframe.load_areas()
         server_instance.start(client.ClientFactory())

@@ -9,6 +9,12 @@ from ..game import actor
 from ..game.actor import user
 
 __config__ = wireframe.create("config.client")
+__mudpy__ = None
+
+def initialize(mudpy):
+    global __mudpy__
+
+    __mudpy__ = mudpy
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
@@ -18,19 +24,19 @@ class Client(observer.Observer, Protocol):
         self.last_input = ""
         self.client_factory = None
         self.user = None
-        self.observers = {}
+        super(Client, self).__init__()
         self.login = Login()
         self.on("loggedin", self._loggedin)
         self.on("input", self.login.step)
         self.on("input.__unhandled__", self._input_unhandled)
 
     def connectionMade(self):
+        __mudpy__.on("cycle", self._poll)
         self.write(__config__.messages["connection_made"]+" ")
-        debug.log("new client connected")
     
     def connectionLost(self, reason):
+        __mudpy__.off("cycle", self._poll)
         self.write(__config__.messages["connection_lost"])
-        debug.log("client disconnected")
     
     def disconnect(self):
         """Called when a client loses their connection."""
@@ -43,8 +49,13 @@ class Client(observer.Observer, Protocol):
     
     def dataReceived(self, data):
         self.input_buffer.append(data.strip())
+    
+    def write(self, message):
+        """Send a message from the game to the client."""
 
-    def poll(self, _event = None):
+        self.transport.write(str(message))
+
+    def _poll(self, _event = None):
         """Game cycle listener, will pop off input from the client's command
         buffer and trigger an input event on the client object.
 
@@ -56,11 +67,6 @@ class Client(observer.Observer, Protocol):
                 sender = self.user if self.user else self
                 self.last_input = data if not data == "!" else self.last_input
                 return self.fire("input", sender, self.last_input.split(" "))
-    
-    def write(self, message):
-        """Send a message from the game to the client."""
-
-        self.transport.write(str(message))
 
     def _input_unhandled(self, _event = None, _subscriber = None, _arg = None):
         if self.user:
