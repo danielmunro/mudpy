@@ -35,8 +35,6 @@ class User(actor.Actor):
         self.observers = {}
         self.role = 'player'
         super(User, self).__init__()
-
-        self.on('action', self._check_if_incapacitated)
         actor.__mudpy__.fire('actor_enters_realm', self)
 
     def prompt(self):
@@ -90,6 +88,9 @@ class User(actor.Actor):
         actor.__proxy__.on('stat', self.stat)
         actor.__proxy__.on('cycle', self._update_delay)
 
+        self.on('attacked', self._attacked)
+        self.on('action', self._check_if_incapacitated)
+
         self.get_room().arriving(self)
 
         command.look(self)
@@ -135,6 +136,9 @@ class User(actor.Actor):
             wireframe.save(self.get_room().get_area())
         else:
             wireframe.save(self, "data.users")
+
+    def _attacked(self, event, attacker):
+        self.notify("%s screams and attacks!" % attacker)
 
     def _end_affect(self, _event, affect):
         super(User, self)._end_affect(_event, affect)

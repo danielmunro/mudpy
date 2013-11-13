@@ -18,12 +18,18 @@ class Mob(actor.Actor):
         self.respawn_timer = self.respawn
         self.auto_flee = False
         self.start_room = None
+        self.aggressive = False
         super(Mob, self).__init__()
     
     def tick(self, _event = None):
         super(Mob, self).tick()
         if self.movement:
             self._decrement_movement_timer()
+
+    def actor_changed(self, event, actor, message = ""):
+        if self.aggressive and actor.last_command.action == "move" and self.get_room().get_actor(actor):
+            self.set_target(actor)
+            event.handle()
     
     def _decrement_movement_timer(self):
         """Counts down to 0, at which point the mob will attempt to move from

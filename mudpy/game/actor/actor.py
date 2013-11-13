@@ -228,11 +228,13 @@ class Actor(wireframe.Blueprint):
         # target acquired
         self.target = target
 
-        # handles above 100% hp/mana/mv and below 0% hp/mana/mv
-        self.target.on('attack_resolution', self._normalize_stats)
+        handled = self.target.fire('attacked', self)
+        if not handled:
+            # handles above 100% hp/mana/mv and below 0% hp/mana/mv
+            self.target.on('attack_resolution', self._normalize_stats)
 
-        # calls attack rounds until target is removed
-        __proxy__.on('pulse', self._do_regular_attacks)
+            # calls attack rounds until target is removed
+            __proxy__.on('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
         return self._get_movement_cost() <= self.curmovement
