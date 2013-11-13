@@ -29,6 +29,7 @@ class Mob(actor.Actor):
             for actor in self.get_room().actors:
                 if not actor is self:
                     self.set_target(actor)
+                    break
 
     def actor_changed(self, event, actor, message = ""):
         if self.aggressive and actor.last_command.action == "move" and self.get_room().get_actor(actor):
