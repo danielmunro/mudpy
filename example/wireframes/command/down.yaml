@@ -6,7 +6,7 @@ required:
     - {property: disposition, value: standing, fail: "You need to be %s to do that."}
     - {property: get_room('down'), fail: "Alas, nothing is there."}
     - {property: target, value: false, fail: "You can't walk away from a fight!"}
-    - {porperty: has_enough_movement(), fail: "You are too tired to move."}
+    - {property: has_enough_movement(), fail: "You are too tired to move."}
 dispatches:
     - {object: get_room(), event: actor_changed, message: "%s leaves heading down."}
 post_dispatches:
