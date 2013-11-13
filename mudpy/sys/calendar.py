@@ -5,7 +5,6 @@ from . import wireframe, observer
 __config__ = wireframe.create('config.calendar')
 __instance__ = None
 __proxy__ = observer.Observer()
-__mudpy__ = None
 
 def proxy(*args):
     """Messages can be passed into this module via the proxy. Listeners are
@@ -22,14 +21,12 @@ def initialize(mudpy):
     
     """
 
-    global __instance__, __mudpy__
+    global __instance__
 
     try:
         __instance__ = wireframe.create("calendar", "data")
     except wireframe.WireframeException:
         __instance__ = Calendar()
-
-    __mudpy__ = mudpy
 
     return __instance__
 
