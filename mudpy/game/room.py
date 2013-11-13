@@ -129,10 +129,10 @@ class Room(wireframe.Blueprint):
     
     @classmethod
     def to_yaml(self, dumper, thing):
-        from . import actor
+        from .actor import mob
         import copy
         persist = copy.copy(thing)
-        persist.actors = [i for i in persist.actors if isinstance(i, actor.Mob)]
+        persist.actors = [i for i in persist.actors if isinstance(i, mob.Mob)]
         return super(Room, self).to_yaml(dumper, persist)
 
     def __str__(self):
@@ -276,7 +276,8 @@ class Area(wireframe.Blueprint):
         for room in self.rooms:
             __rooms__[room.name] = room
             room.area = self.name
-            Area.auto_room_name = max(Area.auto_room_name, room.name)
+            if isinstance(room.name, int):
+                Area.auto_room_name = max(Area.auto_room_name, room.name)
             for mob in room.mobs():
                 actor.actor.__proxy__.fire("actor_enters_realm", mob)
                 room.arriving(mob)
