@@ -320,11 +320,11 @@ class Actor(wireframe.Blueprint):
     def _experience_per_level(self):
         return self.race.experience
 
-    def _check_if_incapacitated(self, _event, _action):
+    def _check_if_incapacitated(self, event, _action):
 
         if self.disposition == disposition.__incapacitated__:
             self.notify(__config__.messages['move_failed_incapacitated'])
-            return True
+            event.handle()
 
     def _end_affect(self, _event, affect):
         """Called when an affect ends."""
@@ -399,7 +399,7 @@ class Actor(wireframe.Blueprint):
         return self._attribute(attribute_name) + \
                 self.race._attribute(attribute_name)
     
-    def _do_regular_attacks(self, _event):
+    def _do_regular_attacks(self, event):
         """Recurse through the attacks the user is able to make for a round of
         battle.
 
@@ -412,7 +412,7 @@ class Actor(wireframe.Blueprint):
                 attack.round(self)
         else:
             __proxy__.off('pulse', self._do_regular_attacks)
-            return True
+            event.handle()
 
     def _end_battle(self):
         """Ensure the actor is removed from battle, unless multiple actors are

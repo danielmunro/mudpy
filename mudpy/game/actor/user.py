@@ -98,7 +98,7 @@ class User(actor.Actor):
         for ability in self.get_abilities():
             ability.on('perform', self.perform_ability)
             if ability.hook == 'input':
-                def check_input(_event, user, args):
+                def check_input(event, user, args):
                     """Checks if the user is trying to perform an ability with
                     a given input.
 
@@ -106,7 +106,7 @@ class User(actor.Actor):
 
                     if ability.name.startswith(args[0]):
                         ability.try_perform(self, args[1:])
-                        return True
+                        event.handle()
                 self.client.on('input', check_input)
 
         debug.log('user logged in as '+str(self))

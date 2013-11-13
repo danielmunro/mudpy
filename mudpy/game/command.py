@@ -1,7 +1,7 @@
 from ..sys import wireframe
 import random
 
-def check_input(_event, user, args):
+def check_input(event, user, args):
 
     command = args[0]
     params = args[1:]
@@ -13,7 +13,7 @@ def check_input(_event, user, args):
 
     command.run(user, params)
 
-    return True
+    event.handle()
 
 def move(actor, direction):
     """Try to move the actor in the given direction."""

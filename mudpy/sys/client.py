@@ -82,7 +82,7 @@ class Login(observer.Observer):
         self.newuser = None
         super(Login, self).__init__()
     
-    def step(self, _event, client, data):
+    def step(self, event, client, data):
         """Called for each successive step of the login/alt creation
         process.
 
@@ -139,7 +139,7 @@ class Login(observer.Observer):
         try:
             locals()[step](data)
             self.done.append(step)
-            return True
+            event.handle()
         except LoginException as error:
             client.write(error+" ")
             self.todo.insert(0, step)
