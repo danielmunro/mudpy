@@ -11,12 +11,13 @@ from . import observer, wireframe
 
 __config__ = wireframe.create("config.server")
 __proxy__ = observer.Observer()
+__init_time__ = time.time()
 
 def initialize(mudpy):
 
     __proxy__.on('__any__', mudpy.fire)
 
-    return Instance()
+    return start
 
 def heartbeat():
     """Callback provided to twisted for communicating between game threads."""
@@ -37,32 +38,20 @@ def heartbeat():
                 __config__.intervals['tick']['highbound'])
             __proxy__.fire('tick')
 
-class Instance:
-    """Runs the twisted reactor and provides a callback for the main game
-    thread.
+def start(client_factory):
+    """Takes a client_factory (twisted Factory implementation), and set it
+    for a tcp endpoint for the twisted reactor. Set the method for reactor
+    to call in a new thread when it starts listening for clients. This 
+    method will start the main game loop.
 
     """
-    
-    def __init__(self):
-        self.starttime = time.time()
 
-    def start(self, client_factory):
-        """Takes a client_factory (twisted Factory implementation), and set it
-        for a tcp endpoint for the twisted reactor. Set the method for reactor
-        to call in a new thread when it starts listening for clients. This 
-        method will start the main game loop.
+    # define an endpoint for the reactor in mud.py's ClientFactory, an
+    # implementation of twisted's Factory
+    TCP4ServerEndpoint(reactor, __config__.port).listen(client_factory)
 
-        """
+    # start running the game thread
+    reactor.callInThread(heartbeat)
 
-        # define an endpoint for the reactor in mud.py's ClientFactory, an
-        # implementation of twisted's Factory
-        TCP4ServerEndpoint(reactor, __config__.port).listen(client_factory)
-
-        # start running the game thread
-        reactor.callInThread(heartbeat)
-
-        # start the twisted client listener thread
-        reactor.run()
-    
-    def __str__(self):
-        return str(__config__)
+    # start the twisted client listener thread
+    reactor.run()
