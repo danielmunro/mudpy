@@ -12,18 +12,19 @@ halt.
 
 """
 
-import time
+import time, os, sys
 
-fp = open('debug.log', 'a')
-fp.write('\nnew log started\n')
+if len(sys.argv) > 0:
+    fp = open(os.path.join(sys.argv[1], 'data', 'debug.log'), 'a')
+    fp.write('\nnew log started\n')
 
 def log(message, status = "info"):
     """Log a message with the given status level."""
 
-    # write the debug.log file
-    fp.write('['+time.strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+ \
-                                                         str(message)+'\n')
-    fp.flush()
+    if fp:
+        fp.write('['+time.strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+ \
+                                                             str(message)+'\n')
+        fp.flush()
 
 def notice(message):
     log(message, "notice")
