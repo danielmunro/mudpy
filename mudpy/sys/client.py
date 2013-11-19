@@ -4,7 +4,7 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 """
 
 from twisted.internet.protocol import Factory as tFactory, Protocol
-from . import debug, observer, wireframe, event
+from . import debug, observer, wireframe
 from ..game import actor
 from ..game.actor import user
 
