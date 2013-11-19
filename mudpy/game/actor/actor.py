@@ -5,7 +5,7 @@
 from __future__ import division
 import random
 
-from ...sys import collection, calendar, wireframe, observer
+from ...sys import collection, calendar, wireframe, observer, debug
 from .. import room, item
 from .  import disposition, attack
 
@@ -221,6 +221,7 @@ class Actor(wireframe.Blueprint):
         """Sets up a new target for the actor."""
 
         if not target:
+            debug.log(str(self)+" untargeting "+str(self.target))
             self.target.off('attack_resolution', self._normalize_stats)
             self.target = None
             return
@@ -229,6 +230,9 @@ class Actor(wireframe.Blueprint):
         self.target = target
 
         handled = self.target.fire('attacked', self)
+
+        debug.log(str(self)+" targeting "+str(self.target))
+
         if not handled:
             # handles above 100% hp/mana/mv and below 0% hp/mana/mv
             self.target.on('attack_resolution', self._normalize_stats)
@@ -318,6 +322,18 @@ class Actor(wireframe.Blueprint):
         """Event listener for when the room update fires."""
 
         pass
+
+    def end_battle(self):
+        """Ensure the actor is removed from battle, unless multiple actors are
+        targeting this actor.
+
+        """
+
+        for _actor in self.get_room().actors:
+            if _actor.target is self:
+                _actor.set_target()
+
+        self.set_target()
 
     def _experience_per_level(self):
         return self.race.experience
@@ -415,17 +431,6 @@ class Actor(wireframe.Blueprint):
         else:
             __proxy__.off('pulse', self._do_regular_attacks)
             event.handle()
-
-    def _end_battle(self):
-        """Ensure the actor is removed from battle, unless multiple actors are
-        targeting this actor.
-
-        """
-
-        for _actor in self.get_room().actors:
-            if _actor.target is self:
-                _actor.set_target()
-        self.set_target()
     
     def _die(self):
         """What happens when the user is killed (regardless of the method of
@@ -456,7 +461,7 @@ class Actor(wireframe.Blueprint):
             self.target.notify("You gained "+str(experience)+" experience points.")
             if self.target.qualifies_for_level():
                 self.target.notify(__config__.messages["qualifies_for_level"])
-            self._end_battle()
+            self.end_battle()
         self.disposition = disposition.__laying__
         self.curhp = 1
         corpse = item.Corpse()

@@ -141,7 +141,7 @@ def flee(actor):
     """
 
     if actor.target:
-        actor._end_battle()
+        actor.end_battle()
         actor.get_room().announce({
             actor: actor.last_command.messages['success_self'],
             'all': actor.last_command.messages['success_room'] % (str(actor).title())

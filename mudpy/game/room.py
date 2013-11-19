@@ -4,7 +4,7 @@ dungeons, and more.
 
 """
 
-from ..sys import wireframe, collection
+from ..sys import wireframe, collection, debug
 from . import item
 import random
 
@@ -111,6 +111,8 @@ class Room(wireframe.Blueprint):
             self.leaving(actor, direction)
             if direction:
                 new_room = get(self.directions[direction])
+                debug.log(str(actor)+" moves to "+new_room.title+\
+                        " ("+str(new_room.name)+")")
                 new_room.arriving(actor, Direction.get_reverse(direction))
 
     def leaving(self, actor, direction = ""):
