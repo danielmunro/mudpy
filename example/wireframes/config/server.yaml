@@ -1,6 +1,6 @@
 !<u!config>
 name: My Great Mud
-port: 9000
+port: 8001
 intervals:
     tick:
         lowbound: 30
