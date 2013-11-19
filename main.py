@@ -7,6 +7,8 @@ server, calendar, and areas.
 import sys
 from mudpy.sys import wireframe, debug
 
+#test
+
 if len(sys.argv) > 1:
     wireframe.__path__ = sys.argv[1]
     wireframe.preload()
