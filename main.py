@@ -4,8 +4,6 @@ server, calendar, and areas.
 
 """
 
-#test
-
 import sys
 from mudpy.sys import wireframe, debug
 
