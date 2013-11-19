@@ -14,7 +14,9 @@ halt.
 
 import time, os, sys
 
-if len(sys.argv) > 0:
+fp = None
+
+if len(sys.argv) > 1:
     fp = open(os.path.join(sys.argv[1], 'data', 'debug.log'), 'a')
     fp.write('\nnew log started\n')
 
