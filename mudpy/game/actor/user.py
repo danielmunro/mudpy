@@ -67,7 +67,7 @@ class User(actor.Actor):
     
     def level_up(self):
         super(User, self).level_up()
-        self.notify(actor.__config__.messages['level_up'])
+        self.notify(actor.__config__['messages']['level_up'])
 
     def perform_ability(self, ability):
         """Applies delay to the user when performing an ability."""
@@ -149,18 +149,18 @@ class User(actor.Actor):
             self._die()
         elif self.curhp <= 0:
             self.disposition = disposition.__incapacitated__
-            self.notify(actor.__config__.messages['incapacitated'])
+            self.notify(actor.__config__['messages']['incapacitated'])
         elif self.disposition == disposition.__incapacitated__ and self.curhp > 0:
             self.disposition = disposition.__laying__
-            self.notify(actor.__config__.messages['recover_from_incapacitation'])
+            self.notify(actor.__config__['messages']['recover_from_incapacitation'])
         super(User, self)._normalize_stats()
     
     def _die(self):
         super(User, self)._die()
         self.get_room().leaving(self)
-        self.room = room.__config__.start_room
+        self.room = room.__config__['start_room']
         self.get_room().arriving(self)
-        self.notify(actor.__config__.messages['died'])
+        self.notify(actor.__config__['messages']['died'])
     
     def _update_delay(self, _event = None):
         """Removes the client from polling for input if the user has a delay

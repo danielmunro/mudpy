@@ -22,20 +22,20 @@ def initialize(mudpy):
 def heartbeat():
     """Callback provided to twisted for communicating between game threads."""
 
-    next_pulse = time.time()+__config__.intervals['pulse']
+    next_pulse = time.time()+__config__['intervals']['pulse']
     next_tick = time.time()+random.randint(
-        __config__.intervals['tick']['lowbound'], \
-        __config__.intervals['tick']['highbound'])
+        __config__['intervals']['tick']['lowbound'], \
+        __config__['intervals']['tick']['highbound'])
     while(1):
         __proxy__.fire('cycle')
         if time.time() >= next_pulse:
-            next_pulse += __config__.intervals['pulse']
+            next_pulse += __config__['intervals']['pulse']
             __proxy__.fire('pulse')
             __proxy__.fire('stat')
         if time.time() >= next_tick:
             next_tick = int(time.time()+random.randint(
-                __config__.intervals['tick']['lowbound'], \
-                __config__.intervals['tick']['highbound']))
+                __config__['intervals']['tick']['lowbound'], \
+                __config__['intervals']['tick']['highbound']))
             __proxy__.fire('tick')
             rel_next_tick = int(next_tick-time.time())
             debug.log("tick; next in "+str(rel_next_tick)+" seconds")
@@ -48,11 +48,11 @@ def start(client_factory):
 
     """
 
-    debug.log("listening on port "+str(__config__.port))
+    debug.log("listening on port "+str(__config__['port']))
 
     # define an endpoint for the reactor in mud.py's ClientFactory, an
     # implementation of twisted's Factory
-    TCP4ServerEndpoint(reactor, __config__.port).listen(client_factory)
+    TCP4ServerEndpoint(reactor, __config__['port']).listen(client_factory)
 
     # start running the game thread
     reactor.callInThread(heartbeat)

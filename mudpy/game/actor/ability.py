@@ -43,7 +43,7 @@ class Ability(wireframe.Blueprint):
             else:
                 invoker.notify('failed')
         else:
-            invoker.notify(__config__.messages['apply_cost_fail'])
+            invoker.notify(__config__['messages']['apply_cost_fail'])
 
     def perform(self, receiver):
         """Initialize all the affects associated with this ability."""

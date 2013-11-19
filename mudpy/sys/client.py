@@ -32,11 +32,11 @@ class Client(observer.Observer, Protocol):
 
     def connectionMade(self):
         __mudpy__.on("cycle", self._poll)
-        self.write(__config__.messages["connection_made"]+" ")
+        self.write(__config__["messages"]["connection_made"]+" ")
     
     def connectionLost(self, reason):
         __mudpy__.off("cycle", self._poll)
-        self.write(__config__.messages["connection_lost"])
+        self.write(__config__["messages"]["connection_lost"])
     
     def disconnect(self):
         """Called when a client loses their connection."""
@@ -70,7 +70,7 @@ class Client(observer.Observer, Protocol):
 
     def _input_unhandled(self, _event = None, _subscriber = None, _arg = None):
         if self.user:
-            self.user.notify(__config__.messages["input_not_handled"])
+            self.user.notify(__config__["messages"]["input_not_handled"])
 
     def _loggedin(self, _event, user):
         self.off("input", self.login.step)
@@ -103,7 +103,7 @@ class Login(observer.Observer):
             """
 
             if not actor.user.is_valid_name(data):
-                raise LoginException(__config__.messages["creation_name_not_valid"])
+                raise LoginException(__config__["messages"]["creation_name_not_valid"])
 
             user = actor.user.load(data)
             if user:
@@ -113,7 +113,7 @@ class Login(observer.Observer):
             self.newuser = actor.user.User()
             #self.newuser.client = client
             self.newuser.name = data
-            client.write(__config__.messages["creation_race_query"]+" ")
+            client.write(__config__["messages"]["creation_race_query"]+" ")
 
         def race(data):
             """If a new alt, have them select a race."""
@@ -121,9 +121,9 @@ class Login(observer.Observer):
             try:
                 self.newuser.race = wireframe.create_from_match("race."+data)
             except KeyError:
-                raise LoginException(__config__.messages["creation_race_not_valid"])
+                raise LoginException(__config__["messages"]["creation_race_not_valid"])
 
-            client.write(__config__.messages["creation_alignment_query"]+" ")
+            client.write(__config__["messages"]["creation_alignment_query"]+" ")
         
         def alignment(data):
             """New alts need an alignment."""
@@ -135,7 +135,7 @@ class Login(observer.Observer):
             elif "evil".find(data) == 0:
                 self.newuser.alignment = -1000
             else:
-                raise LoginException(__config__.messages["creation_alignment_not_valid"])
+                raise LoginException(__config__["messages"]["creation_alignment_not_valid"])
             client.fire("loggedin", self.newuser)
             self.newuser.save()
             debug.log("client created new user as "+str(self.newuser))

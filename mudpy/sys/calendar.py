@@ -64,19 +64,19 @@ class Calendar(wireframe.Blueprint):
 
         self.elapsed_time += 1
         self.hour += 1
-        if self.hour == __config__.months[self.month]['sunrise']:
+        if self.hour == __config__['months'][self.month]['sunrise']:
             __proxy__.fire("sunrise", "The sun begins to rise.")
             self.daylight = True
-        elif self.hour == __config__.months[self.month]['sunset']:
+        elif self.hour == __config__['months'][self.month]['sunset']:
             __proxy__.fire("sunset", "The sun begins to set.")
             self.daylight = False
-        if self.hour == __config__.hours_in_day:
+        if self.hour == __config__['hours_in_day']:
             self.hour = 0
             self.day_of_month += 1
-            if self.day_of_month > __config__.months[self.month]['days_in_month']:
+            if self.day_of_month > __config__['months'][self.month]['days_in_month']:
                 self.day_of_month = 1
                 self.month += 1
-                if self.month > len(__config__.months)-1:
+                if self.month > len(__config__['months'])-1:
                     self.month = 1
                     self.year += 1
         wireframe.save(self, "data")
@@ -91,7 +91,7 @@ class Calendar(wireframe.Blueprint):
 
         return "It is %i o'clock %s, the %i%s day of %s, year %i" % (
                 hour, time, self.day_of_month, suffix(self.day_of_month), 
-                __config__.months[self.month]["name"], self.year)
+                __config__['months'][self.month]["name"], self.year)
 
     def __str__(self):
         return "calendar"

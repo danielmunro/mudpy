@@ -1,15 +1,14 @@
-!<u!config>
-    hours_in_day: 24
-    months:
-    - {days_in_month: 30, name: Narwain, sunrise: 8, sunset: 17}
-    - {days_in_month: 30, name: Ninui, sunrise: 7, sunset: 18}
-    - {days_in_month: 30, name: Gwaeron, sunrise: 7, sunset: 19}
-    - {days_in_month: 30, name: Gwirith, sunrise: 6, sunset: 20}
-    - {days_in_month: 30, name: Lothron, sunrise: 6, sunset: 21}
-    - {days_in_month: 30, name: Norui, sunrise: 5, sunset: 22}
-    - {days_in_month: 30, name: Cerveth, sunrise: 6, sunset: 21}
-    - {days_in_month: 31, name: Urui, sunrise: 6, sunset: 20}
-    - {days_in_month: 31, name: Ivanneth, sunrise: 7, sunset: 19}
-    - {days_in_month: 31, name: Narbeleth, sunrise: 7, sunset: 18}
-    - {days_in_month: 31, name: Hithui, sunrise: 9, sunset: 17}
-    - {days_in_month: 31, name: Girithron, sunrise: 9, sunset: 16}
+hours_in_day: 24
+months:
+- {days_in_month: 30, name: Narwain, sunrise: 8, sunset: 17}
+- {days_in_month: 30, name: Ninui, sunrise: 7, sunset: 18}
+- {days_in_month: 30, name: Gwaeron, sunrise: 7, sunset: 19}
+- {days_in_month: 30, name: Gwirith, sunrise: 6, sunset: 20}
+- {days_in_month: 30, name: Lothron, sunrise: 6, sunset: 21}
+- {days_in_month: 30, name: Norui, sunrise: 5, sunset: 22}
+- {days_in_month: 30, name: Cerveth, sunrise: 6, sunset: 21}
+- {days_in_month: 31, name: Urui, sunrise: 6, sunset: 20}
+- {days_in_month: 31, name: Ivanneth, sunrise: 7, sunset: 19}
+- {days_in_month: 31, name: Narbeleth, sunrise: 7, sunset: 18}
+- {days_in_month: 31, name: Hithui, sunrise: 9, sunset: 17}
+- {days_in_month: 31, name: Girithron, sunrise: 9, sunset: 16}

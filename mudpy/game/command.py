@@ -28,7 +28,7 @@ def look(actor, _args = []):
         if can_see:
             msg = "%s\n%s\n" % (_room.title, _room.description)
         else:
-            msg = __config__.messages["cannot_see_too_dark"]
+            msg = __config__["messages"]["cannot_see_too_dark"]
         msg += "\n[Exits %s]\n" % (
                 "".join(direction[:1] for direction, room in 
                     _room.directions.iteritems() if room))
@@ -38,7 +38,7 @@ def look(actor, _args = []):
                             in _room.actors if _actor is not actor)
             else:
                 msg += \
-                __config__.messages["cannot_see_actors_in_room"]+"\n"
+                __config__["messages"]["cannot_see_actors_in_room"]+"\n"
         msg += _room.inventory.inspection(" is here.")
     else:
         from . import collection
@@ -50,7 +50,7 @@ def look(actor, _args = []):
         if looking_at:
             msg = looking_at.description
         else:
-            msg = __config__.messages['look_at_nothing']
+            msg = __config__['messages']['look_at_nothing']
     actor.notify(msg)
 
 def affects(actor):

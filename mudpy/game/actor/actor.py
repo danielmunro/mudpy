@@ -341,7 +341,7 @@ class Actor(wireframe.Blueprint):
     def _check_if_incapacitated(self, event, _action):
 
         if self.disposition == disposition.__incapacitated__:
-            self.notify(__config__.messages['move_failed_incapacitated'])
+            self.notify(__config__['messages']['move_failed_incapacitated'])
             event.handle()
 
     def _end_affect(self, _event, affect):
@@ -460,7 +460,7 @@ class Actor(wireframe.Blueprint):
             self.target.experience += experience
             self.target.notify("You gained "+str(experience)+" experience points.")
             if self.target.qualifies_for_level():
-                self.target.notify(__config__.messages["qualifies_for_level"])
+                self.target.notify(__config__["messages"]["qualifies_for_level"])
             self.end_battle()
         self.disposition = disposition.__laying__
         self.curhp = 1
