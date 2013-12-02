@@ -1,0 +1,26 @@
+!<u!command>
+name: area
+messages:
+    area_no_args: >
+                Area help menu.
+
+
+                Arguments
+
+                =========
+
+                create - creates a new area and sets the room to the new area.
+
+                name - set the name of the room.
+
+                terrain - set the terrain type.
+
+                location - set the location.
+    area_created: Area created.
+    area_bad_property: "That's not a valid property."
+    area_property_set: "Ok."
+required:
+    - {property: yaml_tag, value: u!user}
+    - {property: role, value: immortal}
+execute:
+    - area(actor, args)

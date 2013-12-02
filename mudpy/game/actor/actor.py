@@ -249,10 +249,10 @@ class Actor(wireframe.Blueprint):
         if self.disposition is disposition.__sleeping__:
             return False
 
-        _room = self.get_room()
-
         if self.has_affect('glow'):
             return True
+
+        _room = self.get_room()
 
         if _room.get_area().location == room.__LOCATION_OUTSIDE__ and \
                 calendar.__instance__.daylight:

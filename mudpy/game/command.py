@@ -28,7 +28,7 @@ def look(actor, _args = []):
         if can_see:
             msg = "%s\n%s\n" % (_room.title, _room.description)
         else:
-            msg = __config__["messages"]["cannot_see_too_dark"]
+            msg = "You can't see anything, it's pitch black!"
         msg += "\n[Exits %s]\n" % (
                 "".join(direction[:1] for direction, room in 
                     _room.directions.iteritems() if room))
@@ -37,8 +37,11 @@ def look(actor, _args = []):
                 msg += "".join(_actor.looked_at().capitalize()+"\n" for _actor
                             in _room.actors if _actor is not actor)
             else:
+                """
                 msg += \
-                __config__["messages"]["cannot_see_actors_in_room"]+"\n"
+                actor.last_command.messages["cannot_see_actors_in_room"]+"\n"
+                """
+                pass
         msg += _room.inventory.inspection(" is here.")
     else:
         from . import collection
@@ -169,14 +172,22 @@ def room(actor, args):
             actor.notify(actor.last_command.messages['room_created'])
         else:
             actor.notify(actor.last_command.messages['room_bad_dir'])
+        return
     elif command == "title":
         actor.get_room().title = " ".join(args[1:])
     elif command == "description":
         actor.get_room().description = " ".join(args[1:])
     elif command == "lit":
-        actor.get_room().lit = args[1]
-    elif command == "area":
-        actor.get_room().area = args[1]
+        actor.get_room().lit = not actor.get_room().lit
+    elif command == "info":
+        r = actor.get_room()
+        actor.notify("""Room info:
+ID: %s
+Title: %s
+Description: %s
+Lit: %s
+Area: %s""" % (r.name, r.title, r.description, "yes" if r.lit else "no", r.area))
+        return
     elif command == "":
         actor.notify(actor.last_command.messages['room_no_args'])
     else:
@@ -184,6 +195,25 @@ def room(actor, args):
         return
     actor.notify(actor.last_command.messages['room_property_set'])
 
+def area(actor, args):
+     
+    arg_len = len(args)
+
+    command = args[0] if arg_len > 0 else ""
+
+    if command == "create":
+        from . import room
+        old_area = actor.get_room().get_area()
+        new_area = room.Area()
+        new_area.name = "_".join(args[1:])
+        room.__areas__[new_area.name] = new_area
+        old_area.rooms.remove(actor.get_room())
+        new_area.rooms.append(actor.get_room())
+        actor.get_room().area = new_area.name
+    else:
+        actor.notify(actor.last_command.messages['area_bad_property'])
+        return
+    actor.notify(actor.last_command.messages['area_property_set'])
 
 """
 def _command_wear(self, _invoked_command, _args):

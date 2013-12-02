@@ -1,0 +1,16 @@
+!<u!area>
+location: ''
+name: midgaard_sewer
+rooms:
+- !<u!room>
+  actors: []
+  area: midgaard_sewer
+  description: A dark and smelly sewer system lies before you.
+  directions: {up: 6}
+  inventory: !<u!inventory>
+    item_count: {}
+    items: []
+  lit: false
+  name: 7
+  title: Underneath the market square
+terrain: ''

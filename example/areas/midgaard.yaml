@@ -103,7 +103,7 @@ rooms:
   actors: []
   area: midgaard
   description: A dark and smelly sewer system lies before you.
-  directions: {up: 4}
+  directions: {down: 7, up: 4}
   inventory: !<u!inventory>
     item_count: {}
     items: []
