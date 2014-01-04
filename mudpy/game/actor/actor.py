@@ -133,19 +133,11 @@ class Actor(wireframe.Blueprint):
         eq = list(eq for eq in self.equipped.values() if eq)
         amount += self._get_modifiers(eq, attribute_name)
 
-        # max stats
+        # if a stat, don't let it exceed the maximum
         if attribute_name in Actor.stats:
             amount = min(amount, self.get_max_attribute(attribute_name))
 
         return amount
-
-    def get_max_attribute(self, attribute_name):
-        """Returns the max attainable value for an attribute."""
-
-        unmodified_attribute = self._get_unmodified_attribute(attribute_name)
-        return min(
-                unmodified_attribute + 4,
-                self.race._attribute(attribute_name) + 8)
     
     def get_abilities(self):
         """Returns abilities available to the actor, including known ones and
@@ -312,6 +304,17 @@ class Actor(wireframe.Blueprint):
         """Calculate the experience this actor needs in order to level."""
 
         return self.race.experience
+
+    def _get_max_attribute(self, attribute_name):
+        """Returns the max attainable value for an attribute."""
+
+        if attribute_name in Actor.stats:
+            unmodified_attribute = self._get_unmodified_attribute(attribute_name)
+            return min(
+                    unmodified_attribute + 4,
+                    self.race._attribute(attribute_name) + 8)
+        else:
+            return -1
 
     def _get_modifiers(self, _list, attribute_name):
         """Takes a list of things with attributes and returns the sum of adding
