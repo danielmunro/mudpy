@@ -3,8 +3,7 @@ loads game areas, and starts the server listening for connections.
 
 """
 
-import sys
-from mudpy.sys import wireframe, debug, observer, server, client
+from mudpy.sys import wireframe, observer, server, client
 
 # Main game observer
 __mudpy__ = observer.Observer()
