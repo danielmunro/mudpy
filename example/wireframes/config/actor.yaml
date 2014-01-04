@@ -12,3 +12,4 @@ messages:
     move_failed_too_tired: You are too tired to move
     recover_from_incapacitation: You suddenly feel a bit better.
     qualifies_for_level: "You qualify to level up!"
+    experience_gain: "You gained %d experience points."

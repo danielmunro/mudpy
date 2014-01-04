@@ -22,7 +22,6 @@ rooms:
       hands: null, head: null, legs: null, light: null, neck0: null, neck1: null,
       torso: null, waist: null, wield0: null, wield1: null, wrist0: null, wrist1: null}
     experience: 0
-    experience_per_level: 1000
     inventory: !<u!inventory>
       item_count: {}
       items: []
@@ -31,7 +30,7 @@ rooms:
     long: null
     movement: 0
     movement_timer: 0
-    name: hassan
+    name: Hassan
     practices: 0
     proficiencies: {}
     race: !<u!race> {wireframe: race.giant}

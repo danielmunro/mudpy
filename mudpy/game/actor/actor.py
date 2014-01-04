@@ -14,6 +14,7 @@ __config__ = wireframe.create('config.actor')
 __proxy__ = observer.Observer()
 
 def proxy(*args):
+    """@todo: refactor out"""
     __proxy__.fire(*args)
 
 __main__.__mudpy__.on('__any__', proxy)
@@ -142,7 +143,9 @@ class Actor(wireframe.Blueprint):
         """Returns the max attainable value for an attribute."""
 
         unmodified_attribute = self._get_unmodified_attribute(attribute_name)
-        return min(unmodified_attribute + 4, self.race._attribute(attribute_name) + 8)
+        return min(
+                unmodified_attribute + 4,
+                self.race._attribute(attribute_name) + 8)
     
     def get_abilities(self):
         """Returns abilities available to the actor, including known ones and
@@ -217,7 +220,7 @@ class Actor(wireframe.Blueprint):
     def qualifies_for_level(self):
         """Return true if the actor has enough experience to level up."""
 
-        return self.experience / self._experience_per_level() > self.level
+        return self.experience / self.experience_per_level() > self.level
 
     def level_up(self):
         """Increase the actor's level."""
@@ -318,8 +321,8 @@ class Actor(wireframe.Blueprint):
 
         amount = 0
 
-        for item in _list:
-            mod = item.get_attribute(attribute_name)
+        for thing in _list:
+            mod = thing.get_attribute(attribute_name)
             if isinstance(mod, float):
                 mod = self._get_unmodified_attribute(attribute_name) * mod
             amount += mod
@@ -331,7 +334,8 @@ class Actor(wireframe.Blueprint):
 
         self.affects.remove(affect)
         try:
-            self.fire('changed', affect, self, affect.messages['end']['all'] % self)
+            message = affect.messages['end']['all'] % self
+            self.fire('changed', affect, self, message)
         except KeyError:
             pass
 
@@ -434,14 +438,18 @@ class Actor(wireframe.Blueprint):
             if aligndiff > 0.5:
                 mod = random.randint(15, 35) / 100
                 experience *= 1 + aligndiff - mod
-            experience = int(round(random.uniform(experience * 0.8, experience * 1.2)))
+            low = experience * 0.8
+            high = experience * 1.2
+            experience = int(round(random.uniform(low, high)))
             experience = experience if experience > 0 else 0
 
             # award experience and check for level change
             self.target.experience += experience
-            self.target.notify("You gained "+str(experience)+" experience points.")
+            message = __config__["messages"]["experience_gain"] % experience
+            self.target.notify(message)
             if self.target.qualifies_for_level():
-                self.target.notify(__config__["messages"]["qualifies_for_level"])
+                message = __config__["messages"]["qualifies_for_level"]
+                self.target.notify(message)
             self.end_battle()
         self.disposition = disposition.__laying__
         self.curhp = 1
