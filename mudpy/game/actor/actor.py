@@ -5,19 +5,12 @@
 from __future__ import division
 import random, __main__
 
-from ...sys import collection, calendar, wireframe, observer, debug
+from ...sys import collection, wireframe, observer, debug
 from .. import room, item
 from .  import disposition, attack
 
 __SAVE_DIR__ = 'data'
 __config__ = wireframe.create('config.actor')
-__proxy__ = observer.Observer()
-
-def proxy(*args):
-    """@todo: refactor out"""
-    __proxy__.fire(*args)
-
-__main__.__mudpy__.on('__any__', proxy)
 
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
@@ -61,7 +54,7 @@ class Actor(wireframe.Blueprint):
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
-        __proxy__.on('tick', self.tick)
+        __main__.__mudpy__.on('tick', self.tick)
         super(Actor, self).__init__()
         
         self.equipped = dict((position, None) for position in ['light',
@@ -155,7 +148,7 @@ class Actor(wireframe.Blueprint):
         self.affects.append(aff)
 
         if aff.timeout > -1:
-            __proxy__.on('tick', aff.countdown_timeout)
+            __main__.__mudpy__.on('tick', aff.countdown_timeout)
             aff.on('end', self._end_affect)
 
     def set_target(self, target = None):
@@ -179,7 +172,7 @@ class Actor(wireframe.Blueprint):
             self.target.on('attack_resolution', self._normalize_stats)
 
             # calls attack rounds until target is removed
-            __proxy__.on('pulse', self._do_regular_attacks)
+            __main__.__mudpy__.on('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
         """Return true if the user has enough movement points to leave the
@@ -191,6 +184,8 @@ class Actor(wireframe.Blueprint):
 
     def can_see(self):
         """Can the user see?"""
+
+        from ...sys import calendar
 
         if self.disposition is disposition.__sleeping__:
             return False
@@ -414,7 +409,7 @@ class Actor(wireframe.Blueprint):
             if not self.disposition is disposition.__incapacitated__:
                 attack.round(self)
         else:
-            __proxy__.off('pulse', self._do_regular_attacks)
+            __main__.__mudpy__.off('pulse', self._do_regular_attacks)
             event.handle()
     
     def _die(self):

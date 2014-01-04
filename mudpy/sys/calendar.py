@@ -4,34 +4,6 @@ from . import wireframe, observer
 import __main__
 
 __config__ = wireframe.create('config.calendar')
-__instance__ = None
-__proxy__ = observer.Observer()
-
-def proxy(*args):
-    """Messages can be passed into this module via the proxy. Listeners are
-    set up to catch events.
-
-    """
-
-    __proxy__.fire(*args)
-
-__main__.__mudpy__.on('__any__', proxy)
-
-def initialize(mudpy):
-    """Setup function for the module. Initializes a calendar instance from
-    either a previous save or creates a new one. Saves a local instance of the
-    main game thread for later reference.
-    
-    """
-
-    global __instance__
-
-    try:
-        __instance__ = wireframe.create("calendar", "data")
-    except wireframe.WireframeException:
-        __instance__ = Calendar()
-
-    return __instance__
 
 def suffix(dec):
     """Helper function to get the suffix for a number, ie 1st, 2nd, 3rd."""
@@ -40,8 +12,8 @@ def suffix(dec):
             1: 'st',2: 'nd',3: 'rd'}.get(dec%10, 'th')
 
 def on_actor_enters_realm(_event, actor):
-    __proxy__.on("sunrise", actor.sunrise)
-    __proxy__.on("sunset", actor.sunset)
+    __main__.__mudpy__.on("sunrise", actor.sunrise)
+    __main__.__mudpy__.on("sunset", actor.sunset)
 
 class Calendar(wireframe.Blueprint):
     """Calendar instance, keeps track of the date in the game."""
@@ -56,8 +28,8 @@ class Calendar(wireframe.Blueprint):
         self.year = 0
         self.daylight = True
         super(Calendar, self).__init__()
-        __proxy__.on("tick", self._tick)
-        __proxy__.on("actor_enters_realm", on_actor_enters_realm)
+        __main__.__mudpy__.on("tick", self._tick)
+        __main__.__mudpy__.on("actor_enters_realm", on_actor_enters_realm)
 
     def _tick(self, _event = None):
         """Tick event listener function, increments the hour and checks for
@@ -68,10 +40,10 @@ class Calendar(wireframe.Blueprint):
         self.elapsed_time += 1
         self.hour += 1
         if self.hour == __config__['months'][self.month]['sunrise']:
-            __proxy__.fire("sunrise", "The sun begins to rise.")
+            __main__.__mudpy__.fire("sunrise", "The sun begins to rise.")
             self.daylight = True
         elif self.hour == __config__['months'][self.month]['sunset']:
-            __proxy__.fire("sunset", "The sun begins to set.")
+            __main__.__mudpy__.fire("sunset", "The sun begins to set.")
             self.daylight = False
         if self.hour == __config__['hours_in_day']:
             self.hour = 0
@@ -98,3 +70,8 @@ class Calendar(wireframe.Blueprint):
 
     def __str__(self):
         return "calendar"
+
+try:
+    __instance__ = wireframe.create("calendar", "data")
+except wireframe.WireframeException:
+    __instance__ = Calendar()

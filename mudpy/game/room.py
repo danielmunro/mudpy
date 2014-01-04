@@ -6,7 +6,7 @@ dungeons, and more.
 
 from ..sys import wireframe, collection, debug
 from . import item
-import random
+import random, __main__
 
 __rooms__ = {}
 __areas__ = {}
@@ -67,9 +67,8 @@ class Room(wireframe.Blueprint):
         super(Room, self).__init__()
 
     def done_init(self):
-        from . import actor
         for mob in self.mobs():
-            actor.actor.__proxy__.fire("actor_enters_realm", mob)
+            #__main__.__mudpy__.fire("actor_enters_realm", mob)
             self.arriving(mob)
             mob.start_room = self.name
 

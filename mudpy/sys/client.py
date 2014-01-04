@@ -7,14 +7,9 @@ from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, observer, wireframe
 from ..game import actor
 from ..game.actor import user
+import __main__
 
 __config__ = wireframe.create("config.client")
-__mudpy__ = None
-
-def initialize(mudpy):
-    global __mudpy__
-
-    __mudpy__ = mudpy
 
 class Client(observer.Observer, Protocol):
     """twisted client protocol, defines behavior for clients."""
@@ -31,11 +26,11 @@ class Client(observer.Observer, Protocol):
         self.on("input.__unhandled__", self._input_unhandled)
 
     def connectionMade(self):
-        actor.actor.__proxy__.on("cycle", self.poll)
+        __main__.__mudpy__.on("cycle", self.poll)
         self.write(__config__["messages"]["connection_made"]+" ")
     
     def connectionLost(self, reason):
-        actor.actor.__proxy__.off("cycle", self.poll)
+        __main__.__mudpy__.off("cycle", self.poll)
         self.write(__config__["messages"]["connection_lost"])
     
     def disconnect(self):
@@ -44,7 +39,7 @@ class Client(observer.Observer, Protocol):
         self.client_factory.fire("destroyed", self)
         self.client_factory.clients.remove(self)
         self.user.get_room().move_actor(self.user)
-        actor.actor.proxy("actor_leaves_realm", self)
+        __main__.__mudpy__.fire("actor_leaves_realm", self)
         self.transport.loseConnection()
     
     def dataReceived(self, data):

@@ -1,23 +1,16 @@
-"""Entry point for mud.py. Set the scripts path from args, which wireframes,
-and game data load from during initialization. Start event will instantiate the
-server, calendar, and areas.
+"""Entry point for mud.py framework. Creates a main game observer object,
+loads game areas, and starts the server listening for connections.
 
 """
 
 import sys
-from mudpy.sys import wireframe, debug, mudpy
+from mudpy.sys import wireframe, debug, observer, server, client
 
-if len(sys.argv) > 1:
-    wireframe.__path__ = sys.argv[1]
-    wireframe.preload()
-else:
-    debug.error("Needs path, ie python main.py example")
-    sys.exit()
+# Main game observer
+__mudpy__ = observer.Observer()
 
-def main(m):
-    m.start()
+# Load game areas
+wireframe.load_areas()
 
-__mudpy__ = mudpy.Mudpy()
-
-if __name__ == "__main__":
-    main(__mudpy__)
+# Start the server listening
+server.start(client.ClientFactory())

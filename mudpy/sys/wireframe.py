@@ -1,26 +1,33 @@
 """Wireframes module."""
 
 from . import debug, observer
-import os, yaml
+import os, yaml, sys
 
 __path__ = None
 wireframes = {}
 
-def load_areas():
-    from ..game import room
-    from ..game.actor import mob, race
-    recurse(os.path.join(__path__, "areas"))
-
 def preload(examine_path = "wireframes"):
-    global wireframes
     start_path = os.path.join(__path__, examine_path)
     if os.path.isdir(start_path):
         for p in os.listdir(start_path):
             preload(os.path.join(examine_path, p))
     else:
         debug.log("preloading "+start_path)
+        global wireframes
         with open(start_path, "r") as fp:
             wireframes[start_path] = fp.read()
+
+if len(sys.argv) > 1:
+    __path__ = sys.argv[1]
+    preload()
+else:
+    debug.error("Needs path, ie python main.py example")
+    sys.exit()
+
+def load_areas():
+    from ..game import room
+    from ..game.actor import mob, race
+    recurse(os.path.join(__path__, "areas"))
 
 def recurse(path):
     """Load wireframes from initialization script, with slightly different 

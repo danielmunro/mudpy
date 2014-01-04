@@ -6,18 +6,11 @@ communication between the threads.
 
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
-import random, time
+import random, time, __main__
 from . import observer, wireframe, debug
 
 __config__ = wireframe.create("config.server")
-__proxy__ = observer.Observer()
 __init_time__ = time.time()
-
-def initialize(mudpy):
-
-    __proxy__.on('__any__', mudpy.fire)
-
-    return start
 
 def heartbeat():
     """Callback provided to twisted for communicating between game threads."""
@@ -27,16 +20,16 @@ def heartbeat():
         __config__['intervals']['tick']['lowbound'], \
         __config__['intervals']['tick']['highbound'])
     while(1):
-        __proxy__.fire('cycle')
+        __main__.__mudpy__.fire('cycle')
         if time.time() >= next_pulse:
             next_pulse += __config__['intervals']['pulse']
-            __proxy__.fire('pulse')
-            __proxy__.fire('stat')
+            __main__.__mudpy__.fire('pulse')
+            __main__.__mudpy__.fire('stat')
         if time.time() >= next_tick:
             next_tick = int(time.time()+random.randint(
                 __config__['intervals']['tick']['lowbound'], \
                 __config__['intervals']['tick']['highbound']))
-            __proxy__.fire('tick')
+            __main__.__mudpy__.fire('tick')
             rel_next_tick = int(next_tick-time.time())
             debug.log("tick; next in "+str(rel_next_tick)+" seconds")
 
