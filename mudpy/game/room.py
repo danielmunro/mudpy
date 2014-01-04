@@ -11,8 +11,16 @@ import random
 __rooms__ = {}
 __areas__ = {}
 __config__ = wireframe.create("config.room")
+__auto_room_name__ = 1
 
 __LOCATION_OUTSIDE__ = "outside"
+
+def auto_room_name():
+    global __auto_room_name__
+    while __auto_room_name__ in __rooms__:
+        __auto_room_name__ = __auto_room_name__ + 1
+    return __auto_room_name__
+
 
 def get(room_name, direction = ""):
     _room = __rooms__[room_name]
@@ -27,20 +35,19 @@ def area(area_name):
     return __areas__[area_name]
 
 def copy(start_room, direction):
-    Area.auto_room_name = Area.auto_room_name + 1
-
     # create new room
     new_room = Room()
     new_room.title = start_room.title
     new_room.description = start_room.description
     new_room.area = start_room.area
     new_room.lit = start_room.lit
-    new_room.name = Area.auto_room_name
+    new_room.name = auto_room_name()
     new_room.directions[Direction.get_reverse(direction)] = start_room.name
     start_room.directions[direction] = new_room.name
 
     __rooms__[new_room.name] = new_room
     start_room.get_area().rooms.append(new_room)
+    return new_room
 
 class Room(wireframe.Blueprint):
     """Basic space representation game configuration files. Has a name (title),
@@ -61,6 +68,13 @@ class Room(wireframe.Blueprint):
         self.area = ''
         self.lit = True
         super(Room, self).__init__()
+
+    def done_init(self):
+        from . import actor
+        for mob in self.mobs():
+            actor.actor.__proxy__.fire("actor_enters_realm", mob)
+            self.arriving(mob)
+            mob.start_room = self.name
 
     def get_area(self):
         return area(self.area)
@@ -92,19 +106,14 @@ class Room(wireframe.Blueprint):
         from actor.mob import Mob
         return list(actor for actor in self.actors if isinstance(actor, Mob))
 
-    def copy(self, newRoom):
+    def _copy(self, newRoom):
         newRoom.name = self.name
         newRoom.description = self.description
         newRoom.area = self.area
-        newRoom.initialize_directions()
-        return newRoom
-
-    def initialize_directions(self):
-        for direction in Direction.__subclasses__():
-            try:
-                self.directions[direction.name]
-            except KeyError:
+        for direction in Direction.get_all():
+            if not direction.name in self.directions:
                 self.directions[direction.name] = None
+        return newRoom
 
     def move_actor(self, actor, direction = None):
         if actor in self.actors:
@@ -140,39 +149,54 @@ class Room(wireframe.Blueprint):
     def __str__(self):
         return str(self.name)
 
-class Randomhall(Room):
+class Dungeon(wireframe.Blueprint):
+
+    yaml_tag = "u!dungeon"
+
     def __init__(self):
-        super(Randomhall, self).__init__()
-        self.rooms = 0
-        self.exit = 0
-        self.probabilities = \
-                dict((direction, .5) for direction in self.directions)
+        self.name = 0
+        self.title = ""
+        self.description = ""
+        self.exits = []
+        self.size = 0
+        self.lit = False
+        self.directions = {}
+
+    def done_init(self):
+        self.room = Room()
+        self.room.name = self.name
+        self.room.title = self.title
+        self.room.description = self.description
+        self.room.area = self.area
+        self.room.directions = self.directions
+        __rooms__[self.room.name] = self.room
+        self.room.get_area().rooms.append(self.room)
+        self._build_dungeon()
     
-    def buildDungeon(self, roomCount = 0):
-        direction = Direction.get_random(list(direction \
-                for direction, room in self.directions.iteritems() if not room))
-        if self.probabilities[direction] > random.random():
-            if self.rooms < roomCount:
-                exit = __rooms__[self.area.name+":"+str(self.exit)]
-                self.directions[direction] = exit
-                exit.directions[globals()[direction.title()]().reverse] = self
+    def _build_dungeon(self, existing_room = None, room_count = 1):
+        if room_count < self.size:
+            origin_room = existing_room if existing_room else self.room
+            used_directions = origin_room.directions.keys()
+            if random.random() < self.branching:
+                available_directions = list(direction.name for direction in Direction.get_all() if not direction.name in used_directions)
+                if available_directions:
+                    random_direction = random.choice(available_directions)
+                    branching_room = copy(origin_room, random_direction)
+                    return self._build_dungeon(origin_room, room_count + 1)
+                else:
+                    return self._build_dungeon(get(origin_room.directions[random.choice(list(direction.name for direction in Direction.get_all()))]), room_count)
             else:
-                return self.copy(direction).buildDungeon(roomCount+1)
-        else:
-            rooms = list(room for room in self.directions.values() if \
-                                            isinstance(room, Randomhall))
-            if rooms:
-                return random.choice(rooms).buildDungeon(roomCount)
-        return roomCount
-    
-    def copy(self, direction):
-        r = super(Randomhall, self).copy(Randomhall())
-        r.rooms = self.rooms
-        r.exit = self.exit
-        r.probabilities = self.probabilities
-        self.directions[direction] = r
-        r.directions[globals()[direction.title()]().reverse] = self
-        return r
+                branching_room = copy(origin_room, self._get_random_direction(origin_room))
+                return self._build_dungeon(branching_room, room_count + 1)
+
+    def _get_random_direction(self, origin_room):
+        toss = random.random()
+        counter = 0
+        while 1:
+            for i in self.probabilities:
+                counter = counter + self.probabilities[i]
+                if toss < counter and i not in origin_room.directions:
+                    return i
 
 class Grid(Room):
     def __init__(self):
@@ -186,7 +210,7 @@ class Grid(Room):
         for y in range(ylen):
             for x in range(xlen):
                 if not isinstance(grid[y][x], Grid):
-                    grid[y][x] = self.copy()
+                    grid[y][x] = self._copy()
                 if x > 0:
                     grid[y][x-1].setIfEmpty('east', grid[y][x])
                 if y > 0:
@@ -212,14 +236,18 @@ class Grid(Room):
                 roomToSet.directions[rdir] = self
 
 
-    def copy(self):
-        r = super(Grid, self).copy(Grid())
+    def _copy(self):
+        r = super(Grid, self)._copy(Grid())
         r.exit = self.exit
         r.counts = self.counts
         return r
 
 class Direction(object):
     name = ""
+
+    @staticmethod
+    def get_all():
+        return Direction.__subclasses__()
 
     @staticmethod
     def match(direction):
@@ -230,7 +258,7 @@ class Direction(object):
     @staticmethod
     def get_random(allowed_directions = []):
         return random.choice(allowed_directions if allowed_directions else \
-            list(direction.name for direction in Direction.__subclasses__()))
+            list(direction.name for direction in Direction.get_all()))
 
     @staticmethod
     def get_reverse(direction):
@@ -263,7 +291,6 @@ class Down(Direction):
 class Area(wireframe.Blueprint):
 
     yaml_tag = "u!area"
-    auto_room_name = 0
 
     def __init__(self):
         self.name = ""
@@ -278,12 +305,7 @@ class Area(wireframe.Blueprint):
         for room in self.rooms:
             __rooms__[room.name] = room
             room.area = self.name
-            if isinstance(room.name, int):
-                Area.auto_room_name = max(Area.auto_room_name, room.name)
-            for mob in room.mobs():
-                actor.actor.__proxy__.fire("actor_enters_realm", mob)
-                room.arriving(mob)
-                mob.start_room = room.name
+            room.done_init()
 
     def __str__(self):
         return self.name
