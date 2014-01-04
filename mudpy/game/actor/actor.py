@@ -104,7 +104,8 @@ class Actor(wireframe.Blueprint):
     def get_wielded_weapons(self):
         """Helper function to return the weapons the actor has wielded."""
 
-        return list(equipment for equipment in [self.equipped['wield0'], self.equipped['wield1']] if equipment)
+        wielded = [self.equipped['wield0'], self.equipped['wield1']]
+        return list(eq for eq in wielded if eq)
     
     def notify(self, message = "", add_prompt = True):
         """Called to tell the actor a generic message. Only utilized by the 
@@ -125,19 +126,11 @@ class Actor(wireframe.Blueprint):
         amount = self._get_unmodified_attribute(attribute_name)
 
         # affect modifiers
-        for _affect in self.affects:
-            affect_modifier = _affect.get_attribute(attribute_name)
-            if isinstance(affect_modifier, float):
-                affect_modifier = self._get_unmodified_attribute(attribute_name) * affect_modifier
-            amount += affect_modifier
+        amount += self._get_modifiers(self.affects, attribute_name)
 
         # equipment modifiers
-        for equipment in self.equipped.values():
-            if equipment:
-                equipment_modifier = getattr(equipment.attributes, attribute_name)
-                if isinstance(equipment_modifier, float):
-                    equipment_modifier = self._get_unmodified_attribute(attribute_name) * equipment_modifier
-                amount += equipment_modifier
+        eq = list(eq for eq in self.equipped.values() if eq)
+        amount += self._get_modifiers(eq, attribute_name)
 
         # max stats
         if attribute_name in Actor.stats:
@@ -158,9 +151,6 @@ class Actor(wireframe.Blueprint):
         """
 
         return self.abilities + self.race.abilities
-
-    def __str__(self):
-        return self.name
 
     def add_affect(self, aff):
         """Apply an affect to the actor."""
@@ -200,6 +190,11 @@ class Actor(wireframe.Blueprint):
             __proxy__.on('pulse', self._do_regular_attacks)
     
     def has_enough_movement(self):
+        """Return true if the user has enough movement points to leave the
+        room.
+
+        """
+
         return self._get_movement_cost() <= self.curmovement
 
     def can_see(self):
@@ -220,6 +215,8 @@ class Actor(wireframe.Blueprint):
         return _room.lit
 
     def qualifies_for_level(self):
+        """Return true if the actor has enough experience to level up."""
+
         return self.experience / self._experience_per_level() > self.level
 
     def level_up(self):
@@ -236,16 +233,30 @@ class Actor(wireframe.Blueprint):
         self.attributes['movement'] += random.randint(_str*.5, _str*1.5)
 
     def sit(self):
+        """Make the actor sit down."""
+
         self.disposition = disposition.__sitting__
 
     def wake(self):
+        """Make the actor wake up."""
+
         self.disposition = disposition.__standing__
     
     def sleep(self):
+        """Make the actor go to sleep."""
+
         self.disposition = disposition.__sleeping__
 
     def has_affect(self, name):
+        """Returns true if the actor has an affect applied that matches the
+        given name.
+
+        """
+
         return collection.find(name, self.get_affects())
+
+    def __str__(self):
+        return self.name
 
     def get_affects(self):
         """Returns all affects currently applied to the actor, including base
@@ -294,14 +305,26 @@ class Actor(wireframe.Blueprint):
 
         self.set_target()
 
-    def _experience_per_level(self):
+    def experience_per_level(self):
+        """Calculate the experience this actor needs in order to level."""
+
         return self.race.experience
 
-    def _check_if_incapacitated(self, event, _action):
+    def _get_modifiers(self, _list, attribute_name):
+        """Takes a list of things with attributes and returns the sum of adding
+        all modifiers together for a given attribute.
 
-        if self.disposition == disposition.__incapacitated__:
-            self.notify(__config__['messages']['move_failed_incapacitated'])
-            event.handle()
+        """
+
+        amount = 0
+
+        for item in _list:
+            mod = item.get_attribute(attribute_name)
+            if isinstance(mod, float):
+                mod = self._get_unmodified_attribute(attribute_name) * mod
+            amount += mod
+
+        return amount
 
     def _end_affect(self, _event, affect):
         """Called when an affect ends."""
@@ -313,6 +336,8 @@ class Actor(wireframe.Blueprint):
             pass
 
     def _attribute(self, attr):
+        """Helper to get attribute for actor."""
+
         return self.attributes[attr] if attr in self.attributes else 0
     
     def _get_proficiencies(self):

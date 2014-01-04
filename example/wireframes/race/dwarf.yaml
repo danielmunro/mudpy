@@ -1,4 +1,5 @@
 !<u!race>
+name: dwarf
 abilities:
     - !<u!ability>
         wireframe: ability.berserk

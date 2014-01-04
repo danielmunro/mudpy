@@ -194,6 +194,13 @@ class User(actor.Actor):
             actor.__proxy__.on('cycle', self.client.poll)
             self.last_delay = 0
 
+    def _check_if_incapacitated(self, event, _action):
+        """Don't let the actor do anything if they are incapacitated."""
+
+        if self.disposition == disposition.__incapacitated__:
+            self.notify(__config__['messages']['incapacitated'])
+            event.handle()
+
     @classmethod
     def to_yaml(self, dumper, thing):
         import copy

@@ -110,7 +110,7 @@ def score(user):
         user.get_attribute('cha'), user._get_unmodified_attribute('cha'),
         user.inventory.get_weight(), user._get_max_weight(),
         user.trains, user.practices, user.level, user.experience,
-        (user.experience % user.experience_per_level),
+        (user.experience % user.experience_per_level()),
         get_alignment_string(user.alignment)))
 
 def inventory(user):

@@ -31,11 +31,11 @@ class Client(observer.Observer, Protocol):
         self.on("input.__unhandled__", self._input_unhandled)
 
     def connectionMade(self):
-        __mudpy__.on("cycle", self._poll)
+        actor.actor.__proxy__.on("cycle", self.poll)
         self.write(__config__["messages"]["connection_made"]+" ")
     
     def connectionLost(self, reason):
-        __mudpy__.off("cycle", self._poll)
+        actor.actor.__proxy__.off("cycle", self.poll)
         self.write(__config__["messages"]["connection_lost"])
     
     def disconnect(self):
@@ -55,7 +55,7 @@ class Client(observer.Observer, Protocol):
 
         self.transport.write(str(message))
 
-    def _poll(self, _event = None):
+    def poll(self, _event = None):
         """Game cycle listener, will pop off input from the client's command
         buffer and trigger an input event on the client object.
 
