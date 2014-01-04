@@ -14,24 +14,33 @@ halt.
 
 import time, os, sys
 
-fp = None
+__fp__ = None
+__env__ = None
 
-if len(sys.argv) > 1:
-    fp = open(os.path.join(sys.argv[1], 'data', 'debug.log'), 'a')
-    fp.write('\nnew log started\n')
+args_len = len(sys.argv)
+if args_len > 1:
+    __fp__ = open(os.path.join(sys.argv[1], 'data', 'debug.log'), 'a')
+    __fp__.write('\nnew log started\n')
+
+    if args_len == 3:
+        __env__ = sys.argv[2]
 
 def log(message, status = "info"):
     """Log a message with the given status level."""
 
-    if fp:
-        fp.write('['+time.strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+ \
+    if __fp__:
+        __fp__.write('['+time.strftime('%Y-%m-%d %H:%M:%S')+' '+str(status)+'] '+ \
                                                              str(message)+'\n')
-        fp.flush()
+        __fp__.flush()
+
+        if __env__ == "dev":
+            print "["+status+"] "+message
+
+def info(message):
+    log(message, "info")
 
 def notice(message):
     log(message, "notice")
-    print message
 
 def error(message):
     log(message, "error")
-    print message

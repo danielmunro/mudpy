@@ -155,7 +155,6 @@ class Actor(wireframe.Blueprint):
         """Sets up a new target for the actor."""
 
         if not target:
-            debug.log(str(self)+" untargeting "+str(self.target))
             self.target.off('attack_resolution', self._normalize_stats)
             self.target = None
             return
@@ -164,8 +163,6 @@ class Actor(wireframe.Blueprint):
         self.target = target
 
         handled = self.target.fire('attacked', self)
-
-        debug.log(str(self)+" targeting "+str(self.target))
 
         if not handled:
             # handles above 100% hp/mana/mv and below 0% hp/mana/mv
@@ -424,6 +421,7 @@ class Actor(wireframe.Blueprint):
             "all": "%s died!" % str(self).title()
         }, False)
         if self.target:
+            debug.info(str(self.target)+" killed "+str(self))
             # calculate the kill experience
             leveldiff = self.level - self.target.level
             experience = 200 + 30 * leveldiff
@@ -446,6 +444,8 @@ class Actor(wireframe.Blueprint):
                 message = __config__["messages"]["qualifies_for_level"]
                 self.target.notify(message)
             self.end_battle()
+        else:
+            debug.info(str(self)+" died!")
         self.disposition = disposition.__laying__
         self.curhp = 1
         corpse = item.Corpse()
