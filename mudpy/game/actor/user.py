@@ -1,4 +1,4 @@
-import time
+import time, __main__
 from . import actor, disposition
 from .. import room, command
 from ...sys import wireframe, debug
@@ -35,7 +35,7 @@ class User(actor.Actor):
         self.observers = {}
         self.role = 'player'
         super(User, self).__init__()
-        actor.__mudpy__.fire('actor_enters_realm', self)
+        __main__.__mudpy__.fire('actor_enters_realm', self)
 
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -55,7 +55,22 @@ class User(actor.Actor):
         """
 
         if self.target:
-            self.notify(self.target.status()+"\n")
+            hp_percent = self.target.curhp / self.target.get_attribute('hp')
+            if hp_percent < 0.1:
+                description = 'is in awful condition'
+            elif hp_percent < 0.15:
+                description = 'looks pretty hurt'
+            elif hp_percent < 0.30:
+                description = 'has some big nasty wounds and scratches'
+            elif hp_percent < 0.50:
+                description = 'has quite a few wounds'
+            elif hp_percent < 0.75:
+                description = 'has some small wounds and bruises'
+            elif hp_percent < 0.99:
+                description = 'has a few scratches'
+            else:
+                description = 'is in excellent condition'
+            self.notify(str(self).title()+' '+description+'.')
 
     def add_affect(self, aff):
         super(User, self).add_affect(aff)

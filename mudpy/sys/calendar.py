@@ -1,6 +1,7 @@
 """Game calendar. Doesn't do much at this point except keep track of time."""
 
 from . import wireframe, observer
+import __main__
 
 __config__ = wireframe.create('config.calendar')
 __instance__ = None
@@ -13,6 +14,8 @@ def proxy(*args):
     """
 
     __proxy__.fire(*args)
+
+__main__.__mudpy__.on('__any__', proxy)
 
 def initialize(mudpy):
     """Setup function for the module. Initializes a calendar instance from

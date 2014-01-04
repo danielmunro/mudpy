@@ -3,7 +3,7 @@
 """
 
 from __future__ import division
-import random
+import random, __main__
 
 from ...sys import collection, calendar, wireframe, observer, debug
 from .. import room, item
@@ -12,14 +12,11 @@ from .  import disposition, attack
 __SAVE_DIR__ = 'data'
 __config__ = wireframe.create('config.actor')
 __proxy__ = observer.Observer()
-__mudpy__ = None
-
-def initialize(mudpy):
-    global __mudpy__
-    __mudpy__ = mudpy
 
 def proxy(*args):
     __proxy__.fire(*args)
+
+__main__.__mudpy__.on('__any__', proxy)
 
 def get_default_attributes():
     """Starting attributes for level 1 actors."""
@@ -40,6 +37,7 @@ class Actor(wireframe.Blueprint):
     """Abstract 'person' in the game, base object for users and mobs."""
     MAX_STAT = 25
     stats = ['str', 'int', 'wis', 'dex', 'con', 'cha']
+    vitals = ['hp', 'mana', 'movement']
 
     def __init__(self):
         self.name = ""
@@ -119,27 +117,39 @@ class Actor(wireframe.Blueprint):
     def get_attribute(self, attribute_name):
         """Calculates the value of the attribute_name passed in, based on a
         number of variables, such as the starting attribute value, plus the
-        trained values, racial modifiers, and affect modifiers.
+        trained values, and racial, equipment, and affect modifiers.
 
         """
 
+        # base attribute amount
         amount = self._get_unmodified_attribute(attribute_name)
+
+        # affect modifiers
         for _affect in self.affects:
-            amount += _affect.get_attribute(attribute_name)
+            affect_modifier = _affect.get_attribute(attribute_name)
+            if isinstance(affect_modifier, float):
+                affect_modifier = self._get_unmodified_attribute(attribute_name) * affect_modifier
+            amount += affect_modifier
+
+        # equipment modifiers
         for equipment in self.equipped.values():
             if equipment:
-                amount += getattr(equipment.attributes, attribute_name)
+                equipment_modifier = getattr(equipment.attributes, attribute_name)
+                if isinstance(equipment_modifier, float):
+                    equipment_modifier = self._get_unmodified_attribute(attribute_name) * equipment_modifier
+                amount += equipment_modifier
+
+        # max stats
         if attribute_name in Actor.stats:
-            return min(amount, self.get_max_attribute(attribute_name))
+            amount = min(amount, self.get_max_attribute(attribute_name))
+
         return amount
 
     def get_max_attribute(self, attribute_name):
         """Returns the max attainable value for an attribute."""
 
-        racial_attr = self.race._attribute(attribute_name)
-        return min(
-                self._attribute(attribute_name) + racial_attr + 4, 
-                racial_attr + 8)
+        unmodified_attribute = self._get_unmodified_attribute(attribute_name)
+        return min(unmodified_attribute + 4, self.race._attribute(attribute_name) + 8)
     
     def get_abilities(self):
         """Returns abilities available to the actor, including known ones and
@@ -151,44 +161,6 @@ class Actor(wireframe.Blueprint):
 
     def __str__(self):
         return self.name
-    
-    def status(self):
-        """A string representation of the approximate physical health of the
-        actor, based on the percentage of hp remaining.
-
-        """
-
-        hppercent = self.curhp / self.get_attribute('hp')
-        
-        if hppercent < 0.1:
-            description = 'is in awful condition'
-        elif hppercent < 0.15:
-            description = 'looks pretty hurt'
-        elif hppercent < 0.30:
-            description = 'has some big nasty wounds and scratches'
-        elif hppercent < 0.50:
-            description = 'has quite a few wounds'
-        elif hppercent < 0.75:
-            description = 'has some small wounds and bruises'
-        elif hppercent < 0.99:
-            description = 'has a few scratches'
-        else:
-            description = 'is in excellent condition'
-
-        return str(self).title()+' '+description+'.'
-
-    def get_alignment(self):
-        """A string representation of the actor's alignment. Alignment is
-        changed based on the actor's actions.
-
-        """
-
-        if self.alignment <= -1000:
-            return "evil"
-        elif self.alignment <= 0:
-            return "neutral"
-        elif self.alignment >= 1000:
-            return "good"
 
     def add_affect(self, aff):
         """Apply an affect to the actor."""
@@ -199,13 +171,6 @@ class Actor(wireframe.Blueprint):
             pass
 
         self.affects.append(aff)
-
-        # for any modifiers that are percents, we need to 
-        # get the percent of the actor's attribute
-        for attr in aff.attributes:
-            modifier = aff.get_attribute(attr)
-            if modifier > 0 and modifier < 1:
-                aff.attributes[attr] = self.get_attribute(attr) * modifier
 
         if aff.timeout > -1:
             __proxy__.on('tick', aff.countdown_timeout)
@@ -391,12 +356,9 @@ class Actor(wireframe.Blueprint):
         return False
     
     def _normalize_stats(self, _event = None, _args = None):
-        """Ensures hp, mana, and movement do not exceed their maxes during a
-        tick.
+        """Ensures hp, mana, and movement do not exceed their maxes."""
 
-        """
-
-        for attr in ['hp', 'mana', 'movement']:
+        for attr in Actor.vitals:
             maxstat = self.get_attribute(attr)
             actorattr = 'cur'+attr
             if getattr(self, actorattr) > maxstat:

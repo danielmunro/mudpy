@@ -79,6 +79,19 @@ def score(user):
 
     """
 
+    def get_alignment_string(alignment_value):
+        """A string representation of the actor's alignment. Alignment is
+        changed based on the actor's actions.
+
+        """
+
+        if alignment_value <= -1000:
+            return "evil"
+        elif alignment_value <= 0:
+            return "neutral"
+        elif alignment_value >= 1000:
+            return "good"
+
     user.notify(("You are %s, a %s\n"+\
         "%i/%i hp %i/%i mana %i/%i mv\n"+\
         "str (%i/%i), int (%i/%i), wis (%i/%i), dex (%i/%i), con(%i/%i),"+\
@@ -98,7 +111,7 @@ def score(user):
         user.inventory.get_weight(), user._get_max_weight(),
         user.trains, user.practices, user.level, user.experience,
         (user.experience % user.experience_per_level),
-        user.get_alignment()))
+        get_alignment_string(user.alignment)))
 
 def inventory(user):
     """Relays the user's inventory of items back to them."""

@@ -5,7 +5,7 @@ server, calendar, and areas.
 """
 
 import sys
-from mudpy.sys import wireframe, debug
+from mudpy.sys import wireframe, debug, mudpy
 
 if len(sys.argv) > 1:
     wireframe.__path__ = sys.argv[1]
@@ -13,8 +13,6 @@ if len(sys.argv) > 1:
 else:
     debug.error("Needs path, ie python main.py example")
     sys.exit()
-
-from mudpy.sys import mudpy
 
 def main(m):
     m.start()
