@@ -43,7 +43,6 @@ class Actor(wireframe.Blueprint):
 
     def __init__(self):
         self.name = ""
-        self.title = "an actor"
         self.long = ""
         self.description = ""
         self.level = 0
@@ -151,7 +150,7 @@ class Actor(wireframe.Blueprint):
         return self.abilities + self.race.abilities
 
     def __str__(self):
-        return self.title
+        return self.name
     
     def status(self):
         """A string representation of the approximate physical health of the
@@ -190,11 +189,6 @@ class Actor(wireframe.Blueprint):
             return "neutral"
         elif self.alignment >= 1000:
             return "good"
-    
-    def looked_at(self):
-        """What a user sees when they look at the actor."""
-
-        return self.long if self.long else str(self)+" the "+str(self.race)+" is "+self.disposition+" here."
 
     def add_affect(self, aff):
         """Apply an affect to the actor."""

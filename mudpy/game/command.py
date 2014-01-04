@@ -34,8 +34,9 @@ def look(actor, _args = []):
                     _room.directions.iteritems() if room))
         if _room.actors:
             if can_see:
-                msg += "".join(_actor.looked_at().capitalize()+"\n" for _actor
-                            in _room.actors if _actor is not actor)
+                msg += "".join(
+                    str(_actor).capitalize()+" the "+str(_actor.race)+" is "+_actor.disposition+" here.\n"
+                        for _actor in _room.actors if _actor is not actor)
             else:
                 """
                 msg += \
