@@ -1,6 +1,5 @@
 class Proficiency:
     def __init__(self):
-        self.name = ""
         self.hook = ""
         self.improvechance = 0.05
         self.level = 15

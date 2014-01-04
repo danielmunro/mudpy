@@ -26,7 +26,7 @@ def look(actor, _args = []):
     if len(_args) <= 1:
         can_see = actor.can_see()
         if can_see:
-            msg = "%s\n%s\n" % (_room.title, _room.description)
+            msg = "%s\n%s\n" % (_room.short_desc, _room.long_desc)
         else:
             msg = "You can't see anything, it's pitch black!"
         msg += "\n[Exits %s]\n" % (
@@ -52,7 +52,7 @@ def look(actor, _args = []):
         if not looking_at:
             looking_at = _room.get_actor(_args)
         if looking_at:
-            msg = looking_at.description
+            msg = looking_at.long_desc
         else:
             msg = __config__['messages']['look_at_nothing']
     actor.notify(msg)
@@ -187,20 +187,20 @@ def room(actor, args):
         else:
             actor.notify(actor.last_command.messages['room_bad_dir'])
         return
-    elif command == "title":
-        actor.get_room().title = " ".join(args[1:])
-    elif command == "description":
-        actor.get_room().description = " ".join(args[1:])
+    elif command == "short_desc":
+        actor.get_room().short_desc = " ".join(args[1:])
+    elif command == "long_desc":
+        actor.get_room().long_desc = " ".join(args[1:])
     elif command == "lit":
         actor.get_room().lit = not actor.get_room().lit
     elif command == "info":
         r = actor.get_room()
         actor.notify("""Room info:
 ID: %s
-Title: %s
-Description: %s
+Short: %s
+Long: %s
 Lit: %s
-Area: %s""" % (r.name, r.title, r.description, "yes" if r.lit else "no", r.area))
+Area: %s""" % (r.name, r.short_desc, r.long_desc, "yes" if r.lit else "no", r.area))
         return
     elif command == "":
         actor.notify(actor.last_command.messages['room_no_args'])

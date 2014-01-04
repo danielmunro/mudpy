@@ -11,18 +11,18 @@ messages:
 
                 copy <direction> - copy the current room to the direction specified.
 
-                title <string> - Sets the room title.
+                short_desc <string> - Sets the room title.
 
-                description <string> - Sets the room description.
+                long_desc <string> - Sets the room description.
 
                 lit - Sets whether the room has a light source.
 
     room_bad_dir: "That's not a valid direction."
     room_bad_property: "That's not a valid property."
     room_property_set: "Ok."
-    room_created: Room created.
+    room_created: "Room created."
 required:
     - {property: yaml_tag, value: u!user}
     - {property: role, value: immortal}
 execute:
-    - room(actor, args)
+    - "room(actor, args)"

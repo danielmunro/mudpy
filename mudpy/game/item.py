@@ -64,8 +64,6 @@ class Item(object):
     """Generic item class for properties shared across all item types."""
 
     def __init__(self):
-        self.name = "a generic item"
-        self.description = "a generic item is here"
         self.value = 0
         self.weight = 0
         self.material = ""

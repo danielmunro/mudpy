@@ -16,7 +16,7 @@ rooms:
     curhp: 200
     curmana: 100
     curmovement: 100
-    description: Standing over 12 feet tall, Hassan the giant guards the temple.
+    long_desc: Standing over 12 feet tall, Hassan the giant guards the temple.
     disposition: standing
     equipped: {arms: null, body: null, feet: null, finger0: null, finger1: null, float: null,
       hands: null, head: null, legs: null, light: null, neck0: null, neck1: null,
@@ -40,11 +40,11 @@ rooms:
     sex: neutral
     start_room: 1
     target: null
-    title: Hassan
+    short_desc: ""
     trained_attributes: {}
     trains: 0
   area: midgaard
-  description: A large temple surrounds you, with sculptures of gods adorning the
+  long_desc: A large temple surrounds you, with sculptures of gods adorning the
     walls.
   directions: {north: 2, south: 3}
   inventory: !<u!inventory>
@@ -52,22 +52,22 @@ rooms:
     items: []
   lit: true
   name: 1
-  title: Temple of Midgaard
+  short_desc: Temple of Midgaard
 - !<u!room>
   actors: []
   area: midgaard
-  description: A temple altar is here.
+  long_desc: A temple altar is here.
   directions: {south: 1}
   inventory: !<u!inventory>
     item_count: {}
     items: []
   lit: true
   name: 2
-  title: The Temple Altar
+  short_desc: The Temple Altar
 - !<u!room>
   actors: []
   area: midgaard
-  description: The temple is imposing in the distance, and a large garden is in front
+  long_desc: The temple is imposing in the distance, and a large garden is in front
     of you.
   directions: {north: 1, south: 4}
   inventory: !<u!inventory>
@@ -75,38 +75,38 @@ rooms:
     items: []
   lit: true
   name: 3
-  title: The Temple Courtyard
+  short_desc: The Temple Courtyard
 - !<u!room>
   actors: []
   area: midgaard
-  description: Markets and roads surround you.
+  long_desc: Markets and roads surround you.
   directions: {down: 6, north: 3, south: 5}
   inventory: !<u!inventory>
     item_count: {}
     items: []
   lit: true
   name: 4
-  title: The Market Square
+  short_desc: The Market Square
 - !<u!room>
   actors: []
   area: midgaard
-  description: Markets and roads surround you.
+  long_desc: Markets and roads surround you.
   directions: {north: 4}
   inventory: !<u!inventory>
     item_count: {}
     items: []
   lit: true
   name: 5
-  title: The Common Square
+  short_desc: The Common Square
 - !<u!room>
   actors: []
   area: midgaard
-  description: A dark and smelly sewer system lies before you.
+  long_desc: A dark and smelly sewer system lies before you.
   directions: {down: 7, up: 4}
   inventory: !<u!inventory>
     item_count: {}
     items: []
   lit: true
   name: 6
-  title: Underneath the market square
+  short_desc: Underneath the market square
 terrain: urban

@@ -41,9 +41,6 @@ class Actor(wireframe.Blueprint):
     vitals = ['hp', 'mana', 'movement']
 
     def __init__(self):
-        self.name = ""
-        self.long = ""
-        self.description = ""
         self.level = 0
         self.experience = 0
         self.alignment = 0
@@ -135,7 +132,7 @@ class Actor(wireframe.Blueprint):
 
         # if a stat, don't let it exceed the maximum
         if attribute_name in Actor.stats:
-            amount = min(amount, self.get_max_attribute(attribute_name))
+            amount = min(amount, self._get_max_attribute(attribute_name))
 
         return amount
     
@@ -458,7 +455,8 @@ class Actor(wireframe.Blueprint):
         self.curhp = 1
         corpse = item.Corpse()
         corpse.name = "the corpse of "+str(self)
-        corpse.description = "The corpse of "+str(self)+" lies here."
+        corpse.short_desc = "The corpse of "+str(self)+" lies here."
+        corpse.long_desc = corpse.short_desc
         corpse.weight = self.race.size * 20
         corpse.material = "flesh"
         for i in self.inventory.items:

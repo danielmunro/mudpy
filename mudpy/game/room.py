@@ -37,8 +37,8 @@ def area(area_name):
 def copy(start_room, direction):
     # create new room
     new_room = Room()
-    new_room.title = start_room.title
-    new_room.description = start_room.description
+    new_room.short_desc = start_room.short_desc
+    new_room.long_desc = start_room.long_desc
     new_room.area = start_room.area
     new_room.lit = start_room.lit
     new_room.name = auto_room_name()
@@ -59,9 +59,6 @@ class Room(wireframe.Blueprint):
     yaml_tag = "u!room"
 
     def __init__(self):
-        self.name = 0
-        self.title = ''
-        self.description = ''
         self.actors = []
         self.inventory = item.Inventory()
         self.directions = {}
@@ -108,7 +105,8 @@ class Room(wireframe.Blueprint):
 
     def _copy(self, newRoom):
         newRoom.name = self.name
-        newRoom.description = self.description
+        newRoom.short_desc = self.short_desc
+        newRoom.long_desc = self.long_desc
         newRoom.area = self.area
         for direction in Direction.get_all():
             if not direction.name in self.directions:
@@ -120,7 +118,7 @@ class Room(wireframe.Blueprint):
             self.leaving(actor, direction)
             if direction:
                 new_room = get(self.directions[direction])
-                debug.log(str(actor)+" moves to "+new_room.title+\
+                debug.log(str(actor)+" moves to "+new_room.short_desc+\
                         " ("+str(new_room.name)+")")
                 new_room.arriving(actor, Direction.get_reverse(direction))
 
@@ -154,9 +152,6 @@ class Dungeon(wireframe.Blueprint):
     yaml_tag = "u!dungeon"
 
     def __init__(self):
-        self.name = 0
-        self.title = ""
-        self.description = ""
         self.exits = []
         self.size = 0
         self.lit = False
@@ -165,8 +160,8 @@ class Dungeon(wireframe.Blueprint):
     def done_init(self):
         self.room = Room()
         self.room.name = self.name
-        self.room.title = self.title
-        self.room.description = self.description
+        self.room.short_desc = self.short_desc
+        self.room.long_desc = self.long_desc
         self.room.area = self.area
         self.room.directions = self.directions
         __rooms__[self.room.name] = self.room
@@ -293,7 +288,6 @@ class Area(wireframe.Blueprint):
     yaml_tag = "u!area"
 
     def __init__(self):
-        self.name = ""
         self.terrain = ""
         self.location = ""
         self.rooms = []

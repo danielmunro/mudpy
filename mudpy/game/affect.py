@@ -12,7 +12,6 @@ class Affect(wireframe.Blueprint):
     yaml_tag = "u!affect"
 
     def __init__(self):
-        self.name = "an affect"
         self.attributes = {}
         self.timeout = 0
         self.messages = {}

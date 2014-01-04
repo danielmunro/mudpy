@@ -15,7 +15,6 @@ class Race(wireframe.Blueprint):
     SIZE_GIGANTIC = 5
 
     def __init__(self):
-        self.name = "critter"
         self.size = self.SIZE_NORMAL
         self.movement_cost = 1
         self.is_playable = False

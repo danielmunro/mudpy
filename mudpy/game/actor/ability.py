@@ -11,7 +11,6 @@ class Ability(wireframe.Blueprint):
     yaml_tag = "u!ability"
 
     def __init__(self):
-        self.name = "an ability"
         self.level = 0
         self.affects = []
         self.costs = {}
