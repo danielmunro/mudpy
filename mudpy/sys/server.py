@@ -7,7 +7,7 @@ communication between the threads.
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 import random, time, __main__
-from . import observer, wireframe, debug
+from . import wireframe, debug
 
 __config__ = wireframe.create("config.server")
 __init_time__ = time.time()
