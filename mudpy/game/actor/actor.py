@@ -249,7 +249,7 @@ class Actor(wireframe.Blueprint):
         """
 
         affects = list(self.affects)
-        for _pos, equipment in self.equipped.iteritems():
+        for _pos, equipment in self.equipped.items():
             if equipment:
                 affects += equipment.affects
         return affects

@@ -1,7 +1,11 @@
 name: My Great Mud
+host: danmunro.com
 port: 8001
 intervals:
     tick:
         lowbound: 30
         highbound: 45
     pulse: 1
+messages:
+    connection_lost: 'Good bye!'
+    connection_made: 'By what name do you wish to be known?'

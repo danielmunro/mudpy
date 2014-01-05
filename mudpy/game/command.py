@@ -31,7 +31,7 @@ def look(actor, _args = []):
             msg = "You can't see anything, it's pitch black!"
         msg += "\n[Exits %s]\n" % (
                 "".join(direction[:1] for direction, room in 
-                    _room.directions.iteritems() if room))
+                    _room.directions.items() if room))
         if _room.actors:
             if can_see:
                 msg += "".join(
@@ -68,7 +68,7 @@ def equipped(user):
     import re
 
     msg = ""
-    for position, equipment in user.equipped.iteritems():
+    for position, equipment in user.equipped.items():
         msg += re.sub(r"\d+", "", position)+": "+str(equipment)+"\n"
     user.notify("You are wearing: "+msg)
 

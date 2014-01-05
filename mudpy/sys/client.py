@@ -3,7 +3,6 @@ mud.py's ClientFactory. Handles connection, and i/o with the client.
 
 """
 
-from twisted.internet.protocol import Factory as tFactory, Protocol
 from . import debug, observer, wireframe
 from ..game import actor
 from ..game.actor import user
@@ -11,44 +10,22 @@ import __main__
 
 __config__ = wireframe.create("config.client")
 
-class Client(observer.Observer, Protocol):
+class Client(observer.Observer):
     """twisted client protocol, defines behavior for clients."""
 
-    def __init__(self):
+    def __init__(self, request):
         self.input_buffer = []
         self.last_input = ""
-        self.client_factory = None
         self.user = None
+        self.request = request
         super(Client, self).__init__()
         self.login = Login()
         self.on("loggedin", self._loggedin)
         self.on("input", self.login.step)
         self.on("input.__unhandled__", self._input_unhandled)
 
-    def connectionMade(self):
-        __main__.__mudpy__.on("cycle", self.poll)
-        self.write(__config__["messages"]["connection_made"]+" ")
-    
-    def connectionLost(self, reason):
-        __main__.__mudpy__.off("cycle", self.poll)
-        self.write(__config__["messages"]["connection_lost"])
-    
-    def disconnect(self):
-        """Called when a client loses their connection."""
-
-        self.client_factory.fire("destroyed", self)
-        self.client_factory.clients.remove(self)
-        self.user.get_room().move_actor(self.user)
-        __main__.__mudpy__.fire("actor_leaves_realm", self)
-        self.transport.loseConnection()
-    
-    def dataReceived(self, data):
-        self.input_buffer.append(data.strip())
-    
     def write(self, message):
-        """Send a message from the game to the client."""
-
-        self.transport.write(str(message))
+        self.request.sendall(bytes(message, "UTF-8"))
 
     def poll(self, _event = None):
         """Game cycle listener, will pop off input from the client's command
@@ -61,7 +38,7 @@ class Client(observer.Observer, Protocol):
             if data:
                 sender = self.user if self.user else self
                 self.last_input = data if not data == "!" else self.last_input
-                return self.fire("input", sender, self.last_input.split(" "))
+                return self.fire("input", sender, str(self.last_input).split(" "))
 
     def _input_unhandled(self, _event = None, _subscriber = None, _arg = None):
         if self.user:
@@ -142,33 +119,8 @@ class Login(observer.Observer):
             self.done.append(step)
             event.handle()
         except LoginException as error:
-            client.write(error+" ")
+            client.write(error)
             self.todo.insert(0, step)
-
-class ClientFactory(tFactory, observer.Observer):
-    """twisted factory implementation, used by twisted's reactor to create
-    mud.py clients.
-
-    """
-
-    protocol = Client
-
-    def __init__(self):
-        self.observers = {}
-        self.clients = []
-        super(ClientFactory, self).__init__()
-
-    def buildProtocol(self, addr):
-        """Called when a new connection is established. Setup method for the
-        client object.
-
-        """
-
-        client = Client()
-        client.client_factory = self
-        self.fire("created", client)
-        self.clients.append(client)
-        return client
 
 class LoginException(Exception):
     """Raised when unexpected input in received during the login process."""

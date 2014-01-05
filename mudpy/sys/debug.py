@@ -34,13 +34,16 @@ def log(message, status = "info"):
         __fp__.flush()
 
         if __env__ == "dev":
-            print "["+status+"] "+message
+            print("["+status+"] "+message)
 
-def info(message):
-    log(message, "info")
+def info(*messages):
+    for message in messages:
+        log(message, "info")
 
-def notice(message):
-    log(message, "notice")
+def notice(*messages):
+    for message in messages:
+        log(message, "notice")
 
-def error(message):
-    log(message, "error")
+def error(*messages):
+    for message in messages:
+        log(message, "error")

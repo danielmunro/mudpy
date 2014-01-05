@@ -99,7 +99,7 @@ class Room(wireframe.Blueprint):
                 actor.notify(generalMessage, add_prompt)
     
     def mobs(self):
-        from actor.mob import Mob
+        from .actor.mob import Mob
         return list(actor for actor in self.actors if isinstance(actor, Mob))
 
     def _copy(self, newRoom):
