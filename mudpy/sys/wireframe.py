@@ -53,8 +53,6 @@ def run(path):
 def create_from_match(search):
     """Parse a yaml object from a partial match."""
 
-    from . import config
-
     parts = search.split('.')
     _file = parts[-1]
     _path = os.path.join(*[__path__, "wireframes"]+parts[0:-1])
@@ -81,8 +79,6 @@ def create(name, subdirectory = "wireframes"):
     race = create("gnome") # returns a new gnome race to assign to an actor
     
     """
-
-    from . import config
 
     wireframe_path = os.path.join(*[__path__]+subdirectory.split('.')+name.split('.'))+".yaml"
     if wireframe_path in wireframes:
