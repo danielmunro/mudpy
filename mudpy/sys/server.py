@@ -8,7 +8,6 @@ import random, time, threading, socketserver
 from . import wireframe, debug, observer, client
 
 __config__ = wireframe.create("config.server")
-__init_time__ = time.time()
 
 def start(publisher=None):
     """Takes a client_factory (twisted Factory implementation), and set a tcp
@@ -26,11 +25,15 @@ def start(publisher=None):
             (__config__['host'], __config__['port']),
             ThreadedTCPRequestHandler)
 
+    # start the server listening for clients
     server_thread = threading.Thread(target=server.serve_forever)
     server_thread.daemon = True
     server_thread.start()
+
     ip, port = server.server_address
     debug.info("listening on "+ip+":"+str(port))
+
+    # main game loop
     server.heartbeat()
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
@@ -43,11 +46,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         """Called when a client connects."""
 
-        cl = client.Client(self.request)
-        self.server.publisher.on("cycle", cl.poll)
-        self.request.sendall(
-                bytes(__config__["messages"]["connection_made"]+" ", "UTF-8"))
-        self.server.clients[self.request] = cl
+        _client = client.Client(self.request)
+        message = bytes(__config__["messages"]["connection_made"]+" ", "UTF-8")
+
+        self.server.publisher.on("cycle", _client.poll)
+        self.request.sendall(message)
+        self.server.clients[self.request] = _client
 
     def handle(self):
         """Thread that handles adding input to a client's input buffer. The
@@ -58,6 +62,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         """
 
         data = b""
+
         while data != b"quit":
             data = self.request.recv(1024).strip()
             _client = self.server.clients[self.request]
