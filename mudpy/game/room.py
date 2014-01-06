@@ -87,7 +87,7 @@ class Room(wireframe.Blueprint):
 
         announcedActors = []
         generalMessage = ""
-        for actor, message in messages.iteritems():
+        for actor, message in messages.items():
             if actor == "all":
                 generalMessage = message
             else:
