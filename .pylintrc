@@ -1,3 +1,6 @@
 [BASIC]
 # Good variable names which should always be accepted, separated by a comma
 good-names=i,j,k,ex,Run,_,fp,on,id,hp,h,ac,e,fn,eq,ip,cl
+
+[MESSAGES CONTROL]
+disable=w0141
