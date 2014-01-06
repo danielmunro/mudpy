@@ -56,34 +56,33 @@ class Actor(wireframe.Blueprint):
         self.last_command = None
         __main__.__mudpy__.on('tick', self.tick)
         super(Actor, self).__init__()
-        
+
         self.equipped = dict((position, None) for position in ['light',
             'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
             'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
             'wield0', 'wield1', 'float'])
 
-    def get_room(self, direction = ""):
+    def get_room(self, direction=""):
         """Returns the current room the actor is in."""
 
         return room.get(self.room, direction)
 
-    def get_proficiency(self, _proficiency):
+    def get_proficiency(self, proficiency_name):
         """Checks if an actor has a given proficiency and returns the object
         if successfully found.
 
         """
 
-        for prof in self._get_proficiencies():
-            if(prof.name == _proficiency):
-                return prof
-    
+        return next(_proficiency for _proficiency in self._get_proficiencies()
+                if _proficiency.name == proficiency_name)
+
     def get_equipment_by_position(self, position):
         """Returns what the actor has equipped for requested position."""
 
         for _position in self.equipped:
             if _position.find(position) == 0:
                 return self.equipped[_position]
-    
+
     def set_equipment(self, equipment):
         """Equips an item, allowing the actor to take advantage of its
         properties.
@@ -91,15 +90,15 @@ class Actor(wireframe.Blueprint):
         """
 
         return self._set_equipment_by_position(equipment.position, equipment)
-    
+
     def get_wielded_weapons(self):
         """Helper function to return the weapons the actor has wielded."""
 
         wielded = [self.equipped['wield0'], self.equipped['wield1']]
         return list(eq for eq in wielded if eq)
-    
-    def notify(self, message = "", add_prompt = True):
-        """Called to tell the actor a generic message. Only utilized by the 
+
+    def notify(self, message="", add_prompt=True):
+        """Called to tell the actor a generic message. Only utilized by the
         user class for transporting messages to the client.
 
         """
@@ -128,7 +127,7 @@ class Actor(wireframe.Blueprint):
             amount = min(amount, self._get_max_attribute(attribute_name))
 
         return amount
-    
+
     def get_abilities(self):
         """Returns abilities available to the actor, including known ones and
         ones granted from racial bonuses.
@@ -151,14 +150,14 @@ class Actor(wireframe.Blueprint):
             __main__.__mudpy__.on('tick', aff.countdown_timeout)
             aff.on('end', self._end_affect)
 
-    def set_target(self, target = None):
+    def set_target(self, target=None):
         """Sets up a new target for the actor."""
 
         if not target:
             self.target.off('attack_resolution', self._normalize_stats)
             self.target = None
             return
-        
+
         # target acquired
         self.target = target
 
@@ -170,7 +169,7 @@ class Actor(wireframe.Blueprint):
 
             # calls attack rounds until target is removed
             __main__.__mudpy__.on('pulse', self._do_regular_attacks)
-    
+
     def has_enough_movement(self):
         """Return true if the user has enough movement points to leave the
         room.
@@ -225,7 +224,7 @@ class Actor(wireframe.Blueprint):
         """Make the actor wake up."""
 
         self.disposition = disposition.__standing__
-    
+
     def sleep(self):
         """Make the actor go to sleep."""
 
@@ -248,16 +247,13 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        affects = list(self.affects)
-        for _pos, equipment in self.equipped.items():
-            if equipment:
-                affects += equipment.affects
-        return affects
-    
-    def tick(self, _event = None):
+        return self.affects + \
+                list(eq.affects for pos, eq in self.equipped.items() if eq)
+
+    def tick(self):
         """Called on the actor by the server, part of a series of "heartbeats".
         Responsible for regening the actor's hp, mana, and movement.
-        
+
         """
 
         modifier = random.uniform(0.05, 0.125)
@@ -272,7 +268,7 @@ class Actor(wireframe.Blueprint):
         self.curmovement += self.get_attribute('movement') * modifier
         self._normalize_stats()
 
-    def actor_changed(self, _event, actor, message = ""):
+    def actor_changed(self):
         """Event listener for when the room update fires."""
 
         pass
@@ -298,9 +294,9 @@ class Actor(wireframe.Blueprint):
         """Returns the max attainable value for an attribute."""
 
         if attribute_name in Actor.stats:
-            unmodified_attribute = self._get_unmodified_attribute(attribute_name)
+            attr = self._get_unmodified_attribute(attribute_name)
             return min(
-                    unmodified_attribute + 4,
+                    attr + 4,
                     self.race._attribute(attribute_name) + 8)
         else:
             return -1
@@ -321,7 +317,7 @@ class Actor(wireframe.Blueprint):
 
         return amount
 
-    def _end_affect(self, _event, affect):
+    def _end_affect(self, event, affect):
         """Called when an affect ends."""
 
         self.affects.remove(affect)
@@ -330,12 +326,13 @@ class Actor(wireframe.Blueprint):
             self.fire('changed', affect, self, message)
         except KeyError:
             pass
+        event.handle()
 
     def _attribute(self, attr):
         """Helper to get attribute for actor."""
 
         return self.attributes[attr] if attr in self.attributes else 0
-    
+
     def _get_proficiencies(self):
         """Returns all actor's proficiencies, including known ones and ones
         granted from racial bonuses.
@@ -345,17 +342,17 @@ class Actor(wireframe.Blueprint):
         all_proficiencies = dict(self.proficiencies)
         all_proficiencies.update(self.race.proficiencies)
         return all_proficiencies
-    
+
     def _get_max_weight(self):
         """Returns the maximum weight that an actor can carry."""
 
         return 100+(self.level*100)
-    
+
     def _is_encumbered(self):
         """If an actor is encumbered, certain tasks become more difficult."""
 
         return self.inventory.get_weight() > self._get_max_weight() * 0.95
-    
+
     def _get_movement_cost(self):
         """Returns the movement cost of moving an actor from one room to
         an adjacent room.
@@ -366,7 +363,7 @@ class Actor(wireframe.Blueprint):
             return self.race.movement_cost + 1
         else:
             return self.race. movement_cost
-    
+
     def _set_equipment_by_position(self, position, equipment):
         """Sets a piece of equipment by a specific position."""
 
@@ -375,8 +372,8 @@ class Actor(wireframe.Blueprint):
                 self.equipped[_position] = equipment
                 return True
         return False
-    
-    def _normalize_stats(self, _event = None, _args = None):
+
+    def _normalize_stats(self):
         """Ensures hp, mana, and movement do not exceed their maxes."""
 
         for attr in Actor.vitals:
@@ -393,7 +390,7 @@ class Actor(wireframe.Blueprint):
 
         return self._attribute(attribute_name) + \
                 self.race._attribute(attribute_name)
-    
+
     def _do_regular_attacks(self, event):
         """Recurse through the attacks the user is able to make for a round of
         battle.
@@ -408,12 +405,12 @@ class Actor(wireframe.Blueprint):
         else:
             __main__.__mudpy__.off('pulse', self._do_regular_attacks)
             event.handle()
-    
+
     def _die(self):
         """What happens when the user is killed (regardless of the method of
         death). Does basic things such as creating the corpse and firing
         a disposition change event.
-        
+
         """
 
         self.get_room().announce({
