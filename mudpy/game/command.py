@@ -312,9 +312,9 @@ def _command_practice(self, invoked_command, args):
         self.notify("Your proficiencies:\n" + \
                 "\n".join(name+": "+str(proficiency.level) \
                 for name, proficiency in 
-                    self._get_proficiencies().iteritems()))
+                    self._get_proficiencies().items()))
     elif any(mob.role == Mob.ROLE_ACOLYTE for mob in _room.mobs()):
-        for prof_name, prof in self._get_proficiencies().iteritems():
+        for prof_name, prof in self._get_proficiencies().items():
             if prof_name.find(args[1]) == 0:
                 if self.practices:
                     self.practices -= 1

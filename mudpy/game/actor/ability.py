@@ -59,12 +59,12 @@ class Ability(wireframe.Blueprint):
 
         """
 
-        for attr, cost in self.costs.iteritems():
+        for attr, cost in self.costs.items():
             curattr = getattr(invoker, 'cur'+attr)
             cost *= curattr if cost > 0 and cost < 1 else 1
             if curattr < cost:
                 return False
-        for attr, cost in self.costs.iteritems():
+        for attr, cost in self.costs.items():
             curattr = getattr(invoker, 'cur'+attr)
             cost *= curattr if cost > 0 and cost < 1 else 1
             setattr(invoker, 'cur'+attr, curattr-cost)

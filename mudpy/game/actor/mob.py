@@ -45,7 +45,7 @@ class Mob(actor.Actor):
         self.movement_timer -= 1
         if self.movement_timer < 0:
             direction = random.choice([direction for direction, _room in 
-                self.get_room().directions.iteritems() if _room and 
+                self.get_room().directions.items() if _room and 
                 _room.area == self.get_room().area])
             command.move(self, direction)
             self.movement_timer = self.movement
