@@ -92,7 +92,7 @@ class Room(wireframe.Blueprint):
                 generalMessage = message
             else:
                 if message:
-                    actor.notify(message = message, add_prompt = add_prompt)
+                    actor.notify(message, add_prompt)
                 announcedActors.append(actor)
         if generalMessage:
             for actor in list(set(self.actors) - set(announcedActors)):

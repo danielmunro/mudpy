@@ -79,9 +79,8 @@ class Actor(wireframe.Blueprint):
     def get_equipment_by_position(self, position):
         """Returns what the actor has equipped for requested position."""
 
-        for _position in self.equipped:
-            if _position.find(position) == 0:
-                return self.equipped[_position]
+        return next(eq for pos, eq in self.equipped.items() \
+                if pos.find(position) == 0)
 
     def set_equipment(self, equipment):
         """Equips an item, allowing the actor to take advantage of its
@@ -94,10 +93,10 @@ class Actor(wireframe.Blueprint):
     def get_wielded_weapons(self):
         """Helper function to return the weapons the actor has wielded."""
 
-        wielded = [self.equipped['wield0'], self.equipped['wield1']]
-        return list(eq for eq in wielded if eq)
+        return list(
+            filter(None, [self.equipped['wield0'], self.equipped['wield1']]))
 
-    def notify(self, message="", add_prompt=True):
+    def notify(self, *_args):
         """Called to tell the actor a generic message. Only utilized by the
         user class for transporting messages to the client.
 
@@ -256,17 +255,12 @@ class Actor(wireframe.Blueprint):
 
         """
 
-        modifier = random.uniform(0.05, 0.125)
-        if self.disposition == disposition.__incapacitated__:
-            modifier = -modifier
-        elif self.disposition == disposition.__laying__:
-            modifier += random.uniform(0.01, 0.05)
-        elif self.disposition == disposition.__sleeping__:
-            modifier += random.uniform(0.05, 0.1)
-        self.curhp += self.get_attribute('hp') * modifier
-        self.curmana += self.get_attribute('mana') * modifier
-        self.curmovement += self.get_attribute('movement') * modifier
-        self._normalize_stats()
+        if self.disposition != disposition.__incapacitated__:
+            modifier = disposition.get_regen_modifier(self.disposition)
+            self.curhp += self.get_attribute('hp') * modifier
+            self.curmana += self.get_attribute('mana') * modifier
+            self.curmovement += self.get_attribute('movement') * modifier
+            self._normalize_stats()
 
     def actor_changed(self):
         """Event listener for when the room update fires."""
@@ -374,7 +368,7 @@ class Actor(wireframe.Blueprint):
         return False
 
     def _normalize_stats(self):
-        """Ensures hp, mana, and movement do not exceed their maxes."""
+        """Reset actor vitals to maxes periodically if they become exceeded."""
 
         for attr in Actor.vitals:
             maxstat = self.get_attribute(attr)
@@ -382,14 +376,13 @@ class Actor(wireframe.Blueprint):
             if getattr(self, actorattr) > maxstat:
                 setattr(self, actorattr, maxstat)
 
-    def _get_unmodified_attribute(self, attribute_name):
+    def _get_unmodified_attribute(self, attr):
         """Returns the "base" value of the requested attribute, which consists
         of the starting actor value plus trained amounts and racial bonuses.
 
         """
 
-        return self._attribute(attribute_name) + \
-                self.race._attribute(attribute_name)
+        return self._attribute(attr) + self.race._attribute(attr)
 
     def _do_regular_attacks(self, event):
         """Recurse through the attacks the user is able to make for a round of
