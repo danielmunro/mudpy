@@ -3,7 +3,7 @@
 """
 
 import random, __main__
-from ...sys import collection, wireframe, debug
+from ...sys import collection, wireframe, debug, observer
 from .. import room, item
 from .  import disposition, attack
 
@@ -52,7 +52,14 @@ class Actor(wireframe.Blueprint):
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
-        __main__.__mudpy__.on('tick', self.tick)
+
+        if '__mudpy__' in dir(__main__):
+            self.publisher = getattr(__main__, '__mudpy__')
+        else:
+            self.publisher = observer.Observer()
+
+        self.publisher.on('tick', self.tick)
+
         super(Actor, self).__init__()
 
         self.equipped = dict((position, None) for position in ['light',
@@ -144,7 +151,7 @@ class Actor(wireframe.Blueprint):
         self.affects.append(aff)
 
         if aff.timeout > -1:
-            __main__.__mudpy__.on('tick', aff.countdown_timeout)
+            self.publisher.on('tick', aff.countdown_timeout)
             aff.on('end', self._end_affect)
 
     def set_target(self, target=None):
@@ -165,7 +172,7 @@ class Actor(wireframe.Blueprint):
             self.target.on('attack_resolution', self._normalize_stats)
 
             # calls attack rounds until target is removed
-            __main__.__mudpy__.on('pulse', self._do_regular_attacks)
+            self.publisher.on('pulse', self._do_regular_attacks)
 
     def has_enough_movement(self):
         """Return true if the user has enough movement points to leave the
@@ -394,7 +401,7 @@ class Actor(wireframe.Blueprint):
             if not self.disposition is disposition.__incapacitated__:
                 attack.round(self)
         else:
-            __main__.__mudpy__.off('pulse', self._do_regular_attacks)
+            self.publisher.off('pulse', self._do_regular_attacks)
             event.handle()
 
     def _die(self):
