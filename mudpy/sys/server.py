@@ -7,8 +7,6 @@ communication between the threads.
 import random, time, threading, socketserver
 from . import wireframe, debug, observer, client
 
-__config__ = wireframe.create("config.server")
-
 def start(publisher=None):
     """Takes a client_factory (twisted Factory implementation), and set a tcp
     endpoint for the twisted reactor. Set the method for reactor to call in a
@@ -20,10 +18,9 @@ def start(publisher=None):
     if not publisher:
         publisher = observer.Observer()
 
-    server = ThreadedTCPServer(
-            publisher,
-            (__config__['host'], __config__['port']),
-            ThreadedTCPRequestHandler)
+    config = wireframe.create("config.server")
+
+    server = ThreadedTCPServer(publisher, config)
 
     # start the server listening for clients
     server_thread = threading.Thread(target=server.serve_forever)
@@ -47,10 +44,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         """Called when a client connects."""
 
         _client = client.Client(self.request)
-        message = bytes(__config__["messages"]["connection_made"]+" ", "UTF-8")
+        message = self.server.config["messages"]["connection_made"]+" "
 
         self.server.publisher.on("cycle", _client.poll)
-        self.request.sendall(message)
+        self.request.sendall(bytes(message, "UTF-8"))
         self.server.clients[self.request] = _client
 
     def handle(self):
@@ -73,10 +70,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         publisher = self.server.publisher
         _client = self.server.clients[self.request]
-        message = bytes(__config__["messages"]["connection_lost"], "UTF-8")
+        message = self.server.config["messages"]["connection_lost"]
 
         publisher.off("cycle", _client.poll)
-        self.request.sendall(message)
+        self.request.sendall(bytes(message, "UTF-8"))
         _client.user.get_room().move_actor(_client.user)
         publisher.fire("actor_leaves_realm", _client.user)
         del self.server.clients[self.request]
@@ -89,12 +86,16 @@ class ThreadedTCPServer(socketserver.ThreadingTCPServer):
 
     allow_reuse_address = True
 
-    def __init__(self, publisher, *args):
+    def __init__(self, publisher, config):
         self.clients = {}
+        self.config = config
         self.publisher = publisher
 
         # pylint thinks socketserver.ThreadingTCPServer is an old-style class
-        socketserver.ThreadingTCPServer.__init__(self, *args)
+        socketserver.ThreadingTCPServer.__init__(
+                self,
+                (self.config['host'], self.config['port']),
+                ThreadedTCPRequestHandler)
 
     def heartbeat(self):
         """Main game loop. Fires timed interval events that observers are
@@ -112,20 +113,20 @@ class ThreadedTCPServer(socketserver.ThreadingTCPServer):
 
         """
 
-        next_pulse = time.time()+__config__['intervals']['pulse']
+        next_pulse = time.time()+self.config['intervals']['pulse']
         next_tick = time.time()+random.randint(
-            __config__['intervals']['tick']['lowbound'], \
-            __config__['intervals']['tick']['highbound'])
+            self.config['intervals']['tick']['lowbound'], \
+            self.config['intervals']['tick']['highbound'])
         while True:
             self.publisher.fire('cycle')
             if time.time() >= next_pulse:
-                next_pulse += __config__['intervals']['pulse']
+                next_pulse += self.config['intervals']['pulse']
                 self.publisher.fire('pulse')
                 self.publisher.fire('stat')
             if time.time() >= next_tick:
                 next_tick = int(time.time()+random.randint(
-                    __config__['intervals']['tick']['lowbound'], \
-                    __config__['intervals']['tick']['highbound']))
+                    self.config['intervals']['tick']['lowbound'], \
+                    self.config['intervals']['tick']['highbound']))
                 self.publisher.fire('tick')
                 rel_next_tick = int(next_tick-time.time())
                 debug.info("tick; next in "+str(rel_next_tick)+" seconds")
