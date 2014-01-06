@@ -2,9 +2,7 @@
 
 """
 
-from __future__ import division
 import random, __main__
-
 from ...sys import collection, wireframe, debug
 from .. import room, item
 from .  import disposition, attack
