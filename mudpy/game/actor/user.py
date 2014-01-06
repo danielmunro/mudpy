@@ -70,7 +70,7 @@ class User(actor.Actor):
                 description = 'has a few scratches'
             else:
                 description = 'is in excellent condition'
-            self.notify(str(self.target).title()+' '+description+'.')
+            self.notify(str(self.target).title()+' '+description+'.\n')
 
     def add_affect(self, aff):
         super(User, self).add_affect(aff)
