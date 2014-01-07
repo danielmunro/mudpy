@@ -1,3 +1,5 @@
+import random
+
 __standing__ = 'standing'
 __sitting__ = 'sitting'
 __laying__ = 'laying'
