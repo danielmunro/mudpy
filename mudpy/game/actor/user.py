@@ -125,7 +125,7 @@ class User(actor.Actor):
                         event.handle()
                 self.client.on('input', check_input)
 
-        debug.log('user logged in as '+str(self))
+        debug.log(str(self.client)+' logged in as '+str(self))
 
     def sunset(self, _event, changed):
         """Notifies the user when a calendar event happens."""

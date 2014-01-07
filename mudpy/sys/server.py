@@ -7,6 +7,8 @@ communication between the threads.
 import random, time, threading, socketserver
 from . import wireframe, debug, observer, client
 
+__ENCODING__ = "UTF-8"
+
 def start(publisher=None):
     """Takes a client_factory (twisted Factory implementation), and set a tcp
     endpoint for the twisted reactor. Set the method for reactor to call in a
@@ -43,11 +45,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         """Called when a client connects."""
 
-        _client = client.Client(self.request)
+        _client = client.Client(self.server.server_address[0], self.request)
+        debug.info(str(_client)+" connected")
         message = self.server.config["messages"]["connection_made"]+" "
 
         self.server.publisher.on("cycle", _client.poll)
-        self.request.sendall(bytes(message, "UTF-8"))
+        self.request.sendall(bytes(message, __ENCODING__))
         self.server.clients[self.request] = _client
 
     def handle(self):
@@ -63,7 +66,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         while data != b"quit":
             data = self.request.recv(1024).strip()
             _client = self.server.clients[self.request]
-            _client.input_buffer.append(data.decode("UTF-8"))
+            _client.input_buffer.append(data.decode(__ENCODING__))
 
     def finish(self):
         """Called when a client disconnects."""
@@ -72,8 +75,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         _client = self.server.clients[self.request]
         message = self.server.config["messages"]["connection_lost"]
 
+        debug.info(str(_client)+" disconnected")
         publisher.off("cycle", _client.poll)
-        self.request.sendall(bytes(message, "UTF-8"))
+        self.request.sendall(bytes(message, __ENCODING__))
         _client.user.get_room().move_actor(_client.user)
         publisher.fire("actor_leaves_realm", _client.user)
         del self.server.clients[self.request]

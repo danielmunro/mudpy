@@ -13,7 +13,8 @@ __config__ = wireframe.create("config.client")
 class Client(observer.Observer):
     """twisted client protocol, defines behavior for clients."""
 
-    def __init__(self, request):
+    def __init__(self, ip, request):
+        self.ip = ip
         self.input_buffer = []
         self.last_input = ""
         self.user = None
@@ -50,6 +51,9 @@ class Client(observer.Observer):
         self.user = user
         self.user.client = self
         user.loggedin()
+
+    def __str__(self):
+        return self.ip
     
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""

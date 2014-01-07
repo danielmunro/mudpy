@@ -7,6 +7,8 @@ __path__ = None
 wireframes = {}
 
 def preload(examine_path = "wireframes"):
+    """Setup wireframes data."""
+
     start_path = os.path.join(__path__, examine_path)
     if os.path.isdir(start_path):
         for p in os.listdir(start_path):
@@ -25,11 +27,13 @@ else:
     sys.exit()
 
 def load_areas():
+    """Load areas defined in the path."""
+
     from ..game import room
     from ..game.actor import mob, race
-    recurse(os.path.join(__path__, "areas"))
+    _load_areas(os.path.join(__path__, "areas"))
 
-def recurse(path):
+def _load_areas(path):
     """Load wireframes from initialization script, with slightly different 
     formatting than a persisted world.
     
@@ -38,11 +42,12 @@ def recurse(path):
     if os.path.isdir(path):
         for infile in os.listdir(path):
             fullpath = path+'/'+infile
-            recurse(fullpath)
+            _load_areas(fullpath)
     elif path.endswith('.yaml'):
         run(path)
 
 def run(path):
+    """Load a yaml file and optionally call a done callback."""
 
     debug.log("running "+path)
     with open(path, "r") as fp:
@@ -90,6 +95,7 @@ def create(name, subdirectory = "wireframes"):
         raise WireframeException
 
 def save(thing, subdirectory = "areas"):
+    """Persist an object."""
     
     wireframe_path = os.path.join(*[__path__]+subdirectory.split('.')+[str(thing)])+".yaml"
     thing_yaml = yaml.dump(thing)
@@ -99,6 +105,8 @@ def save(thing, subdirectory = "areas"):
         wireframes[wireframe_path] = thing_yaml
 
 def load_yaml(fp):
+    """Wrapper to load YAML data."""
+
     return yaml.load(fp)
 
 class Blueprint(observer.Observer, yaml.YAMLObject):
