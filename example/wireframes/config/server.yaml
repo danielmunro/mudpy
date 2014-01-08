@@ -1,6 +1,7 @@
 name: My Great Mud
 host: danmunro.com
 port: 8001
+encoding: "UTF-8"
 intervals:
     tick:
         lowbound: 30

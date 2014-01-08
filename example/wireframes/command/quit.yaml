@@ -3,9 +3,7 @@ name: quit
 required:
     - {property: yaml_tag, value: u!user}
 messages:
-    all: "%s disappears in a puff of smoke."
+    success_self: "Alas, all good things must come to an end."
+    success_room: "%s disappears in a puff of smoke."
 dispatches:
     - {object: get_room(), event: actor_changed}
-execute:
-    - actor.save()
-    - actor.client.disconnect()

@@ -7,22 +7,15 @@ communication between the threads.
 import random, time, threading, socketserver
 from . import wireframe, debug, observer, client
 
-__ENCODING__ = "UTF-8"
-
-def start(publisher=None):
+def start(publisher=observer.Observer()):
     """Takes a client_factory (twisted Factory implementation), and set a tcp
     endpoint for the twisted reactor. Set the method for reactor to call in a
     new thread when it starts listening for clients. This method will run the
     main game loop.
 
     """
-
-    if not publisher:
-        publisher = observer.Observer()
-
-    config = wireframe.create("config.server")
-
-    server = ThreadedTCPServer(publisher, config)
+    
+    server = ThreadedTCPServer(publisher, wireframe.create("config.server"))
 
     # start the server listening for clients
     server_thread = threading.Thread(target=server.serve_forever)
@@ -35,6 +28,9 @@ def start(publisher=None):
     # main game loop
     server.heartbeat()
 
+def _time():
+    return int(time.time())
+
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     """Server will create a handler thread for each new client request.
     Handlers are responsible for input buffering from the client, as well as
@@ -45,12 +41,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         """Called when a client connects."""
 
-        _client = client.Client(self.server.server_address[0], self.request)
-        debug.info(str(_client)+" connected")
-        message = self.server.config["messages"]["connection_made"]+" "
+        _client = client.Client(self)
 
-        self.server.publisher.on("cycle", _client.poll)
-        self.request.sendall(bytes(message, __ENCODING__))
+        debug.info(str(_client)+" connected")
+        self.write(self.server.config["messages"]["connection_made"]+" ")
+
+        self.activate_client(_client)
         self.server.clients[self.request] = _client
 
     def handle(self):
@@ -62,25 +58,37 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         """
 
         data = b""
+        _client = self.server.clients[self.request]
 
-        while data != b"quit":
-            data = self.request.recv(1024).strip()
-            _client = self.server.clients[self.request]
-            _client.input_buffer.append(data.decode(__ENCODING__))
+        while data != "quit":
+            data = _client.read()
+            if data:
+                _client.input_buffer.append(data)
+
+    def write(self, message):
+        self.request.sendall(bytes(message, self.server.config["encoding"]))
 
     def finish(self):
         """Called when a client disconnects."""
-
-        publisher = self.server.publisher
+        
         _client = self.server.clients[self.request]
-        message = self.server.config["messages"]["connection_lost"]
+        publisher = self.server.publisher
 
         debug.info(str(_client)+" disconnected")
-        publisher.off("cycle", _client.poll)
-        self.request.sendall(bytes(message, __ENCODING__))
+        self.write(self.server.config["messages"]["connection_lost"])
+
         _client.user.get_room().move_actor(_client.user)
-        publisher.fire("actor_leaves_realm", _client.user)
+        _client.user.save()
+        self.deactivate_client(_client)
+        _client.user.fire("actor_leaves_realm", _client.user)
         del self.server.clients[self.request]
+
+    def activate_client(self, _client):
+        self.server.publisher.on("cycle", _client.stream_input_chunk)
+
+    def deactivate_client(self, _client):
+        self.server.publisher.off("cycle", _client.stream_input_chunk)
+
 
 class ThreadedTCPServer(socketserver.ThreadingTCPServer):
     """Game server, spins off a thread whenever a new client connects and
@@ -117,20 +125,22 @@ class ThreadedTCPServer(socketserver.ThreadingTCPServer):
 
         """
 
-        next_pulse = time.time()+self.config['intervals']['pulse']
-        next_tick = time.time()+random.randint(
-            self.config['intervals']['tick']['lowbound'], \
-            self.config['intervals']['tick']['highbound'])
+        pulse_interval = self.config['intervals']['pulse']
+        tick_lowbound = self.config['intervals']['tick']['lowbound']
+        tick_highbound = self.config['intervals']['tick']['highbound']
+
+        next_pulse = _time() + pulse_interval
+        next_tick = _time() + random.randint(tick_lowbound, tick_highbound)
+
         while True:
             self.publisher.fire('cycle')
-            if time.time() >= next_pulse:
-                next_pulse += self.config['intervals']['pulse']
+            if _time() >= next_pulse:
+                next_pulse += pulse_interval
                 self.publisher.fire('pulse')
                 self.publisher.fire('stat')
-            if time.time() >= next_tick:
-                next_tick = int(time.time()+random.randint(
-                    self.config['intervals']['tick']['lowbound'], \
-                    self.config['intervals']['tick']['highbound']))
+            if _time() >= next_tick:
+                next_tick = _time() + \
+                        random.randint(tick_lowbound, tick_highbound)
                 self.publisher.fire('tick')
-                rel_next_tick = int(next_tick-time.time())
+                rel_next_tick = next_tick - _time()
                 debug.info("tick; next in "+str(rel_next_tick)+" seconds")

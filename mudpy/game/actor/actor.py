@@ -52,6 +52,10 @@ class Actor(wireframe.Blueprint):
         self.proficiencies = {}
         self.attacks = ['reg']
         self.last_command = None
+        self.equipped = dict((position, None) for position in ['light',
+            'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
+            'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
+            'wield0', 'wield1', 'float'])
 
         if '__mudpy__' in dir(__main__):
             self.publisher = getattr(__main__, '__mudpy__')
@@ -61,11 +65,6 @@ class Actor(wireframe.Blueprint):
         self.publisher.on('tick', self.tick)
 
         super(Actor, self).__init__()
-
-        self.equipped = dict((position, None) for position in ['light',
-            'finger0', 'finger1', 'neck0', 'neck1', 'body', 'head', 'legs',
-            'feet', 'hands', 'arms', 'torso', 'waist', 'wrist0', 'wrist1',
-            'wield0', 'wield1', 'float'])
 
     def get_room(self, direction=""):
         """Returns the current room the actor is in."""

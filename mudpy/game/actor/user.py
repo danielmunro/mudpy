@@ -1,4 +1,4 @@
-import time, __main__
+import time
 from . import actor, disposition
 from .. import room, command
 from ...sys import wireframe, debug
@@ -35,7 +35,6 @@ class User(actor.Actor):
         self.observers = {}
         self.role = 'player'
         super(User, self).__init__()
-        __main__.__mudpy__.fire('actor_enters_realm', self)
 
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -97,11 +96,16 @@ class User(actor.Actor):
 
         """
 
-        __main__.__mudpy__.fire("actor_enters_realm", self)
+        def _unlisten_tick(*args):
+            self.publisher.off('tick', self.tick)
+
+        self.on('actor_leaves_realm', _unlisten_tick)
+
+        self.publisher.fire("actor_enters_realm", self)
 
         # on server events
-        __main__.__mudpy__.on('stat', self.stat)
-        __main__.__mudpy__.on('cycle', self._update_delay)
+        self.publisher.on('stat', self.stat)
+        self.publisher.on('cycle', self._update_delay)
 
         self.on('attacked', self._attacked)
         self.on('action', self._check_if_incapacitated)
@@ -185,13 +189,13 @@ class User(actor.Actor):
 
         if self.delay_counter > 0:
             if not self.last_delay:
-                __main__.__mudpy__.off('cycle', self.client.poll)
+                self.publisher.off('cycle', self.client.stream_input_chunk)
             currenttime = int(time.time())
             if currenttime > self.last_delay:
                 self.delay_counter -= 1
                 self.last_delay = currenttime
         elif self.last_delay:
-            __main__.__mudpy__.on('cycle', self.client.poll)
+            self.publisher.on('cycle', self.client.stream_input_chunk)
             self.last_delay = 0
 
     def _check_if_incapacitated(self, event, _action):
