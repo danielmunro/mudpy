@@ -15,6 +15,10 @@ def check_input(event, user, args):
 
     event.handle()
 
+def do(actor, command_name, args=[]):
+    command = wireframe.create("command."+command_name)
+    command.run(actor, args)
+
 def move(actor, direction):
     """Try to move the actor in the given direction."""
 
