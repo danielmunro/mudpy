@@ -5,7 +5,7 @@ class Ability(wireframe.Blueprint):
     """Represents something cool an actor can do. Invoked when the hook is
     triggered on the parent actor. Applies costs in the costs dict, and affects
     in the affects list.
-    
+
     """
 
     yaml_tag = "u!ability"
@@ -19,7 +19,7 @@ class Ability(wireframe.Blueprint):
         self.hook = ""
         self.aggro = False
         self.messages = {}
-    
+
     def try_perform(self, invoker, args):
         """Parses the user input, finds a target, applies the ability cost,
         and invokes the ability.
@@ -35,8 +35,8 @@ class Ability(wireframe.Blueprint):
         if not receiver:
             receiver = invoker
         if self.apply_cost(invoker):
-            invoker.delay_counter += self.delay + 1
             success = random.randint(0, 1)
+            self.fire('perform')
             if success:
                 self.perform(receiver)
             else:
@@ -51,7 +51,7 @@ class Ability(wireframe.Blueprint):
 
         for affectname in self.affects:
             receiver.add_affect(wireframe.create(affectname))
-    
+
     def apply_cost(self, invoker):
         """Iterates over the cost property, checks that all requirements are
         met, applies each cost, then returns true. If costs cannot be met by
@@ -69,6 +69,6 @@ class Ability(wireframe.Blueprint):
             cost *= curattr if cost > 0 and cost < 1 else 1
             setattr(invoker, 'cur'+attr, curattr-cost)
         return True
-    
+
     def __str__(self):
         return self.name

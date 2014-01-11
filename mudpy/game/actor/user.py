@@ -28,7 +28,7 @@ class User(actor.Actor):
 
     def __init__(self):
         self.delay_counter = 0
-        self.last_delay = 0
+        self.delayed = 0
         self.trains = 5
         self.practices = 5
         self.client = None
@@ -68,7 +68,6 @@ class User(actor.Actor):
         def _unlisten_tick(*_args):
             self.publisher.off('tick', self.tick)
 
-
         def _stat(*_args):
             """Notifies the user of the target's status (if any) and supplies a
             fresh prompt.
@@ -93,7 +92,6 @@ class User(actor.Actor):
                     description = 'is in excellent condition'
                 self.notify(str(self.target).title()+' '+description+'.')
 
-
         def _update_delay(*_args):
             """Removes the client from polling for input if the user has a delay
             applied to it.
@@ -101,16 +99,13 @@ class User(actor.Actor):
             """
 
             if self.delay_counter > 0:
-                if not self.last_delay:
+                if not self.delayed:
                     self.publisher.off('cycle', self.client.stream_input_chunk)
-                currenttime = int(time.time())
-                if currenttime > self.last_delay:
-                    self.delay_counter -= 1
-                    self.last_delay = currenttime
-            elif self.last_delay:
+                    self.delayed = True
+                self.delay_counter -= 1
+            elif self.delayed:
                 self.publisher.on('cycle', self.client.stream_input_chunk)
-                self.last_delay = 0
-
+                self.delayed = False
 
         def _check_if_incapacitated(event, *_args):
             """Don't let the actor do anything if they are incapacitated."""
@@ -119,11 +114,10 @@ class User(actor.Actor):
                 self.notify(__config__['messages']['incapacitated'])
                 event.handle()
 
-
-        def _add_delay(_event, ability):
+        def _add_delay(event):
             """Applies delay to the user when performing an ability."""
 
-            self.delay_counter += ability.delay+1
+            self.delay_counter += event.publisher.delay
 
         def _announce_arrival(event, logged_in):
             self.notify(actor.__config__['messages'][event.name] % str(logged_in).title())
@@ -140,7 +134,7 @@ class User(actor.Actor):
         self.publisher.fire('actor_enters_realm', self)
 
         self.publisher.on('stat', _stat)
-        self.publisher.on('cycle', _update_delay)
+        self.publisher.on('pulse', _update_delay)
         self.publisher.on('actor_enters_realm', _announce_arrival)
 
         self.get_room().arriving(self)
