@@ -42,9 +42,7 @@ class User(actor.Actor):
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
 
     def notify(self, message="", add_prompt=True):
-        if self.client.user:
-            self.client.write(str(message)+"\n"+("\n"+self.prompt() if add_prompt \
-                    else ""))
+        self.client.write(str(message)+"\n"+("\n"+self.prompt() if add_prompt else ""))
 
     def add_affect(self, aff):
         super(User, self).add_affect(aff)
