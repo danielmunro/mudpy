@@ -6,24 +6,16 @@ dungeons, and more.
 
 from ..sys import wireframe, collection, debug
 from . import item
-import random, __main__
+import random
 
 __rooms__ = {}
 __areas__ = {}
 __config__ = wireframe.create("config.room")
-__auto_room_name__ = 1
 
 __LOCATION_OUTSIDE__ = "outside"
 
-def auto_room_name():
-    global __auto_room_name__
-    while __auto_room_name__ in __rooms__:
-        __auto_room_name__ = __auto_room_name__ + 1
-    return __auto_room_name__
-
-
-def get(room_name, direction = ""):
-    _room = __rooms__[room_name]
+def get(room_id, direction = ""):
+    _room = __rooms__[room_id]
     if direction:
         if direction in _room.directions:
             _room = _room.directions[direction]
@@ -41,9 +33,8 @@ def copy(start_room, direction):
     new_room.long_desc = start_room.long_desc
     new_room.area = start_room.area
     new_room.lit = start_room.lit
-    new_room.name = auto_room_name()
-    new_room.directions[Direction.get_reverse(direction)] = start_room.name
-    start_room.directions[direction] = new_room.name
+    new_room.directions[Direction.get_reverse(direction)] = start_room.id
+    start_room.directions[direction] = new_room.id
 
     __rooms__[new_room.name] = new_room
     start_room.get_area().rooms.append(new_room)
@@ -64,20 +55,19 @@ class Room(wireframe.Blueprint):
         self.directions = {}
         self.area = ''
         self.lit = True
-        super(Room, self).__init__()
+        super().__init__()
 
     def done_init(self):
         for mob in self.mobs():
-            #__main__.__mudpy__.fire("actor_enters_realm", mob)
             self.arriving(mob)
-            mob.start_room = self.name
+            mob.start_room = self.id
 
     def get_area(self):
         return area(self.area)
 
     def get_actor(self, name):
         return collection.find(name, self.actors)
-    
+
     def announce(self, messages, add_prompt = True):
         """Will take a message and convey it to the various actors in the
         room. Any updates at the room level will be broadcasted through
@@ -97,7 +87,7 @@ class Room(wireframe.Blueprint):
         if generalMessage:
             for actor in list(set(self.actors) - set(announcedActors)):
                 actor.notify(generalMessage, add_prompt)
-    
+
     def mobs(self):
         from .actor.mob import Mob
         return list(actor for actor in self.actors if isinstance(actor, Mob))
@@ -108,8 +98,8 @@ class Room(wireframe.Blueprint):
         newRoom.long_desc = self.long_desc
         newRoom.area = self.area
         for direction in Direction.get_all():
-            if not direction.name in self.directions:
-                self.directions[direction.name] = None
+            if not direction.id in self.directions:
+                self.directions[direction.id] = None
         return newRoom
 
     def move_actor(self, actor, direction = None):
@@ -118,7 +108,7 @@ class Room(wireframe.Blueprint):
             if direction:
                 new_room = get(self.directions[direction])
                 debug.log(str(actor)+" moves to "+new_room.short_desc+\
-                        " ("+str(new_room.name)+")")
+                        " ("+str(new_room.id)+")")
                 new_room.arriving(actor, Direction.get_reverse(direction))
 
     def leaving(self, actor, direction = ""):
@@ -133,8 +123,8 @@ class Room(wireframe.Blueprint):
         if not handled:
             if not actor in self.actors:
                 self.actors.append(actor)
-            actor.room = self.name
-    
+            actor.room = self.id
+
     @classmethod
     def to_yaml(self, dumper, thing):
         from .actor import mob
@@ -144,7 +134,7 @@ class Room(wireframe.Blueprint):
         return super(Room, self).to_yaml(dumper, persist)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.id)
 
 class Dungeon(wireframe.Blueprint):
 
@@ -155,6 +145,7 @@ class Dungeon(wireframe.Blueprint):
         self.size = 0
         self.lit = False
         self.directions = {}
+        super().__init__()
 
     def done_init(self):
         self.room = Room()
@@ -163,10 +154,10 @@ class Dungeon(wireframe.Blueprint):
         self.room.long_desc = self.long_desc
         self.room.area = self.area
         self.room.directions = self.directions
-        __rooms__[self.room.name] = self.room
+        __rooms__[self.room.id] = self.room
         self.room.get_area().rooms.append(self.room)
         self._build_dungeon()
-    
+
     def _build_dungeon(self, existing_room = None, room_count = 1):
         if room_count < self.size:
             origin_room = existing_room if existing_room else self.room
@@ -194,10 +185,10 @@ class Dungeon(wireframe.Blueprint):
 
 class Grid(Room):
     def __init__(self):
-        super(Grid, self).__init__()
+        super().__init__()
         self.counts = {}
         self.exit = 0
-    
+
     def buildDungeon(self, x = 0, y = 0, grid = []):
         ylen = len(grid)
         xlen = len(grid[0])
@@ -221,7 +212,7 @@ class Grid(Room):
                 __rooms__[room_key].directions[globals()[class_name].reverse]=\
                                                         grid[rand_y][rand_x]
                 exit = None
-    
+
     def setIfEmpty(self, direction, roomToSet):
         rdir = globals()[direction.title()].reverse
         if self.directions[direction] is None:
@@ -248,7 +239,7 @@ class Direction(object):
         for _direction in ["north", "south", "east", "west", "up", "down"]:
             if _direction.startswith(direction):
                 return _direction
-    
+
     @staticmethod
     def get_random(allowed_directions = []):
         return random.choice(allowed_directions if allowed_directions else \
@@ -296,7 +287,7 @@ class Area(wireframe.Blueprint):
         from . import actor
         __areas__[self.name] = self
         for room in self.rooms:
-            __rooms__[room.name] = room
+            __rooms__[room.id] = room
             room.area = self.name
             room.done_init()
 

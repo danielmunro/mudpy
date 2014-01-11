@@ -3,7 +3,7 @@ location: ''
 name: midgaard_sewer
 rooms:
 - !<u!dungeon>
-  name: 7
+  id: 7
   short_desc: Underneath the market square
   long_desc: A dark and smelly sewer system lies before you.
   size: 20

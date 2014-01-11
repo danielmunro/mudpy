@@ -11,5 +11,5 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: purgatory
+  id: purgatory
   short_desc: Purgatory

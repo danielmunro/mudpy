@@ -51,7 +51,7 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: 1
+  id: 1
   short_desc: Temple of Midgaard
 - !<u!room>
   actors: []
@@ -62,7 +62,7 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: 2
+  id: 2
   short_desc: The Temple Altar
 - !<u!room>
   actors: []
@@ -74,7 +74,7 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: 3
+  id: 3
   short_desc: The Temple Courtyard
 - !<u!room>
   actors: []
@@ -85,7 +85,7 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: 4
+  id: 4
   short_desc: The Market Square
 - !<u!room>
   actors: []
@@ -96,7 +96,7 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: 5
+  id: 5
   short_desc: The Common Square
 - !<u!room>
   actors: []
@@ -107,6 +107,6 @@ rooms:
     item_count: {}
     items: []
   lit: true
-  name: 6
+  id: 6
   short_desc: Underneath the market square
 terrain: urban

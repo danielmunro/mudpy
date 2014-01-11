@@ -1,7 +1,7 @@
 """Wireframes module."""
 
 from . import debug, observer
-import os, yaml, sys
+import os, yaml, sys, uuid
 
 __path__ = None
 wireframes = {}
@@ -34,9 +34,9 @@ def load_areas():
     _load_areas(os.path.join(__path__, "areas"))
 
 def _load_areas(path):
-    """Load wireframes from initialization script, with slightly different 
+    """Load wireframes from initialization script, with slightly different
     formatting than a persisted world.
-    
+
     """
 
     if os.path.isdir(path):
@@ -82,7 +82,7 @@ def create(name, subdirectory = "wireframes"):
     Eg:
 
     race = create("gnome") # returns a new gnome race to assign to an actor
-    
+
     """
 
     wireframe_path = os.path.join(*[__path__]+subdirectory.split('.')+name.split('.'))+".yaml"
@@ -96,7 +96,7 @@ def create(name, subdirectory = "wireframes"):
 
 def save(thing, subdirectory = "areas"):
     """Persist an object."""
-    
+
     wireframe_path = os.path.join(*[__path__]+subdirectory.split('.')+[str(thing)])+".yaml"
     thing_yaml = yaml.dump(thing)
     with open(wireframe_path, "w") as fp:
@@ -112,7 +112,7 @@ def load_yaml(fp):
 class Blueprint(observer.Observer, yaml.YAMLObject):
 
     def __init__(self):
-        self.id = 0
+        self.id = uuid.uuid4()
         self.name = "noop"
         self.short_desc = "A noop is here."
         self.long_desc = "A noop is here, from the land of Noops. It seems out of place."
