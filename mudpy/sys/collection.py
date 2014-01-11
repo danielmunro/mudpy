@@ -17,6 +17,6 @@ def execute(needle, haystack, matching):
     n = str(needle).lower()
 
     if matching:
-        return next((i for i in haystack if str(i).lower().find(n) > 0), None)
+        return next((i for i in haystack if str(i).lower().find(n) >= 0), None)
     else:
         return next((i for i in haystack if str(i).lower().find(n) == 0), None)

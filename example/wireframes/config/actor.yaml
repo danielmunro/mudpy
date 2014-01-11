@@ -13,3 +13,4 @@ messages:
     recover_from_incapacitation: You suddenly feel a bit better.
     qualifies_for_level: "You qualify to level up!"
     experience_gain: "You gained %d experience points."
+    actor_enters_realm: "%s has entered the realm."

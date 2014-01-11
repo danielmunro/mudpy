@@ -26,10 +26,8 @@ class Client(observer.Observer):
 
         def _loggedin(_event, user):
             self.off("input", self.login.step)
-            self.on("input", user.input)
             self.user = user
-            self.user.client = self
-            user.loggedin()
+            user.loggedin(self)
 
         def _input_unhandled(*_args):
             if self.user:
@@ -63,7 +61,7 @@ class Client(observer.Observer):
 
     def __str__(self):
         return self.request_handler.client_address[0]
-    
+
 class Login(observer.Observer):
     """Login class, encapsulates relatively procedural login steps."""
 
@@ -72,7 +70,7 @@ class Login(observer.Observer):
         self.done = []
         self.newuser = None
         super(Login, self).__init__()
-    
+
     def step(self, event, client, data):
         """Called for each successive step of the login/alt creation
         process.
@@ -95,7 +93,7 @@ class Login(observer.Observer):
                 #user.client = client
                 client.fire("loggedin", user)
                 return
-            self.newuser = actor.user.User()
+            self.newuser = actor.user.User(client)
             #self.newuser.client = client
             self.newuser.name = data
             client.write(__config__["messages"]["creation_race_query"]+" ")
@@ -109,7 +107,7 @@ class Login(observer.Observer):
                 raise LoginException(__config__["messages"]["creation_race_not_valid"])
 
             client.write(__config__["messages"]["creation_alignment_query"]+" ")
-        
+
         def alignment(data):
             """New alts need an alignment."""
 

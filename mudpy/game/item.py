@@ -43,14 +43,14 @@ class Inventory(wireframe.Blueprint):
 
         """
 
-        msg = "\n"
+        msg = ""
         for i in iter(self.items):
             item_name = str(i)
             msg += ("("+str(self.item_count[item_name])+") " if \
                     self.item_count[item_name] > 1 else "")+ \
                     item_name[0].upper()+item_name[1:]+ \
                     append_to_name+"\n"
-        return msg.strip()
+        return "\n"+msg.strip()
 
     def get_weight(self):
         """Return the sum total weight of the items in the inventory."""

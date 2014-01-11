@@ -47,35 +47,11 @@ class User(actor.Actor):
             self.client.write(str(message)+"\n"+("\n"+self.prompt() if add_prompt \
                     else ""))
 
-    def stat(self, _event = None):
-        """Notifies the user of the target's status (if any) and supplies a
-        fresh prompt.
-
-        """
-
-        if self.target:
-            hp_percent = self.target.curhp / self.target.get_attribute('hp')
-            if hp_percent < 0.1:
-                description = 'is in awful condition'
-            elif hp_percent < 0.15:
-                description = 'looks pretty hurt'
-            elif hp_percent < 0.30:
-                description = 'has some big nasty wounds and scratches'
-            elif hp_percent < 0.50:
-                description = 'has quite a few wounds'
-            elif hp_percent < 0.75:
-                description = 'has some small wounds and bruises'
-            elif hp_percent < 0.99:
-                description = 'has a few scratches'
-            else:
-                description = 'is in excellent condition'
-            self.notify(str(self.target).title()+' '+description+'.')
-
     def add_affect(self, aff):
         super(User, self).add_affect(aff)
         self.notify(aff.messages['start']['self'])
 
-    def tick(self, _event = None):
+    def tick(self, _event=None):
         super(User, self).tick()
         self.notify()
 
@@ -83,32 +59,89 @@ class User(actor.Actor):
         super(User, self).level_up()
         self.notify(actor.__config__['messages']['level_up'])
 
-    def perform_ability(self, ability):
-        """Applies delay to the user when performing an ability."""
-        self.delay_counter += ability.delay+1
-
-    def input(self, event, subscriber, args):
-        return command.check_input(event, subscriber, args)
-
-    def loggedin(self):
+    def loggedin(self, client):
         """Miscellaneous setup tasks for when a user logs in. Nothing too
         exciting.
 
         """
 
-        def _unlisten_tick(*args):
+        def _unlisten_tick(*_args):
             self.publisher.off('tick', self.tick)
 
+
+        def _stat(*_args):
+            """Notifies the user of the target's status (if any) and supplies a
+            fresh prompt.
+
+            """
+
+            if self.target:
+                hp_percent = self.target.curhp / self.target.get_attribute('hp')
+                if hp_percent < 0.1:
+                    description = 'is in awful condition'
+                elif hp_percent < 0.15:
+                    description = 'looks pretty hurt'
+                elif hp_percent < 0.30:
+                    description = 'has some big nasty wounds and scratches'
+                elif hp_percent < 0.50:
+                    description = 'has quite a few wounds'
+                elif hp_percent < 0.75:
+                    description = 'has some small wounds and bruises'
+                elif hp_percent < 0.99:
+                    description = 'has a few scratches'
+                else:
+                    description = 'is in excellent condition'
+                self.notify(str(self.target).title()+' '+description+'.')
+
+
+        def _update_delay(*_args):
+            """Removes the client from polling for input if the user has a delay
+            applied to it.
+
+            """
+
+            if self.delay_counter > 0:
+                if not self.last_delay:
+                    self.publisher.off('cycle', self.client.stream_input_chunk)
+                currenttime = int(time.time())
+                if currenttime > self.last_delay:
+                    self.delay_counter -= 1
+                    self.last_delay = currenttime
+            elif self.last_delay:
+                self.publisher.on('cycle', self.client.stream_input_chunk)
+                self.last_delay = 0
+
+
+        def _check_if_incapacitated(event, *_args):
+            """Don't let the actor do anything if they are incapacitated."""
+
+            if self.disposition == disposition.__incapacitated__:
+                self.notify(__config__['messages']['incapacitated'])
+                event.handle()
+
+
+        def _add_delay(_event, ability):
+            """Applies delay to the user when performing an ability."""
+
+            self.delay_counter += ability.delay+1
+
+        def _announce_arrival(event, logged_in):
+            self.notify(actor.__config__['messages'][event.name] % str(logged_in).title())
+
+        def _input(event, input_user, args):
+            return command.check_input(event, input_user, args)
+
+        self.client = client
+        self.client.on('input', _input)
+
         self.on('actor_leaves_realm', _unlisten_tick)
+        self.on('action', _check_if_incapacitated)
 
-        self.publisher.fire("actor_enters_realm", self)
+        self.publisher.fire('actor_enters_realm', self)
 
-        # on server events
-        self.publisher.on('stat', self.stat)
-        self.publisher.on('cycle', self._update_delay)
-
-        self.on('attacked', self._attacked)
-        self.on('action', self._check_if_incapacitated)
+        self.publisher.on('stat', _stat)
+        self.publisher.on('cycle', _update_delay)
+        self.publisher.on('actor_enters_realm', _announce_arrival)
 
         self.get_room().arriving(self)
 
@@ -116,9 +149,9 @@ class User(actor.Actor):
 
         # on listeners to client input for abilities
         for ability in self.get_abilities():
-            ability.on('perform', self.perform_ability)
+            ability.on('perform', _add_delay)
             if ability.hook == 'input':
-                def check_input(event, user, args):
+                def _check_input(event, user, args):
                     """Checks if the user is trying to perform an ability with
                     a given input.
 
@@ -127,7 +160,7 @@ class User(actor.Actor):
                     if ability.name.startswith(args[0]):
                         ability.try_perform(self, args[1:])
                         event.handle()
-                self.client.on('input', check_input)
+                self.client.on('input', _check_input)
 
         debug.log(str(self.client)+' logged in as '+str(self))
 
@@ -156,9 +189,6 @@ class User(actor.Actor):
         else:
             wireframe.save(self, "data.users")
 
-    def _attacked(self, event, attacker):
-        pass
-
     def _end_affect(self, _event, affect):
         super(User, self)._end_affect(_event, affect)
         self.notify(affect.messages['end']['self'])
@@ -180,30 +210,6 @@ class User(actor.Actor):
         self.room = room.__config__['start_room']
         self.get_room().arriving(self)
         self.notify(actor.__config__['messages']['died'])
-
-    def _update_delay(self, _event = None):
-        """Removes the client from polling for input if the user has a delay
-        applied to it.
-
-        """
-
-        if self.delay_counter > 0:
-            if not self.last_delay:
-                self.publisher.off('cycle', self.client.stream_input_chunk)
-            currenttime = int(time.time())
-            if currenttime > self.last_delay:
-                self.delay_counter -= 1
-                self.last_delay = currenttime
-        elif self.last_delay:
-            self.publisher.on('cycle', self.client.stream_input_chunk)
-            self.last_delay = 0
-
-    def _check_if_incapacitated(self, event, _action):
-        """Don't let the actor do anything if they are incapacitated."""
-
-        if self.disposition == disposition.__incapacitated__:
-            self.notify(__config__['messages']['incapacitated'])
-            event.handle()
 
     @classmethod
     def to_yaml(self, dumper, thing):
