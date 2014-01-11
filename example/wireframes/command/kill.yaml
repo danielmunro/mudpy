@@ -1,10 +1,15 @@
 !<u!command>
 name: kill
 messages:
-    target_not_found: "They aren't here."
     success_self: "You scream and attack!"
     success_room: "%s screams and attacks %s!"
 required:
-    - {property: target, value: false, fail: "You're already fighting!"}
+    - property: target
+      value: false
+      fail: "You're already fighting!"
+      key: current_target
+    - property: get_room().get_actor(args[0])
+      fail: "They aren't here."
+      key: new_target
 execute:
-    - kill(actor, args[0])
+    - kill(actor)

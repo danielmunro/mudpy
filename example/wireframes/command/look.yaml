@@ -2,7 +2,10 @@
 name: look
 messages:
     cannot_see_actors_in_room: "You see glowing red eyes."
+    look_at_nothing: "You don't see that."
 required:
-    - {property: disposition, value: [standing, sitting], fail: "You need to be %s to do that."}
+    - property: disposition
+      value: [standing, sitting]
+      fail: "You need to be %s to do that."
 execute:
-    - look(actor)
+    - look(actor, args)

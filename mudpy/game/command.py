@@ -21,47 +21,42 @@ def move(actor, direction):
     actor.curmovement -= actor._get_movement_cost()
     actor.get_room().move_actor(actor, direction)
 
-def look(actor, _args = []):
+def look(actor, args = []):
     _room = actor.get_room()
-    if len(_args) <= 1:
+    if len(args) == 0:
         can_see = actor.can_see()
         if can_see:
             msg = "%s\n%s\n" % (_room.short_desc, _room.long_desc)
         else:
             msg = "You can't see anything, it's pitch black!"
-        msg += "\n[Exits %s]\n" % (
-                "".join(direction[:1] for direction, room in 
+        msg += "\n[Exits %s]" % (
+                "".join(direction[:1] for direction, room in
                     _room.directions.items() if room))
-        if _room.actors:
+        if len(_room.actors) > 1:
             if can_see:
-                msg += "".join(
-                    str(_actor).capitalize()+" the "+str(_actor.race)+" is "+_actor.disposition+" here.\n"
+                msg += "\n"+"\n".join(
+                    str(_actor).capitalize()+" the "+str(_actor.race)+" is "+_actor.disposition+" here."
                         for _actor in _room.actors if _actor is not actor)
             else:
-                """
-                msg += \
-                actor.last_command.messages["cannot_see_actors_in_room"]+"\n"
-                """
-                pass
+                msg += actor.last_command.messages["cannot_see_actors_in_room"]
         msg += _room.inventory.inspection(" is here.")
     else:
-        from . import collection
-        looking_at = collection.find(_args, actor.inventory.items)
-        if not looking_at:
-            looking_at = collection.find(_args, _room.inventory.items)
-        if not looking_at:
-            looking_at = _room.get_actor(_args)
+        from ..sys import collection
+
+        looking_at = collection.match(args[0], actor.inventory.items + _room.inventory.items + _room.actors)
+
         if looking_at:
             msg = looking_at.long_desc
         else:
-            msg = __config__['messages']['look_at_nothing']
+            msg = actor.last_command.messages['look_at_nothing']
+
     actor.notify(msg)
 
 def affects(actor):
     """Describes the affects currently active on the user."""
 
-    actor.notify("Your affects:\n"+"\n".join(str(x)+": "+str(x.timeout)+\
-                " ticks" for x in actor.affects))
+    actor.notify("Your affects:\n"+"\n".join(str(a)+": "+str(a.timeout)+\
+                " ticks" for a in actor.affects))
 
 def equipped(user):
     """Tells the user what they have equipped."""
@@ -98,7 +93,7 @@ def score(user):
         "cha(%i/%i)\nYou are carrying %g/%i lbs\n"+\
         "You have %i trains, %i practices\n"+\
         "You are level %i with %i experience, %i to next level\n"+\
-        "Your alignment is: %s") % (user, user.race, user.curhp, 
+        "Your alignment is: %s") % (user, user.race, user.curhp,
         user.get_attribute('hp'), user.curmana,
         user.get_attribute('mana'), user.curmovement,
         user.get_attribute('movement'),
@@ -138,18 +133,15 @@ def time(user):
 
     user.notify(calendar.__instance__.get_game_time())
 
-def kill(actor, _target):
+def kill(actor):
     """Attempt to kill another actor within the same room."""
 
-    target = actor.get_room().get_actor(_target)
-    if target:
-        actor.set_target(target)
-        actor.get_room().announce({
-            actor: actor.last_command.messages['success_self'],
-            'all': actor.last_command.messages['success_room'] % (actor, target)
-        })
-    elif not target:
-        actor.notify(actor.last_command.messages['target_not_found'])
+    actor.set_target(actor.last_command.args['new_target'])
+    messages = actor.last_command.messages
+    actor.get_room().announce({
+        actor: messages['success_self'],
+        'all': messages['success_room'] % (actor, actor.target)
+    })
 
 def flee(actor):
     """Attempt to flee from a battle. This will cause the actor to flee
@@ -157,16 +149,15 @@ def flee(actor):
 
     """
 
-    if actor.target:
-        actor.end_battle()
-        actor.get_room().announce({
-            actor: actor.last_command.messages['success_self'],
-            'all': actor.last_command.messages['success_room'] % (str(actor).title())
-        })
-        move(actor, random.choice(actor.get_room().directions.keys()))
-        look(actor)
-    else:
-        actor.notify(actor.last_command.messages['no_target'])
+    actor.end_battle()
+
+    messages = actor.last_command.messages
+    actor.get_room().announce({
+        actor: messages['success_self'],
+        'all': messages['success_room'] % (str(actor).title())
+    })
+
+    move(actor, random.choice(list(actor.get_room().directions.keys())))
 
 def room(actor, args):
 
@@ -210,7 +201,7 @@ Area: %s""" % (r.name, r.short_desc, r.long_desc, "yes" if r.lit else "no", r.ar
     actor.notify(actor.last_command.messages['room_property_set'])
 
 def area(actor, args):
-     
+
     arg_len = len(args)
 
     command = args[0] if arg_len > 0 else ""
@@ -232,7 +223,7 @@ def area(actor, args):
 """
 def _command_wear(self, _invoked_command, _args):
     ""Attempt to wear a piece of equipment or a weapon from the inventory.
-    
+
     equipment = utility.match_partial(args[1], self.inventory.items)
     if equipment:
         current_eq = self.get_equipment_by_position(equipment.position)
@@ -252,7 +243,7 @@ def _command_wear(self, _invoked_command, _args):
 def _command_remove(self, invoked_command, args):
     ""Attempt to remove a worn piece of equipment or weapon.""
 
-    equipment = utility.match_partial(args[1], 
+    equipment = utility.match_partial(args[1],
         list(eq for eq in self.equipped.values() if eq))
     if equipment:
         self._set_equipment_by_position(equipment.position, None)
@@ -311,7 +302,7 @@ def _command_practice(self, invoked_command, args):
     if len(args) == 1:
         self.notify("Your proficiencies:\n" + \
                 "\n".join(name+": "+str(proficiency.level) \
-                for name, proficiency in 
+                for name, proficiency in
                     self._get_proficiencies().items()))
     elif any(mob.role == Mob.ROLE_ACOLYTE for mob in _room.mobs()):
         for prof_name, prof in self._get_proficiencies().items():
@@ -379,12 +370,13 @@ class Command(wireframe.Blueprint):
         self.messages = {}
         self.dispatches = {}
         self.post_dispatches = {}
+        self.args = {}
         self.execute = []
 
     def run(self, actor, args):
         """Takes an actor and input arguments and runs the command."""
 
-        handled = self._required_chain(actor)
+        handled = self._required_chain(actor, args)
         if handled:
             return
 
@@ -401,7 +393,7 @@ class Command(wireframe.Blueprint):
                 eval(e)
             self._fire_chain(actor, self.post_dispatches)
 
-    def _required_chain(self, actor):
+    def _required_chain(self, actor, args):
         for req in self.required:
             req_value = req['value'] if 'value' in req else True
             req_prop = req['property']
@@ -409,6 +401,8 @@ class Command(wireframe.Blueprint):
             if self._did_fail(req_value, attr):
                 self._fail(actor, req_value, req['fail'] if 'fail' in req else '')
                 return True
+            elif 'key' in req:
+                self.args[req['key']] = attr
 
     def _fire_chain(self, actor, dispatches):
         for d in dispatches:
@@ -423,7 +417,7 @@ class Command(wireframe.Blueprint):
             return (req_value and not attr) or (not req_value and attr)
         else:
             return not attr in req_value
-    
+
     def _fail(self, actor, req_value, fail):
         if '%s' in fail:
             if isinstance(req_value, list):
@@ -433,6 +427,6 @@ class Command(wireframe.Blueprint):
             actor.notify((fail) % fail_val)
         elif fail:
             actor.notify(fail)
-    
+
     def __str__(self):
         return self.name

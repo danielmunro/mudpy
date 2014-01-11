@@ -14,7 +14,7 @@ class Inventory(wireframe.Blueprint):
     def __init__(self):
         self.items = []
         self.item_count = {}
-    
+
     def append(self, item):
         """Add a new item to the bucket and keep track of how many items the
         inventory has by that name.
@@ -27,7 +27,7 @@ class Inventory(wireframe.Blueprint):
             self.item_count[k] += 1
         else:
             self.item_count[k] = 1
-    
+
     def remove(self, item):
         """Remove an item from the bucket."""
 
@@ -36,27 +36,27 @@ class Inventory(wireframe.Blueprint):
             self.item_count[str(item)] -= 1
         except ValueError:
             pass
-    
+
     def inspection(self, append_to_name = ""):
         """Slightly modified __str__ -type method, with the ability to append a
         string to each item.
 
         """
 
-        msg = ""
+        msg = "\n"
         for i in iter(self.items):
             item_name = str(i)
             msg += ("("+str(self.item_count[item_name])+") " if \
                     self.item_count[item_name] > 1 else "")+ \
                     item_name[0].upper()+item_name[1:]+ \
                     append_to_name+"\n"
-        return msg
-    
+        return msg.strip()
+
     def get_weight(self):
         """Return the sum total weight of the items in the inventory."""
 
         return sum(item.weight for item in self.items)
-    
+
     def __str__(self):
         return self.inspection()
 

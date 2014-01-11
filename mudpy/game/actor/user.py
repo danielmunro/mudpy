@@ -41,12 +41,12 @@ class User(actor.Actor):
         and movement. Not yet configurable."""
 
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
-    
+
     def notify(self, message = "", add_prompt = True):
         if self.client.user:
-            self.client.write(str(message)+"\n"+(self.prompt() if add_prompt \
+            self.client.write(str(message)+"\n"+("\n"+self.prompt() if add_prompt \
                     else ""))
-    
+
     def stat(self, _event = None):
         """Notifies the user of the target's status (if any) and supplies a
         fresh prompt.
@@ -69,16 +69,16 @@ class User(actor.Actor):
                 description = 'has a few scratches'
             else:
                 description = 'is in excellent condition'
-            self.notify(str(self.target).title()+' '+description+'.\n')
+            self.notify(str(self.target).title()+' '+description+'.')
 
     def add_affect(self, aff):
         super(User, self).add_affect(aff)
         self.notify(aff.messages['start']['self'])
-    
+
     def tick(self, _event = None):
         super(User, self).tick()
         self.notify()
-    
+
     def level_up(self):
         super(User, self).level_up()
         self.notify(actor.__config__['messages']['level_up'])
@@ -157,30 +157,30 @@ class User(actor.Actor):
             wireframe.save(self, "data.users")
 
     def _attacked(self, event, attacker):
-        self.notify("%s screams and attacks!" % attacker)
+        pass
 
     def _end_affect(self, _event, affect):
         super(User, self)._end_affect(_event, affect)
         self.notify(affect.messages['end']['self'])
-    
+
     def _normalize_stats(self, _event = None, _args = None):
         if self.curhp < -9:
             self._die()
-        elif self.curhp <= 0:
+        elif self.curhp <= 0 and self.disposition != disposition.__incapacitated__:
             self.disposition = disposition.__incapacitated__
-            self.notify(actor.__config__['messages']['incapacitated'])
+            self.notify(actor.__config__['messages']['incapacitated'], False)
         elif self.disposition == disposition.__incapacitated__ and self.curhp > 0:
             self.disposition = disposition.__laying__
             self.notify(actor.__config__['messages']['recover_from_incapacitation'])
         super(User, self)._normalize_stats()
-    
+
     def _die(self):
         super(User, self)._die()
         self.get_room().leaving(self)
         self.room = room.__config__['start_room']
         self.get_room().arriving(self)
         self.notify(actor.__config__['messages']['died'])
-    
+
     def _update_delay(self, _event = None):
         """Removes the client from polling for input if the user has a delay
         applied to it.
