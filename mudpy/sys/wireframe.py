@@ -116,7 +116,7 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         self.name = "noop"
         self.short_desc = "A noop is here."
         self.long_desc = "A noop is here, from the land of Noops. It seems out of place."
-        super(Blueprint, self).__init__()
+        super().__init__()
 
     @classmethod
     def from_yaml(cls, loader, node):
