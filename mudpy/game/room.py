@@ -284,7 +284,6 @@ class Area(wireframe.Blueprint):
         super(Area, self).__init__()
 
     def done_init(self):
-        from . import actor
         __areas__[self.name] = self
         for room in self.rooms:
             __rooms__[room.id] = room
