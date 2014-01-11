@@ -18,7 +18,8 @@ class Client(observer.Observer):
         self.input_buffer = []
         self.last_input = ""
         self.user = None
-        super(Client, self).__init__()
+        self.activated = False
+        super().__init__()
 
         self.login = Login()
 
@@ -56,6 +57,14 @@ class Client(observer.Observer):
         except IndexError:
             pass
 
+    def activate(self):
+        self.request_handler.server.publisher.on("cycle", self.stream_input_chunk)
+        self.activated = True
+
+    def deactivate(self):
+        self.request_handler.server.publisher.off("cycle", self.stream_input_chunk)
+        self.activated = False
+
     def _sender(self):
         return self.user if self.user else self
 
@@ -90,11 +99,9 @@ class Login(observer.Observer):
 
             user = actor.user.load(data)
             if user:
-                #user.client = client
                 client.fire("loggedin", user)
                 return
-            self.newuser = actor.user.User(client)
-            #self.newuser.client = client
+            self.newuser = actor.user.User()
             self.newuser.name = data
             client.write(__config__["messages"]["creation_race_query"]+" ")
 

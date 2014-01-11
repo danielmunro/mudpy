@@ -28,13 +28,12 @@ class User(actor.Actor):
 
     def __init__(self):
         self.delay_counter = 0
-        self.delayed = 0
         self.trains = 5
         self.practices = 5
         self.client = None
         self.observers = {}
         self.role = 'player'
-        super(User, self).__init__()
+        super().__init__()
 
     def prompt(self):
         """The status prompt for a user. By default, shows current hp, mana,
@@ -42,7 +41,7 @@ class User(actor.Actor):
 
         return "%i %i %i >> " % (self.curhp, self.curmana, self.curmovement)
 
-    def notify(self, message = "", add_prompt = True):
+    def notify(self, message="", add_prompt=True):
         if self.client.user:
             self.client.write(str(message)+"\n"+("\n"+self.prompt() if add_prompt \
                     else ""))
@@ -99,13 +98,11 @@ class User(actor.Actor):
             """
 
             if self.delay_counter > 0:
-                if not self.delayed:
-                    self.publisher.off('cycle', self.client.stream_input_chunk)
-                    self.delayed = True
+                if self.client.activated:
+                    self.client.deactivate()
                 self.delay_counter -= 1
-            elif self.delayed:
-                self.publisher.on('cycle', self.client.stream_input_chunk)
-                self.delayed = False
+            elif not self.client.activated:
+                self.client.activate()
 
         def _check_if_incapacitated(event, *_args):
             """Don't let the actor do anything if they are incapacitated."""
@@ -139,7 +136,7 @@ class User(actor.Actor):
 
         self.get_room().arriving(self)
 
-        command.look(self)
+        command.do(self, 'look')
 
         # on listeners to client input for abilities
         for ability in self.get_abilities():
@@ -187,7 +184,7 @@ class User(actor.Actor):
         super(User, self)._end_affect(_event, affect)
         self.notify(affect.messages['end']['self'])
 
-    def _normalize_stats(self, _event = None, _args = None):
+    def _normalize_stats(self, _event=None, _args=None):
         if self.curhp < -9:
             self._die()
         elif self.curhp <= 0 and self.disposition != disposition.__incapacitated__:

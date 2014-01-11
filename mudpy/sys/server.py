@@ -14,7 +14,7 @@ def start(publisher=observer.Observer()):
     main game loop.
 
     """
-    
+
     server = ThreadedTCPServer(publisher, wireframe.create("config.server"))
 
     # start the server listening for clients
@@ -46,7 +46,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         debug.info(str(_client)+" connected")
         self.write(self.server.config["messages"]["connection_made"]+" ")
 
-        self.activate_client(_client)
+        _client.activate()
         self.server.clients[self.request] = _client
 
     def handle(self):
@@ -70,7 +70,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def finish(self):
         """Called when a client disconnects."""
-        
+
         _client = self.server.clients[self.request]
         publisher = self.server.publisher
 
@@ -79,16 +79,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         _client.user.get_room().move_actor(_client.user)
         _client.user.save()
-        self.deactivate_client(_client)
+        _client.deactivate()
         _client.user.fire("actor_leaves_realm", _client.user)
         del self.server.clients[self.request]
-
-    def activate_client(self, _client):
-        self.server.publisher.on("cycle", _client.stream_input_chunk)
-
-    def deactivate_client(self, _client):
-        self.server.publisher.off("cycle", _client.stream_input_chunk)
-
 
 class ThreadedTCPServer(socketserver.ThreadingTCPServer):
     """Game server, spins off a thread whenever a new client connects and
