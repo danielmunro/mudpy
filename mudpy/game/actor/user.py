@@ -1,5 +1,6 @@
 import time
 from . import actor, disposition
+from . import ability # hacky, needed by wireframe parsing
 from .. import room, command
 from ...sys import wireframe, debug
 
@@ -8,7 +9,6 @@ def load(name):
     not exist, the client is trying to create a new user.
 
     """
-    from . import ability
 
     try:
         return wireframe.create(name.capitalize(), "data.users")
