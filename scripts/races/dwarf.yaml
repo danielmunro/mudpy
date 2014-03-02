@@ -1,8 +1,7 @@
 !<u!race>
 name: dwarf
 abilities:
-    - !<u!ability>
-        wireframe: ability.berserk
+    - berserk
 attributes: {cha: 12, con: 18, dex: 13, int: 14, str: 18, wis: 16}
 is_playable: true
 proficiencies: {heavy armor: 5, melee: 10, slash: 5}

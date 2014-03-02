@@ -70,8 +70,8 @@ class Event:
 
 class EventBreakoutException(Exception):
     """Observer wraps this exception in a try/catch, so it is useful for
-    breaking out of event loops if the nature of the event is that it can be
-    handled by a listener.
+    breaking out of event loops if the loop is only looking for one condition
+    to be met.
 
     """
 

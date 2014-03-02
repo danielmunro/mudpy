@@ -1,15 +1,4 @@
-"""Entry point for mud.py framework. Creates a main game observer object,
-loads game areas, and starts the server listening for connections.
+from mudpy import mud
 
-"""
-
-from mudpy.sys import wireframe, observer, server
-
-# Main game observer
-__mudpy__ = observer.Observer()
-
-# Load game areas
-wireframe.load_areas()
-
-# Start the server listening
-server.start(__mudpy__)
+if __name__ == "__main__":
+	mud.run()

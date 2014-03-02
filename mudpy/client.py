@@ -1,29 +1,21 @@
-"""mud.py client classes, hooks in with twisted via the twisted's reactor and
-mud.py's ClientFactory. Handles connection, and i/o with the client.
+"""Mudpy client classes, handles connection and i/o with the client."""
 
-"""
-
-from . import debug, observer, wireframe
-from ..game import actor
-from ..game.actor import user
-import __main__
-
-__config__ = wireframe.create("config.client")
+from . import observer, mud
+from .wireframes import user
 
 class Client(observer.Observer):
-    """twisted client protocol, defines behavior for clients."""
+    """Represents a telnet connection."""
 
     def __init__(self, ip, request):
         self.ip = ip
         self.input_buffer = []
         self.last_input = ""
-        self.user = None
         self.request = request
-        super(Client, self).__init__()
         self.login = Login()
-        self.on("loggedin", self._loggedin)
-        self.on("input", self.login.step)
-        self.on("input.__unhandled__", self._input_unhandled)
+        
+        super(Client, self).__init__()
+
+        self._setup_initial_events()
 
     def write(self, message):
         self.request.sendall(bytes(message, "UTF-8"))
@@ -35,22 +27,25 @@ class Client(observer.Observer):
         """
 
         if self.input_buffer:
-            data = self.input_buffer.pop(0)
-            if data:
-                sender = self.user if self.user else self
-                self.last_input = data if not data == "!" else self.last_input
-                return self.fire("input", sender, str(self.last_input).split(" "))
-
-    def _input_unhandled(self, _event = None, _subscriber = None, _arg = None):
-        if self.user:
-            self.user.notify(__config__["messages"]["input_not_handled"])
+            self._fire_on_input(self.input_buffer.pop(0))
 
     def _loggedin(self, _event, user):
         self.off("input", self.login.step)
         self.on("input", user.input)
-        self.user = user
-        self.user.client = self
-        user.loggedin()
+
+        def _unhandled_input(*args):
+            self.write("Eh?")
+
+        self.on("input", _unhandled_input)
+
+    def _setup_initial_events(self):
+        self.on("loggedin", self._loggedin)
+        self.on("input", self.login.step)
+
+    def _fire_on_input(self, input = ""):
+        if input:
+            self.last_input = input if not input == "!" else self.last_input
+            return self.fire("input", self, str(self.last_input).split(" "))
 
     def __str__(self):
         return self.ip
@@ -78,28 +73,27 @@ class Login(observer.Observer):
 
             """
 
-            if not actor.user.is_valid_name(data):
-                raise LoginException(__config__["messages"]["creation_name_not_valid"])
+            if not user.is_valid_name(data):
+                raise LoginException("That name is not valid. What is your name? ")
 
-            user = actor.user.load(data)
-            if user:
-                #user.client = client
-                client.fire("loggedin", user)
+            loaded_user = user.load(data)
+            if loaded_user:
+                client.fire("loggedin", loaded_user)
                 return
-            self.newuser = actor.user.User()
-            #self.newuser.client = client
+
+            self.newuser = user.User()
             self.newuser.name = data
-            client.write(__config__["messages"]["creation_race_query"]+" ")
+            client.write("New user. Choose a race. ")
 
         def race(data):
             """If a new alt, have them select a race."""
 
             try:
-                self.newuser.race = wireframe.create_from_match("race."+data)
-            except KeyError:
-                raise LoginException(__config__["messages"]["creation_race_not_valid"])
+                self.newuser.set_race(mud.safe_load("races", data))
+            except ValueError:
+                raise LoginException("That's not a valid race. Choose a race. ")
 
-            client.write(__config__["messages"]["creation_alignment_query"]+" ")
+            client.write("Are you good, neutral, or evil [g/n/e]? ")
         
         def alignment(data):
             """New alts need an alignment."""
@@ -111,10 +105,8 @@ class Login(observer.Observer):
             elif "evil".find(data) == 0:
                 self.newuser.alignment = -1000
             else:
-                raise LoginException(__config__["messages"]["creation_alignment_not_valid"])
+                raise LoginException("That's not a valid alignment. Are you good, neutral, or evil? ")
             client.fire("loggedin", self.newuser)
-            self.newuser.save()
-            debug.log("client created new user as "+str(self.newuser))
 
         step = self.todo.pop(0)
 
@@ -123,7 +115,7 @@ class Login(observer.Observer):
             self.done.append(step)
             event.handle()
         except LoginException as error:
-            client.write(error)
+            client.write(str(error))
             self.todo.insert(0, step)
 
 class LoginException(Exception):
