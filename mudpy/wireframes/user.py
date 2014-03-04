@@ -9,20 +9,44 @@ def is_valid_name(name):
 
 class User(actor.Actor):
 
+    yaml_tag = "user"
+
     def __init__(self):
+
+        self.client = None
 
         super(User, self).__init__()
 
-    def input(self, event, client, args):
-    
-        command_name = args[0]
-        command_args = args[1:]
+        self._setup_events()
 
-        command = mud.safe_load("commands", command_name)
+    def set_client(self, client):
+        
+        self.client = client
 
-        if command:
-            self._perform(command)
-            event.handle()
+        def _input(event, client, args):
+        
+            command_name = args[0]
+            command_args = args[1:]
 
-    def _perform(self, command):
-        pass
+            command = mud.safe_load("commands", command_name)
+
+            if command:
+                #self._perform(command, command_args)
+                command.run(self, command_args)
+                event.handle()
+        
+        self.client.on("input", _input)
+        self.client.on("input.__done__", self._prompt)
+
+    def notify(self, message):
+        self.client.write(message)
+
+    def _prompt(self, *_args):
+        self.client.write(("\n\n%ihp %imana %imv > ") % (self.current_stats['hp'], self.current_stats['mana'], self.current_stats['movement']))
+
+    def _setup_events(self):
+
+        def _tick(_event):
+            self._prompt()
+
+        mud.__self__.on("tick", _tick)

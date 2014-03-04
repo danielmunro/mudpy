@@ -15,7 +15,7 @@ class Client(observer.Observer):
         
         super(Client, self).__init__()
 
-        self._setup_initial_events()
+        self._setup_events()
 
     def write(self, message):
         self.request.sendall(bytes(message, "UTF-8"))
@@ -29,17 +29,18 @@ class Client(observer.Observer):
         if self.input_buffer:
             self._fire_on_input(self.input_buffer.pop(0))
 
-    def _loggedin(self, _event, user):
-        self.off("input", self.login.step)
-        self.on("input", user.input)
+    def _setup_events(self):
 
-        def _unhandled_input(*args):
-            self.write("Eh?")
+        def _loggedin(_event, user):
+            self.off("input", self.login.step)
+            user.set_client(self)
 
-        self.on("input", _unhandled_input)
+            def _unhandled_input(*args):
+                self.write("Eh?")
 
-    def _setup_initial_events(self):
-        self.on("loggedin", self._loggedin)
+            self.on("input", _unhandled_input)
+        
+        self.on("loggedin", _loggedin)
         self.on("input", self.login.step)
 
     def _fire_on_input(self, input = ""):

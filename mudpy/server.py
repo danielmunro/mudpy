@@ -127,3 +127,4 @@ class ThreadedTCPServer(socketserver.ThreadingTCPServer):
                     self._tick_low, self._tick_high))
                 self.publisher.fire('tick')
                 rel_next_tick = int(next_tick-time.time())
+                print("Tick. Next will be in "+str(rel_next_tick)+" seconds")

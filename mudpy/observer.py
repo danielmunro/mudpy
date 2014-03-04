@@ -3,14 +3,6 @@ events and states without forcing the objects to be tightly coupled.
 
 """
 
-def fire_events(event, listeners):
-    """Call a list of listeners and pass the given event to them."""
-    for fn in listeners:
-        try:
-            fn(event, *event.args)
-        except(EventBreakoutException):
-            break
-
 class Observer(object):
     """Any object that wants to notify other objects of state changes must
     inherit from Observer.
@@ -41,15 +33,32 @@ class Observer(object):
         event = Event(event_name, self, args)
 
         if event_name in self.observers:
-            fire_events(event, self.observers[event_name])
+            self._fire_events(event, self.observers[event_name])
 
         if "__any__" in self.observers:
-            fire_events(event, self.observers["__any__"])
+            self._fire_events(event, self.observers["__any__"])
 
-        if not event.handled and not event_name.endswith("__unhandled__"):
-            return self.fire(event_name+".__unhandled__", *args)
-        else:
-            return event.handled
+        if not event.handled and not self._is_framework_event(event_name):
+            self.fire(event_name+".__unhandled__", *args)
+        
+        if not self._is_framework_event(event_name):
+            self.fire(event_name+".__done__", *args)
+        
+        return event.handled
+
+    @staticmethod
+    def _is_framework_event(event_name):
+        return event_name.endswith("__")
+
+    @staticmethod
+    def _fire_events(event, listeners):
+        """Call a list of listeners and pass the given event to them."""
+        
+        for fn in listeners:
+            try:
+                fn(event, *event.args)
+            except(EventBreakoutException):
+                break
 
 class Event:
     """Convenient object to encapsulate the state of a fired event."""

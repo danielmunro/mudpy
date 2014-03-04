@@ -1,1 +1,1 @@
-from . import ability, race
+from . import ability, race, command

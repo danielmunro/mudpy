@@ -7,15 +7,16 @@ __self__ = observer.Observer()
 
 def load(path):
 
+	print("loading "+path)
 	with open(path, "r") as fp:
 		return yaml.load(fp.read())
 
 def safe_load(*path):
 	
-	path = list(path)
-	path[-1] = path[-1] + ".yaml"
+	full_path = os.path.join(__SCRIPTS_DIR__, *path)+".yaml"
+
 	try:
-		return load(os.path.join(__SCRIPTS_DIR__, *path))
+		return load(full_path)
 	except FileNotFoundError:
 		pass
 
