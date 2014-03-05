@@ -17,8 +17,6 @@ class User(actor.Actor):
 
         super(User, self).__init__()
 
-        self._setup_events()
-
     def set_client(self, client):
         
         self.client = client
@@ -31,7 +29,6 @@ class User(actor.Actor):
             command = mud.safe_load("commands", command_name)
 
             if command:
-                #self._perform(command, command_args)
                 command.run(self, command_args)
                 event.handle()
         
@@ -40,6 +37,9 @@ class User(actor.Actor):
 
     def notify(self, message):
         self.client.write(message)
+
+    def test(self):
+        self.notify("This is a test of the public broadcast system.")
 
     def _prompt(self, *_args):
         self.client.write(("\n\n%ihp %imana %imv > ") % (self.current_stats['hp'], self.current_stats['mana'], self.current_stats['movement']))

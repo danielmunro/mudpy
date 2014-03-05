@@ -29,9 +29,8 @@ class Command(wireframe.Blueprint):
             handled = self._fire_chain(actor, self.dispatches)
             if handled:
                 return
-            from .. import command
             for e in self.execute:
-                eval(e)
+                eval("actor."+e)
             self._fire_chain(actor, self.post_dispatches)
 
     def _required_chain(self, actor):

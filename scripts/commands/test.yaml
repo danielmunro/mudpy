@@ -3,4 +3,4 @@ name: test
 required:
     - {property: yaml_tag, value: u!user}
 execute:
-    - command.test(actor)
+    - test()

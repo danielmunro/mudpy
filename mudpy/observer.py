@@ -11,6 +11,7 @@ class Observer(object):
 
     def __init__(self):
         self.observers = {}
+        self._setup_events()
 
     def on(self, event, fn):
         """Attach a new listener function to a named event."""
@@ -45,6 +46,9 @@ class Observer(object):
             self.fire(event_name+".__done__", *args)
         
         return event.handled
+
+    def _setup_events(self):
+        pass
 
     @staticmethod
     def _is_framework_event(event_name):

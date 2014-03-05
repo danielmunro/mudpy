@@ -15,8 +15,6 @@ class Client(observer.Observer):
         
         super(Client, self).__init__()
 
-        self._setup_events()
-
     def write(self, message):
         self.request.sendall(bytes(message, "UTF-8"))
 
@@ -32,6 +30,7 @@ class Client(observer.Observer):
     def _setup_events(self):
 
         def _loggedin(_event, user):
+            
             self.off("input", self.login.step)
             user.set_client(self)
 

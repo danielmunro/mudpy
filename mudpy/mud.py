@@ -2,7 +2,7 @@ import os, yaml
 from . import observer
 from .wireframes import *
 
-__SCRIPTS_DIR__ = "scripts"
+__scripts_dir__ = "scripts"
 __self__ = observer.Observer()
 
 def load(path):
@@ -13,7 +13,7 @@ def load(path):
 
 def safe_load(*path):
 	
-	full_path = os.path.join(__SCRIPTS_DIR__, *path)+".yaml"
+	full_path = os.path.join(__scripts_dir__, *path)+".yaml"
 
 	try:
 		return load(full_path)

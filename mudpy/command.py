@@ -1,8 +1,5 @@
 import random
 
-def test(actor):
-    actor.notify("This is a test of the public broadcast system.")
-
 def move(actor, direction):
     """Try to move the actor in the given direction."""
 
