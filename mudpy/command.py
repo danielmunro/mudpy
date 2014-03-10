@@ -4,10 +4,10 @@ def move(actor, direction):
     """Try to move the actor in the given direction."""
 
     actor.curmovement -= actor._get_movement_cost()
-    actor.get_room().move_actor(actor, direction)
+    actor.room.move_actor(actor, direction)
 
 def look(actor, _args = []):
-    _room = actor.get_room()
+    _room = actor.room
     if len(_args) <= 1:
         can_see = actor.can_see()
         if can_see:
@@ -126,10 +126,10 @@ def time(user):
 def kill(actor, _target):
     """Attempt to kill another actor within the same room."""
 
-    target = actor.get_room().get_actor(_target)
+    target = actor.room.get_actor(_target)
     if target:
         actor.set_target(target)
-        actor.get_room().announce({
+        actor.room.announce({
             actor: actor.last_command.messages['success_self'],
             'all': actor.last_command.messages['success_room'] % (actor, target)
         })
@@ -144,11 +144,11 @@ def flee(actor):
 
     if actor.target:
         actor.end_battle()
-        actor.get_room().announce({
+        actor.room.announce({
             actor: actor.last_command.messages['success_self'],
             'all': actor.last_command.messages['success_room'] % (str(actor).title())
         })
-        move(actor, random.choice(actor.get_room().directions.keys()))
+        move(actor, random.choice(actor.room.directions.keys()))
         look(actor)
     else:
         actor.notify(actor.last_command.messages['no_target'])
@@ -167,19 +167,19 @@ def room(actor, args):
         from . import room
         direction = room.Direction.match(direction)
         if direction:
-            room.copy(actor.get_room(), direction)
+            room.copy(actor.room, direction)
             actor.notify(actor.last_command.messages['room_created'])
         else:
             actor.notify(actor.last_command.messages['room_bad_dir'])
         return
     elif command == "short_desc":
-        actor.get_room().short_desc = " ".join(args[1:])
+        actor.room.short_desc = " ".join(args[1:])
     elif command == "long_desc":
-        actor.get_room().long_desc = " ".join(args[1:])
+        actor.room.long_desc = " ".join(args[1:])
     elif command == "lit":
-        actor.get_room().lit = not actor.get_room().lit
+        actor.room.lit = not actor.room.lit
     elif command == "info":
-        r = actor.get_room()
+        r = actor.room
         actor.notify("""Room info:
 ID: %s
 Short: %s
@@ -202,13 +202,13 @@ def area(actor, args):
 
     if command == "create":
         from . import room
-        old_area = actor.get_room().get_area()
+        old_area = actor.room.get_area()
         new_area = room.Area()
         new_area.name = "_".join(args[1:])
         room.__areas__[new_area.name] = new_area
-        old_area.rooms.remove(actor.get_room())
-        new_area.rooms.append(actor.get_room())
-        actor.get_room().area = new_area.name
+        old_area.rooms.remove(actor.room)
+        new_area.rooms.append(actor.room)
+        actor.room.area = new_area.name
     else:
         actor.notify(actor.last_command.messages['area_bad_property'])
         return
@@ -254,11 +254,11 @@ def _command_get(self, invoked_command, args):
 
     ""
 
-    _item = utility.match_partial(args[1], self.get_room().inventory.items)
+    _item = utility.match_partial(args[1], self.room.inventory.items)
     if _item and _item.can_own:
-        self.get_room().inventory.remove(_item)
+        self.room.inventory.remove(_item)
         self.inventory.append(_item)
-        self.get_room().announce({
+        self.room.announce({
             self: invoked_command.messages['success_self'],
             "*": invoked_command.messages['success_room'] % (str(self).title(), _item)
         })
@@ -277,8 +277,8 @@ def _command_drop(self, invoked_command, args):
     _item = utility.match_partial(args[1], self.inventory.items)
     if _item:
         self.inventory.remove(_item)
-        self.get_room().inventory.append(_item)
-        self.get_room().announce({
+        self.room.inventory.append(_item)
+        self.room.announce({
             self: invoked_command.messages['success_self'],
             "*": invoked_command.messages['success_room'] % (str(self).title(), _item)
         })
@@ -291,7 +291,7 @@ def _command_practice(self, invoked_command, args):
 
     ""
 
-    _room = self.get_room()
+    _room = self.room
 
     if len(args) == 1:
         self.notify("Your proficiencies:\n" + \
@@ -324,7 +324,7 @@ def _command_train(self, invoked_command, args):
     if self.trains < 1:
         self.notify(invoked_command.messages['no_trains'])
         return
-    if not any(mob.role == Mob.ROLE_TRAINER for mob in self.get_room().mobs()):
+    if not any(mob.role == Mob.ROLE_TRAINER for mob in self.room.mobs()):
         self.notify(invoked_command.messages['no_trainers'])
         return
     if len(args) == 0:
@@ -343,7 +343,7 @@ def _command_train(self, invoked_command, args):
         if attr+1 <= mattr:
             setattr(self.trained_attributes, stat, getattr(self.trained_attributes, stat)+1)
             self.trains -= 1
-            self.get_room().announce({
+            self.room.announce({
                 self: invoked_command.messages['success_self'] % (stat),
                 '*': invoked_command.messages['success_room'] % (str(self).title(), stat)
             })

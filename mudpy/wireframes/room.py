@@ -2,15 +2,23 @@ from .. import wireframe
 
 class Room(wireframe.Blueprint):
 
-    def __init__(self):
+    yaml_tag = "room"
 
+    def __init__(self, publisher):
+
+        self.id = 0
         self.short_desc = "A nondescript room"
         self.long_desc = "You find yourself in a fairly uninteresting room."
-
+        self.actors = list()
+        self.lit = False
+        self.area = "noopland"
+        self.publisher = publisher
         self.directions = dict((d.name, None) for d in Direction.get_all())
 
         super(Room, self).__init__()
 
+    def get_direction(self, direction):
+        return self.directions[direction]
 
 class Direction(object):
     name = ""

@@ -12,6 +12,7 @@ class Client(observer.Observer):
         self.last_input = ""
         self.request = request
         self.login = Login()
+        self.server = None
         
         super(Client, self).__init__()
 
@@ -33,6 +34,8 @@ class Client(observer.Observer):
             
             self.off("input", self.login.step)
             user.set_client(self)
+
+            user.look()
 
             def _unhandled_input(*args):
                 self.write("Eh?")
@@ -81,7 +84,7 @@ class Login(observer.Observer):
                 client.fire("loggedin", loaded_user)
                 return
 
-            self.newuser = user.User()
+            self.newuser = user.User(client.server.publisher)
             self.newuser.name = data
             client.write("New user. Choose a race. ")
 

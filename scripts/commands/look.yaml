@@ -1,0 +1,6 @@
+!<command>
+name: look
+required:
+    - {property: disposition, value: [standing, sitting], fail: "You need to be %s to do that."}
+execute:
+    - look(args)

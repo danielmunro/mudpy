@@ -1,4 +1,4 @@
-from . import observer
+from . import observer, mud
 import yaml
 
 class Blueprint(observer.Observer, yaml.YAMLObject):
@@ -8,12 +8,13 @@ class Blueprint(observer.Observer, yaml.YAMLObject):
         self.name = "noop"
         self.short_desc = "A noop is here."
         self.long_desc = "A noop is here, from the land of Noops. It seems out of place."
+        
         super(Blueprint, self).__init__()
 
     @classmethod
     def from_yaml(cls, loader, node):
         data = loader.construct_mapping(node)
-        self = cls()
+        self = cls(mud.__instance__)
         self.__dict__.update(data)
         self.observers = {}
         return self

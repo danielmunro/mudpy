@@ -4,7 +4,7 @@ class Command(wireframe.Blueprint):
 
     yaml_tag = "command"
 
-    def __init__(self):
+    def __init__(self, publisher):
         self.name = ""
         self.action = ""
         self.required = []
@@ -12,6 +12,7 @@ class Command(wireframe.Blueprint):
         self.dispatches = {}
         self.post_dispatches = {}
         self.execute = []
+        self.publisher = publisher
 
     def run(self, actor, args):
         """Takes an actor and input arguments and runs the command."""

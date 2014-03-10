@@ -9,7 +9,7 @@ class Ability(wireframe.Blueprint):
 
     yaml_tag = "u!ability"
 
-    def __init__(self):
+    def __init__(self, _publisher):
         self.level = 0
         self.affects = []
         self.costs = {}

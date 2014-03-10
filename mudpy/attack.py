@@ -75,7 +75,7 @@ def round(aggressor, index = 0):
     verb = get_damage_verb(dam_roll)
     ucname = str(aggressor).title()
     tarname = str(aggressor.target)
-    aggressor.get_room().announce({
+    aggressor.room.announce({
         aggressor: "("+attackname+") Your "+verb+" attack "+is_hit+" "+tarname+".",
         aggressor.target: ucname+"'s "+verb+" attack "+is_hit+" you.",
         "all": ucname+"'s "+verb+" attack "+is_hit+" "+tarname+"."

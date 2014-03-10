@@ -1,4 +1,4 @@
-!<u!race>
+!<race>
 name: volare
 attributes: {cha: 18, con: 13, dex: 15, int: 16, str: 11, wis: 18}
 is_playable: true

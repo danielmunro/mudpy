@@ -5,20 +5,17 @@ communication between the threads.
 """
 
 import random, time, threading, socketserver
-from . import observer, client
+from . import client
 
 __ENCODING__ = "UTF-8"
 
-def start(publisher=None):
+def start(publisher):
     """Takes a client_factory (twisted Factory implementation), and set a tcp
     endpoint for the twisted reactor. Set the method for reactor to call in a
     new thread when it starts listening for clients. This method will run the
     main game loop.
 
     """
-
-    if not publisher:
-        publisher = observer.Observer()
 
     server = ThreadedTCPServer(publisher, 
                                     ThreadedTCPServer._host, 
@@ -43,6 +40,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         """Called when a client connects."""
 
         _client = client.Client(self.server.server_address[0], self.request)
+        _client.server = self.server
 
         self.server.publisher.on("cycle", _client.poll)
         self.request.sendall(bytes("By what name do you wish to be known? ", __ENCODING__))
@@ -71,7 +69,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         
         publisher.off("cycle", _client.poll)
         self.request.sendall(bytes("Alas, all good things must come to an end.", __ENCODING__))
-        _client.user.get_room().move_actor(_client.user)
+        _client.user.room.move_actor(_client.user)
         publisher.fire("actor_leaves_realm", _client.user)
         del self.server.clients[self.request]
 
@@ -92,7 +90,6 @@ class ThreadedTCPServer(socketserver.ThreadingTCPServer):
         self.clients = {}
         self.publisher = publisher
 
-        # pylint thinks socketserver.ThreadingTCPServer is an old-style class
         socketserver.ThreadingTCPServer.__init__(
                 self,
                 (host, port),

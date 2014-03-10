@@ -1,10 +1,6 @@
-!<u!area>
-location: outside
-name: midgaard
-rooms:
-- !<u!room>
+- !<room>
   actors:
-  - !<u!mob>
+  - !<mob>
     abilities: []
     affects: []
     aggressive: false
@@ -16,15 +12,14 @@ rooms:
     curhp: 200
     curmana: 100
     curmovement: 100
+    short_desc: Hassan the giant
     long_desc: Standing over 12 feet tall, Hassan the giant guards the temple.
     disposition: standing
     equipped: {arms: null, body: null, feet: null, finger0: null, finger1: null, float: null,
       hands: null, head: null, legs: null, light: null, neck0: null, neck1: null,
       torso: null, waist: null, wield0: null, wield1: null, wrist0: null, wrist1: null}
     experience: 0
-    inventory: !<u!inventory>
-      item_count: {}
-      items: []
+    inventory: null
     last_command: null
     level: 0
     long: null
@@ -33,80 +28,66 @@ rooms:
     name: Hassan
     practices: 0
     proficiencies: {}
-    race: !<u!race> {wireframe: race.giant}
+    race: giant
     respawn: 1
     respawn_timer: 1
     room: 1
     sex: neutral
     start_room: 1
     target: null
-    short_desc: ""
     trained_attributes: {}
     trains: 0
   area: midgaard
   long_desc: A large temple surrounds you, with sculptures of gods adorning the
     walls.
   directions: {north: 2, south: 3}
-  inventory: !<u!inventory>
-    item_count: {}
-    items: []
+  inventory: null
   lit: true
-  name: 1
+  id: 1
   short_desc: Temple of Midgaard
-- !<u!room>
+- !<room>
   actors: []
   area: midgaard
   long_desc: A temple altar is here.
   directions: {south: 1}
-  inventory: !<u!inventory>
-    item_count: {}
-    items: []
+  inventory: null
   lit: true
-  name: 2
+  id: 2
   short_desc: The Temple Altar
-- !<u!room>
+- !<room>
   actors: []
   area: midgaard
   long_desc: The temple is imposing in the distance, and a large garden is in front
     of you.
   directions: {north: 1, south: 4}
-  inventory: !<u!inventory>
-    item_count: {}
-    items: []
+  inventory: null
   lit: true
-  name: 3
+  id: 3
   short_desc: The Temple Courtyard
-- !<u!room>
+- !<room>
   actors: []
   area: midgaard
   long_desc: Markets and roads surround you.
   directions: {down: 6, north: 3, south: 5}
-  inventory: !<u!inventory>
-    item_count: {}
-    items: []
+  inventory: null
   lit: true
-  name: 4
+  id: 4
   short_desc: The Market Square
-- !<u!room>
+- !<room>
   actors: []
   area: midgaard
   long_desc: Markets and roads surround you.
   directions: {north: 4}
-  inventory: !<u!inventory>
-    item_count: {}
-    items: []
+  inventory: null
   lit: true
-  name: 5
+  id: 5
   short_desc: The Common Square
-- !<u!room>
+- !<room>
   actors: []
   area: midgaard
   long_desc: A dark and smelly sewer system lies before you.
   directions: {down: 7, up: 4}
-  inventory: !<u!inventory>
-    item_count: {}
-    items: []
+  inventory: null
   lit: true
-  name: 6
+  id: 6
   short_desc: Underneath the market square
-terrain: urban

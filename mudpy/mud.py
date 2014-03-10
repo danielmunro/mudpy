@@ -1,22 +1,18 @@
 import os, yaml
-from . import observer
-from .wireframes import *
 
-__scripts_dir__ = "scripts"
-__self__ = observer.Observer()
+__instance__ = None
 
-def load(path):
-
-	print("loading "+path)
-	with open(path, "r") as fp:
+def load(*path):
+	
+	full_path = os.path.join(__scripts_dir__, *path)+".yaml"
+	
+	with open(full_path, "r") as fp:
 		return yaml.load(fp.read())
 
 def safe_load(*path):
 	
-	full_path = os.path.join(__scripts_dir__, *path)+".yaml"
-
 	try:
-		return load(full_path)
+		return load(*path)
 	except FileNotFoundError:
 		pass
 
@@ -25,4 +21,7 @@ def run():
 	from . import server
 
 	print("running mud on port "+str(server.ThreadedTCPServer._port))
-	server.start(__self__)
+	__instance__.__rooms__ = load("rooms", "midgaard")
+	server.start(__instance__)
+
+__scripts_dir__ = "scripts"

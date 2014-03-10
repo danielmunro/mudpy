@@ -1,17 +1,16 @@
 """Mobs are creatures in the game."""
-from . import actor, disposition
-from .. import command, room
-import random, __main__
+from .. import actor, wireframe
+import random
 
-class Mob(actor.Actor):
+class Mob(actor.Actor, wireframe.Blueprint):
     """NPCs of the game, mobs are the inhabitants of the mud world."""
 
     ROLE_TRAINER = 'trainer'
     ROLE_ACOLYTE = 'acolyte'
 
-    yaml_tag = "u!mob"
+    yaml_tag = "mob"
 
-    def __init__(self):
+    def __init__(self, publisher):
         self.movement = 0
         self.movement_timer = self.movement
         self.respawn = 1
@@ -19,20 +18,21 @@ class Mob(actor.Actor):
         self.auto_flee = False
         self.start_room = None
         self.aggressive = False
-        super(Mob, self).__init__()
+        
+        super(Mob, self).__init__(publisher)
     
     def tick(self, _event):
         super(Mob, self).tick()
         if self.movement:
             self._decrement_movement_timer()
         if self.aggressive:
-            for actor in self.get_room().actors:
+            for actor in self.room.actors:
                 if not actor is self:
                     self.set_target(actor)
                     break
 
     def actor_changed(self, event, actor, message = ""):
-        if self.aggressive and actor.last_command.action == "move" and self.get_room().get_actor(actor):
+        if self.aggressive and actor.last_command.action == "move" and self.room.get_actor(actor):
             self.set_target(actor)
             event.handle()
     
@@ -45,8 +45,8 @@ class Mob(actor.Actor):
         self.movement_timer -= 1
         if self.movement_timer < 0:
             direction = random.choice([direction for direction, _room in 
-                self.get_room().directions.items() if _room and 
-                _room.area == self.get_room().area])
+                self.room.directions.items() if _room and 
+                _room.area == self.room.area])
             command.move(self, direction)
             self.movement_timer = self.movement
     
@@ -57,7 +57,7 @@ class Mob(actor.Actor):
     
     def _die(self):
         super(Mob, self)._die()
-        self.get_room().move_actor(self)
+        self.room.move_actor(self)
         room.get(room.__config__['purgatory']).arriving(self)
         __main__.__mudpy__.on('tick', self._respawn)
 
@@ -69,5 +69,5 @@ class Mob(actor.Actor):
             self.curhp = self.get_attribute('hp')
             self.curmana = self.get_attribute('mana')
             self.curmovement = self.get_attribute('movement')
-            self.get_room().move_actor(self)
+            self.room.move_actor(self)
             room.get(self.start_room).arriving(self)

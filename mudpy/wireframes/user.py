@@ -10,12 +10,21 @@ def is_valid_name(name):
 class User(actor.Actor):
 
     yaml_tag = "user"
+    __starting_hp__ = 20
+    __starting_mana__ = 100
+    __starting_movement__ = 100
+    __starting_luck__ = 100
 
-    def __init__(self):
+    def __init__(self, publisher):
 
         self.client = None
 
-        super(User, self).__init__()
+        super(User, self).__init__(publisher)
+
+        self.add_to_attr('hp', self.__starting_hp__)
+        self.add_to_attr('mana', self.__starting_mana__)
+        self.add_to_attr('movement', self.__starting_movement__)
+        self.add_to_attr('luck', self.__starting_luck__)
 
     def set_client(self, client):
         
@@ -41,12 +50,25 @@ class User(actor.Actor):
     def test(self):
         self.notify("This is a test of the public broadcast system.")
 
+    def look(self, _args = None):
+
+        _room = self.room
+        msg = "%s\n%s\n\n" % (_room.short_desc, _room.long_desc)
+        msg += "".join(
+                    str(_actor).capitalize()+" is "+_actor.disposition+" here.\n"
+                        for _actor in _room.actors if _actor is not actor)
+        self.notify(msg.strip())
+
     def _prompt(self, *_args):
-        self.client.write(("\n\n%ihp %imana %imv > ") % (self.current_stats['hp'], self.current_stats['mana'], self.current_stats['movement']))
+        self.notify(("\n\n%ihp %imana %imv > ") % (self.stats['hp'], self.stats['mana'], self.stats['movement']))
 
     def _setup_events(self):
 
         def _tick(_event):
             self._prompt()
 
-        mud.__self__.on("tick", _tick)
+        self.room = self.publisher.__rooms__[actor.__start_room__]
+
+        self.publisher.on("tick", _tick)
+
+        super(User, self)._setup_events()

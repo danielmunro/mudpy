@@ -1,4 +1,4 @@
-!<u!race>
+!<race>
 name: gnome
 abilities: [sneak, dirt kick, infravision]
 attributes: {cha: 15, con: 12, dex: 18, int: 17, str: 12, wis: 14}

@@ -1,4 +1,4 @@
-!<u!race>
+!<race>
 name: faerie
 attributes: {cha: 15, con: 12, dex: 17, int: 17, str: 15, wis: 17}
 is_playable: true

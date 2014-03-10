@@ -6,7 +6,7 @@ class Race(wireframe.Blueprint):
 
     """
 
-    yaml_tag = "u!race"
+    yaml_tag = "race"
 
     SIZE_TINY = 1
     SIZE_SMALL = 2
@@ -14,7 +14,7 @@ class Race(wireframe.Blueprint):
     SIZE_LARGE = 4
     SIZE_GIGANTIC = 5
 
-    def __init__(self):
+    def __init__(self, _publisher):
         self.name = "noop"
         self.size = self.SIZE_NORMAL
         self.movement_cost = 1
